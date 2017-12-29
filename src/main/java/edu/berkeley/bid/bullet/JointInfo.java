@@ -1,4 +1,4 @@
-package edu.berkeley.bid.Bullet;
+package edu.berkeley.bid.bullet;
 
 import java.io.Serializable;
 

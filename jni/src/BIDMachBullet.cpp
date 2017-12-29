@@ -19,10 +19,16 @@ static void* long2void(jlong l) {
   return v.p;
 }
 
-static b3RobotSimulatorClientAPI * getRobotSimulatorClientAPI(JNIEnv *env, jobject jRoboSimAPI)
+static b3RobotSimulatorClientAPI *getRobotSimulatorClientAPI(JNIEnv *env, jobject jRoboSimAPI)
 {
-  jclass clazz = env->GetObjectClass(jRoboSimAPI);
-  jfieldID handle_id = env->GetFieldID(clazz, "handle", "J");
+  static jclass clazz = NULL;
+  static jfieldID handle_id = NULL;
+  if (clazz == NULL) {
+    clazz = (jclass) env->NewGlobalRef(env->FindClass("edu/berkeley/bid/Bullet"));
+  }
+  if (handle_id == NULL) {
+    handle_id = env->GetFieldID(clazz, "handle", "J");
+  }
   jlong handle = env->GetLongField(jRoboSimAPI, handle_id);
   b3RobotSimulatorClientAPI * pch = (b3RobotSimulatorClientAPI *)long2void(handle);
   return pch;
@@ -45,7 +51,7 @@ static void getQuaternionFields(JNIEnv *env, jclass &qclass, jfieldID &qxfield, 
   static jfieldID jwfield = NULL;
   
   if (jqclass == NULL) {
-    jqclass = (jclass) env->NewGlobalRef(env->FindClass("edu/berkeley/bid/Bullet/Quaternion"));
+    jqclass = (jclass) env->NewGlobalRef(env->FindClass("edu/berkeley/bid/bullet/Quaternion"));
   }
   if (jqclass != NULL && jxfield == NULL) {
     jxfield = env->GetFieldID(jqclass, "x", "F");
@@ -93,7 +99,7 @@ static void getVector3Fields(JNIEnv *env, jclass &vclass, jfieldID &vxfield, jfi
   static jfieldID jzfield = NULL;
   
   if (jvclass == NULL) {
-    jvclass = (jclass) env->NewGlobalRef(env->FindClass("edu/berkeley/bid/Bullet/Vector3"));
+    jvclass = (jclass) env->NewGlobalRef(env->FindClass("edu/berkeley/bid/bullet/Vector3"));
   }
   if (jvclass != NULL && jxfield == NULL) {
     jxfield = env->GetFieldID(jvclass, "x", "F");
@@ -129,10 +135,6 @@ static void nativeVector3ToJava(JNIEnv *env, jobject jv, b3Vector3 &v) {
   env->SetFloatField(jv, jzfield, v.z);
 }
 
-
-
-  
-  
 
 extern "C" {
   
@@ -190,6 +192,13 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_isConnected
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   return jrsa -> isConnected();
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setTimeOut
+(JNIEnv *env, jobject jRoboSimAPI, jdouble t)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  return jrsa -> setTimeOut(t);
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_disconnect
@@ -312,6 +321,51 @@ JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadMJCF
   }
   env->ReleaseStringUTFChars(jfname, fname);
   return results;
+}
+
+JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadBullet
+(JNIEnv *env, jobject jRoboSimAPI, jstring jfname)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  char *fname = (char *)(env->GetStringUTFChars(jfname, 0));
+  int i;
+
+  b3RobotSimulatorLoadFileResults m_results;
+  bool status = jrsa -> loadBullet(fname, m_results);    
+
+  int size = m_results.m_uniqueObjectIds.size();
+  jintArray results = env->NewIntArray(size);
+  if (results != NULL) {
+    jint *body = env->GetIntArrayElements(results, 0);
+    for (i = 0; i < size; i++) {
+      body[i] = m_results.m_uniqueObjectIds[i];
+    }
+    env->ReleaseIntArrayElements(results, body, 0);
+  }
+  env->ReleaseStringUTFChars(jfname, fname);
+  return results;
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_configureDebugVisualizer
+(JNIEnv *env, jobject jRoboSimAPI, jint flags, jint enable)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> configureDebugVisualizer((b3ConfigureDebugVisualizerEnum)flags, enable);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setGravity
+(JNIEnv *env, jobject jRoboSimAPI, jobject jgravity)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3Vector3 gravity = javaVector3ToNative(env, jgravity);
+  jrsa -> setGravity(gravity);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setTimeStep
+(JNIEnv *env, jobject jRoboSimAPI, jdouble t)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> setTimeStep(t);
 }
 
 }

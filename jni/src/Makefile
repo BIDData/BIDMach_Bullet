@@ -40,10 +40,10 @@ $(BIDMACH_ROOT)/target/BIDMachBullet-$(VERSION)-cpu-$(OS)-$(MARCH).jar: $(LIBPRE
 	rm $(LIBDIR)/$(LIBPREPEND)bidmachbullet$(LIBAPPEND)
 
 clean:
-	rm -f *.$(OBJ) *.pdb *.exp *.lib
+	rm -f *.$(OBJ) *.pdb *.exp *.lib  *.jnilib *.so *.dylib *.dll 
 
 distclean: clean
-	rm -f  *.jnilib Makefile.incl
+	rm -f Makefile.incl
 
 cleanres:
 	rm $(BIDMACH_ROOT)/src/main/resources/lib/*

@@ -1,4 +1,4 @@
-package edu.berkeley.bid.Bullet;
+package edu.berkeley.bid.bullet;
 
 import java.io.Serializable;
 
@@ -37,6 +37,11 @@ public class Vector3 implements Serializable {
 
     public Vector3 set (final float[] values) {
 	return this.set(values[0], values[1], values[2]);
+    }
+
+    @Override
+    public String toString () {
+	return "[" + x + "|" + y + "|" + z + "]";
     }
 
     public Vector3 cpy () {

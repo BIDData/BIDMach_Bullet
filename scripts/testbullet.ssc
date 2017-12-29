@@ -1,0 +1,24 @@
+import edu.berkeley.bid.Bullet
+import edu.berkeley.bid.bullet._
+
+val b = new Bullet;
+
+b.connect(Bullet.eCONNECT_GUI);
+
+b.configureDebugVisualizer(Bullet.COV_ENABLE_GUI, 0);
+
+b.setTimeOut(10);
+
+b.setTimeStep(1f/240);
+
+val v = new Vector3(0.1,0.2,0.3);
+
+val q = b.getQuaternionFromEuler(v);
+
+val rpy = b.getEulerFromQuaternion(q);
+
+val gravity = new Vector3(0,0,-9.8); 
+
+b.setGravity(gravity);
+
+
