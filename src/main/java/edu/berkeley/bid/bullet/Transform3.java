@@ -36,4 +36,10 @@ public class Transform3 implements Serializable {
     public Transform3 cpy() {
 	return new Transform3(this);
     }
+
+    @Override
+    public String toString () {
+	return "[basis=" + m_basis.toString() + ", origin=" + m_origin.toString()+"]";
+    }
+
 }

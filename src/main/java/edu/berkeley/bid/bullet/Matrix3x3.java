@@ -5,21 +5,26 @@ import java.io.Serializable;
 public class Matrix3x3 implements Serializable {
     private static final long serialVersionUID = 8903214321342893L;
 
-    public Vector3 m_el[];
+    public Vector3 []m_el;
 
     public Matrix3x3 () {
 	m_el = new Vector3[3];
+	m_el[0] = new Vector3();
+	m_el[1] = new Vector3();
+	m_el[2] = new Vector3();
     }
 
-    public Matrix3x3(Vector3 el[]) {
+    public Matrix3x3(Vector3 []el) {
+	m_el = new Vector3[3];
 	this.set(el);
     }
 
     public Matrix3x3(Matrix3x3 m) {
+	m_el = new Vector3[3];
 	this.set(m);
     }
 
-    public Matrix3x3 set(Vector3 el[]) {
+    public Matrix3x3 set(Vector3 []el) {
 	m_el[0] = el[0].cpy();
 	m_el[1] = el[1].cpy();
 	m_el[2] = el[2].cpy();
@@ -40,6 +45,11 @@ public class Matrix3x3 implements Serializable {
 	m_el[1].set(0, 1, 0);
 	m_el[2].set(0, 0, 1);
 	return this;
+    }
+
+    @Override
+    public String toString () {
+	return "[" + m_el[0].toString() + "," + m_el[1].toString() + "," + m_el[2].toString() + "]";
     }
 
 }

@@ -139,7 +139,11 @@ static void nativeVector3ToJava(JNIEnv *env, jobject jv, b3Vector3 &v) {
 
 static void nativeMatrix3x3ToJava(JNIEnv *env, jobject jv, b3Matrix3x3 &v) {
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Matrix3x3");
-  jfieldID jm_el_ID = env->GetFieldID(clazz, "m_el", "[L/edu/berkeley/bid/bullet/Vector3;");
+  jfieldID jm_el_ID = env->GetFieldID(clazz, "m_el", "[Ledu/berkeley/bid/bullet/Vector3;");
+  if (jm_el_ID == NULL) {
+    fprintf(stderr, "Couldnt access m_el array");
+    return;
+  }
   jobjectArray jm_el = (jobjectArray)env->GetObjectField(jv, jm_el_ID);
   int i;
   for (i = 0; i < 3; i++) {
@@ -151,7 +155,11 @@ static void nativeMatrix3x3ToJava(JNIEnv *env, jobject jv, b3Matrix3x3 &v) {
 static b3Matrix3x3 javaMatrix3x3ToNative(JNIEnv *env, jobject jv) {
   b3Matrix3x3 v;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Matrix3x3");
-  jfieldID jm_el_ID = env->GetFieldID(clazz, "m_el", "[L/edu/berkeley/bid/bullet/Vector3;");
+  jfieldID jm_el_ID = env->GetFieldID(clazz, "m_el", "[Ledu/berkeley/bid/bullet/Vector3;");
+  if (jm_el_ID == NULL) {
+    fprintf(stderr, "Couldnt access m_el array");
+    return v;
+  }
   jobjectArray jm_el = (jobjectArray)env->GetObjectField(jv, jm_el_ID);
   int i;
   for (i = 0; i < 3; i++) {
@@ -163,8 +171,8 @@ static b3Matrix3x3 javaMatrix3x3ToNative(JNIEnv *env, jobject jv) {
 
 static void nativeTransform3ToJava(JNIEnv *env, jobject jv, b3Transform &v) {
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Transform3");
-  jfieldID jm_basis_ID = env->GetFieldID(clazz, "m_basis", "L/edu/berkeley/bid/bullet/Matrix3x3;");
-  jfieldID jm_origin_ID = env->GetFieldID(clazz, "m_origin", "L/edu/berkeley/bid/bullet/Vector3;");
+  jfieldID jm_basis_ID = env->GetFieldID(clazz, "m_basis", "Ledu/berkeley/bid/bullet/Matrix3x3;");
+  jfieldID jm_origin_ID = env->GetFieldID(clazz, "m_origin", "Ledu/berkeley/bid/bullet/Vector3;");
   jobject jm_basis = env->GetObjectField(jv, jm_basis_ID);
   jobject jm_origin = env->GetObjectField(jv, jm_origin_ID);
   nativeMatrix3x3ToJava(env, jm_basis, v.getBasis());
@@ -174,8 +182,8 @@ static void nativeTransform3ToJava(JNIEnv *env, jobject jv, b3Transform &v) {
 static b3Transform javaTransform3ToNative(JNIEnv *env, jobject jv) {
   b3Transform v;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Transform3");
-  jfieldID jm_basis_ID = env->GetFieldID(clazz, "m_basis", "L/edu/berkeley/bid/bullet/Matrix3x3;");
-  jfieldID jm_origin_ID = env->GetFieldID(clazz, "m_origin", "L/edu/berkeley/bid/bullet/Vector3;");
+  jfieldID jm_basis_ID = env->GetFieldID(clazz, "m_basis", "Ledu/berkeley/bid/bullet/Matrix3x3;");
+  jfieldID jm_origin_ID = env->GetFieldID(clazz, "m_origin", "Ledu/berkeley/bid/bullet/Vector3;");
   jobject jm_basis = env->GetObjectField(jv, jm_basis_ID);
   jobject jm_origin = env->GetObjectField(jv, jm_origin_ID);
   v.setBasis(javaMatrix3x3ToNative(env, jm_basis));
@@ -185,8 +193,8 @@ static b3Transform javaTransform3ToNative(JNIEnv *env, jobject jv) {
 
 static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &jointInfo) {
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
-  jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "L/java/lang/String;");
-  jfieldID jointNameID = env->GetFieldID(clazz, "m_jointName", "L/java/lang/String;");
+  jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "Ljava/lang/String;");
+  jfieldID jointNameID = env->GetFieldID(clazz, "m_jointName", "Ljava/lang/String;");
   jfieldID jointTypeID = env->GetFieldID(clazz, "m_jointType", "I");
   jfieldID qIndexID = env->GetFieldID(clazz, "m_qIndex", "I");
   jfieldID uIndexID = env->GetFieldID(clazz, "m_uIndex", "I");
@@ -246,8 +254,8 @@ static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &j
 static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   struct b3JointInfo jointInfo;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
-  jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "L/java/lang/String;");
-  jfieldID jointNameID = env->GetFieldID(clazz, "m_jointName", "L/java/lang/String;");
+  jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "Ljava/lang/String;");
+  jfieldID jointNameID = env->GetFieldID(clazz, "m_jointName", "Ljava/lang/String;");
   jfieldID jointTypeID = env->GetFieldID(clazz, "m_jointType", "I");
   jfieldID qIndexID = env->GetFieldID(clazz, "m_qIndex", "I");
   jfieldID uIndexID = env->GetFieldID(clazz, "m_uIndex", "I");

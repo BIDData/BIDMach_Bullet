@@ -9,12 +9,12 @@ public class JointStates2 implements Serializable {
     public int m_numDegreeOfFreedomQ;
     public int m_numDegreeOfFreedomU;
     public Transform3 m_rootLocalInertialFrame;
-    public double m_actualStateQ[];
-    public double m_actualStateQdot[];
-    public double m_jointReactionForces[];
+    public double []m_actualStateQ;
+    public double []m_actualStateQdot;
+    public double []m_jointReactionForces;
 
     public JointStates2 (int bodyUniqueId, int numDegreeOfFreedomQ, int numDegreeOfFreedomU, Transform3 rootLocalInertialFrame,
-			 double actualStateQ[], double actualStateQdot[], double jointReactionForces[]) {
+			 double []actualStateQ, double []actualStateQdot, double []jointReactionForces) {
 	m_bodyUniqueId = bodyUniqueId;
 	m_numDegreeOfFreedomQ = numDegreeOfFreedomQ;
 	m_numDegreeOfFreedomU = numDegreeOfFreedomU;
