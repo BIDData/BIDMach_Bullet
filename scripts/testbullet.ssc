@@ -1,25 +1,26 @@
 import edu.berkeley.bid.Bullet
 import edu.berkeley.bid.bullet._
 
-val b = new Bullet;
+val sim = new Bullet;
 
-b.connect(Bullet.eCONNECT_GUI);
+//sim.connect(Bullet.eCONNECT_GUI);
 
-/* b.configureDebugVisualizer(Bullet.COV_ENABLE_GUI, 0);
+sim.connect(Bullet.eCONNECT_DIRECT);
 
-b.setTimeOut(10);
+sim.configureDebugVisualizer(Bullet.COV_ENABLE_GUI, 0);
 
-b.setTimeStep(1f/240);
+sim.setTimeOut(10);
 
-val v = new Vector3(0.1,0.2,0.3);
+sim.setTimeStep(1f/240);
 
-val q = b.getQuaternionFromEuler(v);
+val v = new Vector3(0.1f,0.2f,0.3f);
 
-val rpy = b.getEulerFromQuaternion(q);
+val q = sim.getQuaternionFromEuler(v);
 
-val gravity = new Vector3(0,0,-9.8); 
+val rpy = sim.getEulerFromQuaternion(q);
 
-b.setGravity(gravity);
+val gravity = new Vector3(0,0,-9.8f); 
 
+sim.setGravity(gravity);
 
-*/
+sim.loadURDF("/code/bullet3/data/plane.urdf")

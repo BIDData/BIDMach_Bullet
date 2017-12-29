@@ -73,8 +73,20 @@ public class Bullet implements Serializable {
 
 
     public native int loadURDF(String fname, Vector3 startPos, Quaternion startOrient, boolean forceOverrideFixedBase, boolean useMultiBody, int flags);
-    
+
+    public int loadURDF(String fname, Vector3 startPos, Quaternion startOrient) {
+	return loadURDF(fname, startPos, startOrient, false, true, 0);
+    }
+
+    public int loadURDF(String fname) {
+	return loadURDF(fname, new Vector3(), new Quaternion(), false, true, 0);
+    }
+
     public native int[] loadSDF(String fname, boolean forceOverrideFixedBase, boolean useMultiBody);
+
+    public int[] loadSDF(String fname) {
+	return loadSDF(fname, false, true);
+    }
 
     public native int[] loadMJCF(String fname);
 
