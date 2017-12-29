@@ -3,9 +3,9 @@ import edu.berkeley.bid.bullet._
 
 val sim = new Bullet;
 
-//sim.connect(Bullet.eCONNECT_GUI);
+sim.connect(Bullet.eCONNECT_GUI);
 
-sim.connect(Bullet.eCONNECT_DIRECT);
+//sim.connect(Bullet.eCONNECT_DIRECT);
 
 sim.configureDebugVisualizer(Bullet.COV_ENABLE_GUI, 0);
 
