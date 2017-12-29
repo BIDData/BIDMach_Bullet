@@ -196,7 +196,6 @@ static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &j
   env->ReleasePrimitiveArrayCritical(jParentFrame, parentFrame, 0);
 }
 
-
 static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   struct b3JointInfo jointInfo;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
@@ -267,6 +266,53 @@ static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   return jointInfo;
 }
 
+static void nativeJointSensorStateToJava(JNIEnv *env, jobject jv, struct b3JointSensorState &jointSensorState) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointSensorState");
+  jfieldID jointPositionID = env->GetFieldID(clazz, "m_jointPosition", "D");
+  jfieldID jointVelocityID = env->GetFieldID(clazz, "m_jointVelocity", "D");
+  jfieldID jointMotorTorqueID = env->GetFieldID(clazz, "m_jointMotorTorque", "D");
+  jfieldID jointForceTorqueID = env->GetFieldID(clazz, "m_jointForceTorque", "[D");
+  int i;
+
+  env->SetDoubleField(jv, jointPositionID, jointSensorState.m_jointPosition);
+  env->SetDoubleField(jv, jointVelocityID, jointSensorState.m_jointVelocity);
+  env->SetDoubleField(jv, jointMotorTorqueID, jointSensorState.m_jointMotorTorque);
+
+  jdoubleArray jJointForceTorque = (jdoubleArray)env->GetObjectField(jv, jointForceTorqueID);
+
+  double *jointForceTorque = (jdouble *)env->GetPrimitiveArrayCritical(jJointForceTorque, JNI_FALSE);
+
+  for (i = 0; i < 6; i++) {
+    jointForceTorque[i] = jointSensorState.m_jointForceTorque[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jJointForceTorque, jointForceTorque, 0);
+}
+
+static struct b3JointSensorState javaJointSensorStateToNative(JNIEnv *env, jobject jv) {
+  struct b3JointSensorState jointSensorState;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointSensorState");
+  jfieldID jointPositionID = env->GetFieldID(clazz, "m_jointPosition", "D");
+  jfieldID jointVelocityID = env->GetFieldID(clazz, "m_jointVelocity", "D");
+  jfieldID jointMotorTorqueID = env->GetFieldID(clazz, "m_jointMotorTorque", "D");
+  jfieldID jointForceTorqueID = env->GetFieldID(clazz, "m_jointForceTorque", "[D");
+  int i;
+
+  jointSensorState.m_jointPosition = env->GetDoubleField(jv, jointPositionID);
+  jointSensorState.m_jointVelocity = env->GetDoubleField(jv, jointVelocityID);
+  jointSensorState.m_jointMotorTorque = env->GetDoubleField(jv, jointMotorTorqueID);
+
+  jdoubleArray jJointForceTorque = (jdoubleArray)env->GetObjectField(jv, jointForceTorqueID);
+
+  double *jointForceTorque = (jdouble *)env->GetPrimitiveArrayCritical(jJointForceTorque, JNI_FALSE);
+
+  for (i = 0; i < 6; i++) {
+    jointSensorState.m_jointForceTorque[i] = jointForceTorque[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jJointForceTorque, jointForceTorque, 0);
+  return jointSensorState;
+}
 
 extern "C" {
   
@@ -597,6 +643,13 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_changeConstraint
   int retval = jrsa -> changeConstraint(constraintId, &jointInfo);
   
   return retval;
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_removeConstraint
+(JNIEnv *env, jobject jRoboSimAPI, jint constraintId)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> removeConstraint(constraintId);
 }
 
 
