@@ -368,4 +368,64 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setTimeStep
   jrsa -> setTimeStep(t);
 }
 
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyInfo
+(JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBodyInfo)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3BodyInfo bodyInfo;
+  bool status = jrsa -> getBodyInfo(bodyUniqueId, &bodyInfo);
+  jstring jbaseName = env->NewStringUTF(bodyInfo.m_baseName);
+  jstring jbodyName = env->NewStringUTF(bodyInfo.m_bodyName);
+  jclass clazz = env->GetObjectClass(jBodyInfo);
+  jfieldID baseNameField = env->GetFieldID(clazz, "m_baseName", "Ljava/lang/String;");
+  jfieldID bodyNameField = env->GetFieldID(clazz, "m_bodyName", "Ljava/lang/String;");
+  env->SetObjectField(jBodyInfo, baseNameField, jbaseName);
+  env->SetObjectField(jBodyInfo, bodyNameField, jbodyName);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBasePositionAndOrientation
+(JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBasePosition, jobject jBaseOrient)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3Vector3 basePosition;
+  b3Quaternion baseOrient;
+  bool status = jrsa -> getBasePositionAndOrientation(bodyUniqueId, basePosition, baseOrient);
+  nativeVector3ToJava(env, jBasePosition, basePosition);
+  nativeQuaternionToJava(env, jBaseOrient, baseOrient);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetBasePositionAndOrientation
+(JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBasePosition, jobject jBaseOrient)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3Vector3 basePosition = javaVector3ToNative(env, jBasePosition);
+  b3Quaternion baseOrient = javaQuaternionToNative(env, jBaseOrient);
+  bool status = jrsa -> resetBasePositionAndOrientation(bodyUniqueId, basePosition, baseOrient);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBaseVelocity
+(JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBaseVelocity, jobject jBaseAngularV)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3Vector3 baseVelocity;
+  b3Vector3 baseAngularV;
+  bool status = jrsa -> getBaseVelocity(bodyUniqueId, baseVelocity, baseAngularV);
+  nativeVector3ToJava(env, jBaseVelocity, baseVelocity);
+  nativeVector3ToJava(env, jBaseAngularV, baseAngularV);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetBaseVelocity
+(JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBaseVelocity, jobject jBaseAngularV)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3Vector3 baseVelocity = javaVector3ToNative(env, jBaseVelocity);
+  b3Vector3 baseAngularV = javaVector3ToNative(env, jBaseAngularV);
+  bool status = jrsa -> resetBaseVelocity(bodyUniqueId, baseVelocity, baseAngularV);
+  return status;
+}
+
 }
