@@ -5,7 +5,7 @@ val b = new Bullet;
 
 b.connect(Bullet.eCONNECT_GUI);
 
-b.configureDebugVisualizer(Bullet.COV_ENABLE_GUI, 0);
+/* b.configureDebugVisualizer(Bullet.COV_ENABLE_GUI, 0);
 
 b.setTimeOut(10);
 
@@ -22,3 +22,4 @@ val gravity = new Vector3(0,0,-9.8);
 b.setGravity(gravity);
 
 
+*/
