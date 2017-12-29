@@ -34,4 +34,12 @@ public class Matrix3x3 implements Serializable {
     public Matrix3x3 cpy() {
 	return new Matrix3x3(this);
     }
+
+    public Matrix3x3 idt() {
+	m_el[0].set(1, 0, 0);
+	m_el[1].set(0, 1, 0);
+	m_el[2].set(0, 0, 1);
+	return this;
+    }
+
 }
