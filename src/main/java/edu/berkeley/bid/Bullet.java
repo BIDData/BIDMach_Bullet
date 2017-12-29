@@ -23,6 +23,14 @@ public class Bullet implements Serializable {
         }
     }
 
+    public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
+
+    public static native void testTransform3(Transform3 min, Transform3 mout);
+
+    public static native void testJointInfo(JointInfo min, JointInfo mout);
+
+    public static native void testJointSensorState(JointSensorState min, JointSensorState mout);
+
     private native int newRobotSimulatorClientAPI();
 
     private native int deleteRobotSimulatorClientAPI();
@@ -97,6 +105,26 @@ public class Bullet implements Serializable {
     public native void setGravity(Vector3 gravity);
 
     public native void setTimeStep(double t);
+
+    public native boolean getBodyInfo(int bodyUniqueId, BodyInfo bodyInfo);
+
+    public native boolean getBasePositionAndOrientation(int bodyUniqueId, Vector3 basePosition, Quaternion baseOrientation);
+
+    public native boolean resetBasePositionAndOrientation(int bodyUniqueId, Vector3 basePosition, Quaternion baseOrientation);
+
+    public native boolean getBaseVelocity(int bodyUniqueId, Vector3 baseVelocity, Vector3 baseAngularV);
+
+    public native boolean resetBaseVelocity(int bodyUniqueId, Vector3 baseVelocity, Vector3 baseAngularV);
+
+    public native int getNumJoints(int bodyUniqueId);
+
+    public native boolean getJointInfo(int bodyUniqueId, int jointIndex, JointInfo jointInfo);
+
+    public native int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex, JointInfo jointInfo);
+
+    public native int changeConstraint(int constraintId, JointInfo jointInfo);
+
+    public native void removeConstraint(int constraintId);
     
     public static final int eCONNECT_GUI = 1;
     public static final int eCONNECT_DIRECT = 2;

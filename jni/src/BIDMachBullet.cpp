@@ -136,6 +136,53 @@ static void nativeVector3ToJava(JNIEnv *env, jobject jv, b3Vector3 &v) {
   env->SetFloatField(jv, jzfield, v.z);
 }
 
+
+static void nativeMatrix3x3ToJava(JNIEnv *env, jobject jv, b3Matrix3x3 &v) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Matrix3x3");
+  jfieldID jm_el_ID = env->GetFieldID(clazz, "m_el", "[L/edu/berkeley/bid/bullet/Vector3;");
+  jobjectArray jm_el = (jobjectArray)env->GetObjectField(jv, jm_el_ID);
+  int i;
+  for (i = 0; i < 3; i++) {
+    jobject vec3 = env->GetObjectArrayElement(jm_el, i);
+    nativeVector3ToJava(env, vec3, v[i]);
+  }
+}
+
+static b3Matrix3x3 javaMatrix3x3ToNative(JNIEnv *env, jobject jv) {
+  b3Matrix3x3 v;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Matrix3x3");
+  jfieldID jm_el_ID = env->GetFieldID(clazz, "m_el", "[L/edu/berkeley/bid/bullet/Vector3;");
+  jobjectArray jm_el = (jobjectArray)env->GetObjectField(jv, jm_el_ID);
+  int i;
+  for (i = 0; i < 3; i++) {
+    jobject vec3 = env->GetObjectArrayElement(jm_el, i);
+    v[i] = javaVector3ToNative(env, vec3);
+  }
+  return v;
+}
+
+static void nativeTransform3ToJava(JNIEnv *env, jobject jv, b3Transform &v) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Transform3");
+  jfieldID jm_basis_ID = env->GetFieldID(clazz, "m_basis", "L/edu/berkeley/bid/bullet/Matrix3x3;");
+  jfieldID jm_origin_ID = env->GetFieldID(clazz, "m_origin", "L/edu/berkeley/bid/bullet/Vector3;");
+  jobject jm_basis = env->GetObjectField(jv, jm_basis_ID);
+  jobject jm_origin = env->GetObjectField(jv, jm_origin_ID);
+  nativeMatrix3x3ToJava(env, jm_basis, v.getBasis());
+  nativeVector3ToJava(env, jm_origin, v.getOrigin());
+}
+
+static b3Transform javaTransform3ToNative(JNIEnv *env, jobject jv) {
+  b3Transform v;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Transform3");
+  jfieldID jm_basis_ID = env->GetFieldID(clazz, "m_basis", "L/edu/berkeley/bid/bullet/Matrix3x3;");
+  jfieldID jm_origin_ID = env->GetFieldID(clazz, "m_origin", "L/edu/berkeley/bid/bullet/Vector3;");
+  jobject jm_basis = env->GetObjectField(jv, jm_basis_ID);
+  jobject jm_origin = env->GetObjectField(jv, jm_origin_ID);
+  v.setBasis(javaMatrix3x3ToNative(env, jm_basis));
+  v.setOrigin(javaVector3ToNative(env, jm_origin));
+  return v;
+}
+
 static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &jointInfo) {
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
   jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "L/java/lang/String;");
@@ -315,7 +362,36 @@ static struct b3JointSensorState javaJointSensorStateToNative(JNIEnv *env, jobje
 }
 
 extern "C" {
-  
+
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3Matrix3x3 m = javaMatrix3x3ToNative(env, min);
+  nativeMatrix3x3ToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testTransform3
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3Transform m = javaTransform3ToNative(env, min);
+  nativeTransform3ToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointInfo
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3JointInfo m = javaJointInfoToNative(env, min);
+  nativeJointInfoToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointSensorState
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3JointSensorState m = javaJointSensorStateToNative(env, min);
+  nativeJointSensorStateToJava(env, mout, m);
+}
+
 JNIEXPORT jint JNICALL Java_edu_berkeley_bid_Bullet_newRobotSimulatorClientAPI
 (JNIEnv *env, jobject jRoboSimAPI)
 {
