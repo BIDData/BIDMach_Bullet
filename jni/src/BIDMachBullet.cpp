@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <../examples/RobotSimulator/b3RobotSimulatorClientAPI.h>
+#include <string.h>
 
 union VoidLong {
   jlong l;
@@ -133,6 +134,137 @@ static void nativeVector3ToJava(JNIEnv *env, jobject jv, b3Vector3 &v) {
   env->SetFloatField(jv, jxfield, v.x);
   env->SetFloatField(jv, jyfield, v.y);
   env->SetFloatField(jv, jzfield, v.z);
+}
+
+static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &jointInfo) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
+  jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "L/java/lang/String;");
+  jfieldID jointNameID = env->GetFieldID(clazz, "m_jointName", "L/java/lang/String;");
+  jfieldID jointTypeID = env->GetFieldID(clazz, "m_jointType", "I");
+  jfieldID qIndexID = env->GetFieldID(clazz, "m_qIndex", "I");
+  jfieldID uIndexID = env->GetFieldID(clazz, "m_uIndex", "I");
+  jfieldID jointIndexID = env->GetFieldID(clazz, "m_jointIndex", "I");
+  jfieldID flagsID = env->GetFieldID(clazz, "m_flags", "I");
+  jfieldID jointDampingID = env->GetFieldID(clazz, "m_jointDamping", "D");
+  jfieldID jointFrictionID = env->GetFieldID(clazz, "m_jointFriction", "D");
+  jfieldID jointLowerLimitID = env->GetFieldID(clazz, "m_jointLowerLimit", "D");
+  jfieldID jointUpperLimitID = env->GetFieldID(clazz, "m_jointUpperLimit", "D");
+  jfieldID jointMaxForceID = env->GetFieldID(clazz, "m_jointMaxForce", "D");
+  jfieldID jointMaxVelocityID = env->GetFieldID(clazz, "m_jointMaxVelocity", "D");
+  jfieldID parentFrameID = env->GetFieldID(clazz, "m_parentFrame", "[D");
+  jfieldID childFrameID = env->GetFieldID(clazz, "m_childFrame", "[D");
+  jfieldID jointAxisID = env->GetFieldID(clazz, "m_jointAxis", "[D");
+  int i;
+
+  jstring jlinkName = env->NewStringUTF(jointInfo.m_linkName);
+  jstring jjointName = env->NewStringUTF(jointInfo.m_jointName);
+      
+  env->SetObjectField(jv, linkNameID, jlinkName);
+  env->SetObjectField(jv, jointNameID, jjointName);
+  env->SetIntField(jv, jointTypeID, jointInfo.m_jointType);
+  env->SetIntField(jv, qIndexID, jointInfo.m_qIndex);
+  env->SetIntField(jv, uIndexID, jointInfo.m_uIndex);
+  env->SetIntField(jv, jointIndexID, jointInfo.m_jointIndex);
+  env->SetIntField(jv, flagsID, jointInfo.m_flags);
+  env->SetDoubleField(jv, jointDampingID, jointInfo.m_jointDamping);
+  env->SetDoubleField(jv, jointFrictionID, jointInfo.m_jointFriction);
+  env->SetDoubleField(jv, jointLowerLimitID, jointInfo.m_jointLowerLimit);
+  env->SetDoubleField(jv, jointUpperLimitID, jointInfo.m_jointUpperLimit);
+  env->SetDoubleField(jv, jointMaxForceID, jointInfo.m_jointMaxForce);
+  env->SetDoubleField(jv, jointMaxVelocityID, jointInfo.m_jointMaxVelocity);
+
+  jdoubleArray jParentFrame = (jdoubleArray)env->GetObjectField(jv, parentFrameID);
+  jdoubleArray jChildFrame = (jdoubleArray)env->GetObjectField(jv, childFrameID);
+  jdoubleArray jJointAxis = (jdoubleArray)env->GetObjectField(jv, jointAxisID);
+
+  double *parentFrame = (jdouble *)env->GetPrimitiveArrayCritical(jParentFrame, JNI_FALSE);
+  double *childFrame = (jdouble *)env->GetPrimitiveArrayCritical(jChildFrame, JNI_FALSE);
+  double *jointAxis = (jdouble *)env->GetPrimitiveArrayCritical(jJointAxis, JNI_FALSE);
+
+  for (i = 0; i < 7; i++) {
+    parentFrame[i] = jointInfo.m_parentFrame[i];
+  }
+  for (i = 0; i < 7; i++) {
+    childFrame[i] = jointInfo.m_childFrame[i];
+  }
+  for (i = 0; i < 3; i++) {
+    jointAxis[i] = jointInfo.m_jointAxis[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jJointAxis, jointAxis, 0);
+  env->ReleasePrimitiveArrayCritical(jChildFrame, childFrame, 0);
+  env->ReleasePrimitiveArrayCritical(jParentFrame, parentFrame, 0);
+}
+
+
+static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
+  struct b3JointInfo jointInfo;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
+  jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "L/java/lang/String;");
+  jfieldID jointNameID = env->GetFieldID(clazz, "m_jointName", "L/java/lang/String;");
+  jfieldID jointTypeID = env->GetFieldID(clazz, "m_jointType", "I");
+  jfieldID qIndexID = env->GetFieldID(clazz, "m_qIndex", "I");
+  jfieldID uIndexID = env->GetFieldID(clazz, "m_uIndex", "I");
+  jfieldID jointIndexID = env->GetFieldID(clazz, "m_jointIndex", "I");
+  jfieldID flagsID = env->GetFieldID(clazz, "m_flags", "I");
+  jfieldID jointDampingID = env->GetFieldID(clazz, "m_jointDamping", "D");
+  jfieldID jointFrictionID = env->GetFieldID(clazz, "m_jointFriction", "D");
+  jfieldID jointLowerLimitID = env->GetFieldID(clazz, "m_jointLowerLimit", "D");
+  jfieldID jointUpperLimitID = env->GetFieldID(clazz, "m_jointUpperLimit", "D");
+  jfieldID jointMaxForceID = env->GetFieldID(clazz, "m_jointMaxForce", "D");
+  jfieldID jointMaxVelocityID = env->GetFieldID(clazz, "m_jointMaxVelocity", "D");
+  jfieldID parentFrameID = env->GetFieldID(clazz, "m_parentFrame", "[D");
+  jfieldID childFrameID = env->GetFieldID(clazz, "m_childFrame", "[D");
+  jfieldID jointAxisID = env->GetFieldID(clazz, "m_jointAxis", "[D");
+  int i;
+
+  jstring jLinkName = (jstring)env->GetObjectField(jv, linkNameID);
+  jstring jJointName = (jstring)env->GetObjectField(jv, jointNameID);
+
+  char *linkName = (char *)(env->GetStringUTFChars(jLinkName, 0));
+  char *jointName = (char *)(env->GetStringUTFChars(jJointName, 0));
+
+  strncpy(jointInfo.m_linkName, linkName, 1024);
+  strncpy(jointInfo.m_jointName, jointName, 1024);
+
+  env -> ReleaseStringUTFChars(jJointName, jointName);
+  env -> ReleaseStringUTFChars(jLinkName, linkName);
+
+  jointInfo.m_jointType = env->GetIntField(jv, jointTypeID);
+  jointInfo.m_qIndex = env->GetIntField(jv, qIndexID);
+  jointInfo.m_uIndex = env->GetIntField(jv, uIndexID);
+  jointInfo.m_jointIndex = env->GetIntField(jv, jointIndexID);
+  jointInfo.m_flags = env->GetIntField(jv, flagsID);
+  jointInfo.m_jointDamping = env->GetDoubleField(jv, jointDampingID);
+  jointInfo.m_jointFriction = env->GetDoubleField(jv, jointFrictionID);
+  jointInfo.m_jointLowerLimit = env->GetDoubleField(jv, jointLowerLimitID);
+  jointInfo.m_jointUpperLimit = env->GetDoubleField(jv, jointUpperLimitID);
+  jointInfo.m_jointMaxForce = env->GetDoubleField(jv, jointMaxForceID);
+  jointInfo.m_jointMaxVelocity = env->GetDoubleField(jv, jointMaxVelocityID);
+
+  jdoubleArray jParentFrame = (jdoubleArray)env->GetObjectField(jv, parentFrameID);
+  jdoubleArray jChildFrame = (jdoubleArray)env->GetObjectField(jv, childFrameID);
+  jdoubleArray jJointAxis = (jdoubleArray)env->GetObjectField(jv, jointAxisID);
+
+  double *parentFrame = (jdouble *)env->GetPrimitiveArrayCritical(jParentFrame, JNI_FALSE);
+  double *childFrame = (jdouble *)env->GetPrimitiveArrayCritical(jChildFrame, JNI_FALSE);
+  double *jointAxis = (jdouble *)env->GetPrimitiveArrayCritical(jJointAxis, JNI_FALSE);
+
+  for (i = 0; i < 7; i++) {
+    jointInfo.m_parentFrame[i] = parentFrame[i];
+  }
+  for (i = 0; i < 7; i++) {
+    jointInfo.m_childFrame[i] = childFrame[i];
+  }
+  for (i = 0; i < 3; i++) {
+    jointInfo.m_jointAxis[i] = jointAxis[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jJointAxis, jointAxis, 0);
+  env->ReleasePrimitiveArrayCritical(jChildFrame, childFrame, 0);
+  env->ReleasePrimitiveArrayCritical(jParentFrame, parentFrame, 0);
+
+  return jointInfo;
 }
 
 
@@ -427,5 +559,45 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetBaseVelocity
   bool status = jrsa -> resetBaseVelocity(bodyUniqueId, baseVelocity, baseAngularV);
   return status;
 }
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumJoints
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  int njoints = jrsa -> getNumJoints(bodyUniqueId);
+  return njoints;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointInfo
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject jJointInfo)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3JointInfo jointInfo;
+  bool status = jrsa -> getJointInfo(bodyUniqueId, jointIndex, &jointInfo);
+  nativeJointInfoToJava(env, jJointInfo, jointInfo);
+  
+  return status;
+}
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createConstraint
+(JNIEnv *env, jobject jRoboSimAPI, jint parentBodyIndex, jint parentJointIndex, jint childBodyIndex, jint childJointIndex, jobject jJointInfo)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3JointInfo jointInfo = javaJointInfoToNative(env, jJointInfo);
+  int constraintId = jrsa -> createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, &jointInfo);
+  
+  return constraintId;
+}
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_changeConstraint
+(JNIEnv *env, jobject jRoboSimAPI, jint constraintId, jobject jJointInfo)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3JointInfo jointInfo = javaJointInfoToNative(env, jJointInfo);
+  int retval = jrsa -> changeConstraint(constraintId, &jointInfo);
+  
+  return retval;
+}
+
 
 }
