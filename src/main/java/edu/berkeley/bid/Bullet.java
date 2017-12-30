@@ -203,4 +203,44 @@ public class Bullet implements Serializable {
     public static final int STATE_LOGGING_CONTACT_POINTS = 5;
     public static final int STATE_LOGGING_PROFILE_TIMINGS = 6;
 
+    public static final int CONTROL_MODE_VELOCITY=0;
+    public static final int CONTROL_MODE_TORQUE=1;
+    public static final int CONTROL_MODE_POSITION_VELOCITY_PD=2;
+
+    public static final int IK_DLS=0;
+    public static final int IK_SDLS=1;
+    public static final int IK_HAS_TARGET_POSITION=16;
+    public static final int IK_HAS_TARGET_ORIENTATION=32;
+    public static final int IK_HAS_NULL_SPACE_VELOCITY=64;
+    public static final int IK_HAS_JOINT_DAMPING=128;
+
+    public static final int EF_LINK_FRAME=1;
+    public static final int EF_WORLD_FRAME=2;
+
+    public static final int DEB_DEBUG_TEXT_ALWAYS_FACE_CAMERA=1;
+    public static final int DEB_DEBUG_TEXT_USE_TRUE_TYPE_FONTS=2;
+    public static final int DEB_DEBUG_TEXT_HAS_TRACKING_OBJECT=4;
+
+    public static final int URDF_USE_INERTIA_FROM_FILE=2;
+    public static final int URDF_USE_SELF_COLLISION=8;
+    public static final int URDF_USE_SELF_COLLISION_EXCLUDE_PARENT=16;
+    public static final int URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS=32;
+    public static final int URDF_RESERVED=64;
+
+    public static final int GEOM_SPHERE=2;
+    public static final int GEOM_BOX=3;
+    public static final int GEOM_CYLINDER=4;
+    public static final int GEOM_MESH=5;
+    public static final int GEOM_PLANE=6;
+    public static final int GEOM_CAPSULE=7;
+    public static final int GEOM_UNKNOWN=8; 
+
+    public static final int GEOM_FORCE_CONCAVE_TRIMESH=1;
+    
+    public static final int GEOM_VISUAL_HAS_RGBA_COLOR=1;
+    public static final int GEOM_VISUAL_HAS_SPECULAR_COLOR=2;
+
+    public static final int STATE_LOG_JOINT_MOTOR_TORQUES=1;
+    public static final int STATE_LOG_JOINT_USER_TORQUES=2;
+    public static final int STATE_LOG_JOINT_TORQUES = STATE_LOG_JOINT_MOTOR_TORQUES+STATE_LOG_JOINT_USER_TORQUES;
 }
