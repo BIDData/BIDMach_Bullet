@@ -1,4 +1,4 @@
-import edu.berkeley.bid.Bullet
+import BIDMach.rl.environments.Bullet
 import edu.berkeley.bid.bullet._
 
 val sim = new Bullet;
@@ -15,9 +15,9 @@ sim.setTimeStep(1f/240);
 
 val v = new Vector3(0.1f,0.2f,0.3f);
 
-val q = sim.getQuaternionFromEuler(v);
+val q = Bullet.getQuaternionFromEuler(v);
 
-val rpy = sim.getEulerFromQuaternion(q);
+val rpy = Bullet.getEulerFromQuaternion(q);
 
 val gravity = new Vector3(0,0,-9.8f); 
 

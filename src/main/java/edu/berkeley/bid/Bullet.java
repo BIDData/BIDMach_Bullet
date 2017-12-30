@@ -51,22 +51,21 @@ public class Bullet implements Serializable {
 
     public native void resetSimulation();
 
-    public native void getQuaternionFromEuler(Vector3 euler, Quaternion q);
+    public static native void getQuaternionFromEuler(Vector3 euler, Quaternion q);
 
-    public Quaternion getQuaternionFromEuler(Vector3 euler) {
+    public static Quaternion getQuaternionFromEuler(Vector3 euler) {
 	Quaternion q = new Quaternion();
 	getQuaternionFromEuler(euler, q);
 	return q;
     }
 
-    public native void getEulerFromQuaternion(Quaternion q, Vector3 euler);
+    public static native void getEulerFromQuaternion(Quaternion q, Vector3 euler);
 
-    public Vector3 getEulerFromQuaternion(Quaternion q) {
+    public static Vector3 getEulerFromQuaternion(Quaternion q) {
 	Vector3 v = new Vector3();
 	getEulerFromQuaternion(q, v);
 	return v;
     }
-
 
     public native int loadURDF(String fname, Vector3 startPos, Quaternion startOrient, boolean forceOverrideFixedBase, boolean useMultiBody, int flags);
 
@@ -90,6 +89,12 @@ public class Bullet implements Serializable {
 
     public native boolean getBodyInfo(int bodyUniqueId, BodyInfo bodyInfo);
 
+    public BodyInfo getBodyInfo(int bodyUniqueId) {
+	BodyInfo bodyInfo = new BodyInfo();
+	getBodyInfo(bodyUniqueId, bodyInfo);
+	return bodyInfo;
+    }
+
     public native boolean getBasePositionAndOrientation(int bodyUniqueId, Vector3 basePosition, Quaternion baseOrientation);
 
     public native boolean resetBasePositionAndOrientation(int bodyUniqueId, Vector3 basePosition, Quaternion baseOrientation);
@@ -102,6 +107,12 @@ public class Bullet implements Serializable {
 
     public native boolean getJointInfo(int bodyUniqueId, int jointIndex, JointInfo jointInfo);
 
+    public JointInfo getJointInfo(int bodyUniqueId, int jointIndex) {
+	JointInfo jointInfo = new JointInfo();
+	getJointInfo(bodyUniqueId, jointIndex, jointInfo);
+	return jointInfo;
+    }
+
     public native int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex, JointInfo jointInfo);
 
     public native int changeConstraint(int constraintId, JointInfo jointInfo);
@@ -110,7 +121,19 @@ public class Bullet implements Serializable {
 
     public native boolean getJointState(int bodyUniqueId, int jointIndex, JointSensorState state);
 
+    public JointSensorState getJointState(int bodyUniqueId, int jointIndex) {
+	JointSensorState jointState = new JointSensorState();
+	getJointState(bodyUniqueId, jointIndex, jointState);
+	return jointState;
+    }
+
     public native boolean getJointStates(int bodyUniqueId, JointStates2 state);
+
+    public JointStates2 getJointStates(int bodyUniqueId) {
+	JointStates2 jointStates = new JointStates2();
+	getJointStates(bodyUniqueId, jointStates);
+	return jointStates;
+    }
 
     public native boolean resetJointState(int bodyUniqueId, int jointIndex, double targetValue);
 
@@ -136,10 +159,22 @@ public class Bullet implements Serializable {
 
     public native boolean calculateInverseKinematics(InverseKinematicArgs args, InverseKinematicsResults results);
 
+    public InverseKinematicsResults calculateInverseKinematics(InverseKinematicArgs args) {
+	InverseKinematicsResults results = new InverseKinematicsResults();
+	calculateInverseKinematics(args, results);
+	return results;
+    }
+
     public native boolean getBodyJacobian(int bodyUniqueId, int linkIndex, double [] localPosition, double [] jointPositions, double [] jointVelocities,
 					  double [] jointAccelerations, double [] linearJacobian, double [] angularJacobian);
 
     public native boolean getLinkState(int bodyUniqueId, int linkIndex, LinkState linkState);
+
+    public LinkState getLinkState(int bodyUniqueId, int linkIndex) {
+	LinkState linkState = new LinkState();
+	getLinkState(bodyUniqueId, linkIndex, linkState);
+	return linkState;
+    }
 
     public native void configureDebugVisualizer(int flags, int enable);
 
@@ -150,6 +185,12 @@ public class Bullet implements Serializable {
     public native void stopStateLogging(int stateLoggerUniqueId);
 
     public native void getKeyboardEventsData(KeyboardEventsData keyboardEventsData);
+
+    public KeyboardEventsData getKeyboardEventsData() {
+	KeyboardEventsData keyboardEventsData = new KeyboardEventsData();
+	getKeyboardEventsData(keyboardEventsData);
+	return keyboardEventsData;
+    }
 
     public native void submitProfileTiming(String jprofileName, int durationInMicroseconds);
 
