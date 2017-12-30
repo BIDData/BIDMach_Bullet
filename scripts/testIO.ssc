@@ -1,0 +1,82 @@
+import edu.berkeley.bid.Bullet
+import edu.berkeley.bid.bullet._
+
+val r1 = new Vector3(1,2,3);
+val r2 = new Vector3(4,5,6);
+val r3 = new Vector3(7,8,9);
+
+val m1 = new Matrix3x3(Array(r1,r2,r3));
+val m2 = new Matrix3x3();
+
+Bullet.testMatrix3x3(m1, m2);
+
+m1
+m2
+
+val v1 = new Vector3(10,11,12);
+val t1 = new Transform3(m1, v1);
+val t2 = new Transform3();
+
+Bullet.testTransform3(t1,t2);
+t1
+t2
+
+val info1 = new JointInfo("link","joint",0,1,2,3,4,5.0,6.0,7.0,8.0,9.0,10.0,
+Array(20.0,21.0,22.0,23.0,24.0,25.0,26.0),
+Array(120.0,121.0,122.0,123.0,124.0,125.0,126.0),
+Array(220.0,221.0,222.0))
+val info2 = new JointInfo();
+
+Bullet.testJointInfo(info1, info2);
+info1
+info2
+info1.m_parentFrame
+info2.m_parentFrame
+info1.m_childFrame
+info2.m_childFrame
+info1.m_jointAxis
+info2.m_jointAxis
+
+val sens1 = new JointSensorState(1.0, 2.0, Array(10.0,11.0,12.0,13.0,14.0,15.0), 3.0);
+val sens2 = new JointSensorState();
+Bullet.testJointSensorState(sens1,sens2);
+sens1
+sens2
+sens1.m_jointForceTorque
+sens2.m_jointForceTorque
+
+val js1 = new JointStates2(0, 2, 4, new Transform3((new Matrix3x3).idt(), new Vector3(0.1f,0.2f,0.3f)), Array(10.0,11.0), Array(20.0,21.0,22.0,23.0),Array(30.0,31.0,32.0,33.0,34.0,35.0));
+val js2 = new JointStates2();
+
+Bullet.testJointStates2(js1,js2,1);
+js1
+js2
+js1.m_actualStateQ
+js2.m_actualStateQ
+js1.m_actualStateQdot
+js2.m_actualStateQdot
+js1.m_jointReactionForces
+js2.m_jointReactionForces
+
+val jma1 = new JointMotorArgs(1,2.0,3.0,4.0,5.0,6.0);
+val jma2 = new JointMotorArgs(2);
+Bullet.testJointMotorArgs(jma1,jma2);
+jma1
+jma2
+
+val ls1 = new LinkState(Array(1.0,2.0,3.0), Array(4.0,5.0,6.0,7.0), Array(11.0,12.0,13.0), Array(14.0,15.0,16.0,17.0), Array(21.0,22.0,23.0), Array(24.0,25.0,26.0,27.0),
+Array(31.0,32.0,33.0), Array(34.0,35.0,36.0), Array(41.0,42.0,43.0), Array(44.0,45.0,46.0))
+val ls2 = new LinkState();
+
+Bullet.testLinkState(ls1,ls2);
+ls1
+ls2
+
+val ked1 = new KeyboardEventsData();
+ked1.m_keyboardEvents = Array(new KeyboardEvent(1,2), new KeyboardEvent(3,4), new KeyboardEvent(5,6));
+ked1.m_numKeyboardEvents = ked1.m_keyboardEvents.length;
+val ked2 = new KeyboardEventsData();
+
+Bullet.testKeyboardEventsData(ked1,ked2);
+ked1
+ked2
