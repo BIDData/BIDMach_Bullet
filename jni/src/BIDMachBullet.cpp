@@ -529,6 +529,37 @@ static void nativeJointMotorArgsToJava(JNIEnv *env, jobject jv, struct b3RobotSi
 
 }
 
+static struct b3RobotSimulatorInverseKinematicArgs javaInverseKinematicArgsToNative(JNIEnv *env, jobject jv) {
+  struct b3RobotSimulatorInverseKinematicArgs args;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/InverseKinematicArgs");
+  CHECKFIELD(bodyUniqueIdID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "InverseKinematicArgs: can't access m_bodyUniqueId\n", args);
+  CHECKFIELD(endEffectorTargetPositionID, env->GetFieldID(clazz, "m_endEffectorTargetPosition", "[D"), "InverseKinematicArgs: can't access m_endEffectorTargetPosition\n", args);
+  CHECKFIELD(endEffectorTargetOrientationID, env->GetFieldID(clazz, "m_endEffectorTargetOrientation", "[D"), "InverseKinematicArgs: can't access m_endEffectorTargetOrientation\n", args);
+  CHECKFIELD(endEffectorLinkIndexID, env->GetFieldID(clazz, "m_endEffectorLinkIndex", "I"), "InverseKinematicArgs: can't access m_endEffectorLinkIndex\n", args);
+  CHECKFIELD(flagsID, env->GetFieldID(clazz, "m_flags", "I"), "InverseKinematicArgs: can't access m_flags\n", args);
+  CHECKFIELD(numDegreeOfFreedomID, env->GetFieldID(clazz, "m_numDegreeOfFreedom", "I"), "InverseKinematicArgs: can't access m_numDegreeOfFreedom\n", args);
+  CHECKFIELD(lowerLimitsID, env->GetFieldID(clazz, "m_lowerLimits", "[D"), "InverseKinematicArgs: can't access m_lowerLimits\n", args);
+  CHECKFIELD(upperLimitsID, env->GetFieldID(clazz, "m_upperLimits", "[D"), "InverseKinematicArgs: can't access m_upperLimits\n", args);
+  CHECKFIELD(jointRangesID, env->GetFieldID(clazz, "m_jointRanges", "[D"), "InverseKinematicArgs: can't access m_jointRanges\n", args);
+  CHECKFIELD(restPosesID, env->GetFieldID(clazz, "m_restPoses", "[D"), "InverseKinematicArgs: can't access m_restPoses\n", args);
+  CHECKFIELD(jointDampingID, env->GetFieldID(clazz, "m_jointDamping", "[D"), "InverseKinematicArgs: can't access m_jointDamping\n", args);
+
+  jint bodyUniqueId = env->GetIntField(jv, bodyUniqueIdID);
+  jint endEffectorLinkIndex = env->GetIntField(jv, endEffectorLinkIndexID);
+  jint flags = env->GetIntField(jv, flagsID);
+  jint numDegreeOfFreedom = env->GetIntField(jv, numDegreeOfFreedomID);
+  jdoubleArray jendEffectorTargetPosition = (jdoubleArray)env->GetObjectField(jv, endEffectorTargetPositionID);
+  jdoubleArray jendEffectorTargetOrientation = (jdoubleArray)env->GetObjectField(jv, endEffectorTargetOrientationID);
+  jdoubleArray jlowerLimits = (jdoubleArray)env->GetObjectField(jv, lowerLimitsID);
+  jdoubleArray jupperLimits = (jdoubleArray)env->GetObjectField(jv, upperLimitsID);
+  jdoubleArray jjointRanges = (jdoubleArray)env->GetObjectField(jv, jointRangesID);
+  jdoubleArray jrestPoses = (jdoubleArray)env->GetObjectField(jv, restPosesID);
+  jdoubleArray jjointDamping = (jdoubleArray)env->GetObjectField(jv, jointDampingID);
+
+  return args;
+}
+
+
 
 extern "C" {
 
@@ -623,6 +654,13 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_connect
   return success;
 }
 
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_disconnect
+(JNIEnv *env, jobject jRoboSimAPI)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> disconnect();
+}
+
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_isConnected
 (JNIEnv *env, jobject jRoboSimAPI)
 {
@@ -635,13 +673,6 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setTimeOut
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   return jrsa -> setTimeOut(t);
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_disconnect
-(JNIEnv *env, jobject jRoboSimAPI)
-{
-  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  jrsa -> disconnect();
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_syncBodies
@@ -911,7 +942,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetJointState
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
-(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, JointMotorArgs args)
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject args)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   struct b3RobotSimulatorJointMotorArgs motorArgs = javaJointMotorArgsToNative(env, args);
