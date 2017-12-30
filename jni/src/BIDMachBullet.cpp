@@ -637,51 +637,254 @@ static void nativeInverseKinematicsResultsToJava(JNIEnv *env, jobject jv, struct
   }
   env->ReleasePrimitiveArrayCritical(jcalculatedJointPositions, calculatedJointPositions, 0);
 }
+
+static struct b3LinkState javaLinkStateToNative(JNIEnv *env, jobject jv) {
+  int n, i;
+  struct b3LinkState linkState;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/LinkState");
+  CHECKFIELD(worldPositionID, env->GetFieldID(clazz, "m_worldPosition", "[D"), "LinkState: can't access m_worldPosition\n", linkState);
+  CHECKFIELD(worldOrientationID, env->GetFieldID(clazz, "m_worldOrientation", "[D"), "LinkState: can't access m_worldOrientation\n", linkState);
+  CHECKFIELD(localInertialPositionID, env->GetFieldID(clazz, "m_localInertialPosition", "[D"), "LinkState: can't access m_localInertialPosition\n", linkState);
+  CHECKFIELD(localInertialOrientationID, env->GetFieldID(clazz, "m_localInertialOrientation", "[D"), "LinkState: can't access m_localInertialOrientation\n", linkState);
+  CHECKFIELD(worldLinkFramePositionID, env->GetFieldID(clazz, "m_worldLinkFramePosition", "[D"), "LinkState: can't access m_worldLinkFramePosition\n", linkState);
+  CHECKFIELD(worldLinkFrameOrientationID, env->GetFieldID(clazz, "m_worldLinkFrameOrientation", "[D"), "LinkState: can't access m_worldLinkFrameOrientation\n", linkState);
+  CHECKFIELD(worldLinearVelocityID, env->GetFieldID(clazz, "m_worldLinearVelocity", "[D"), "LinkState: can't access m_worldLinearVelocity\n", linkState);
+  CHECKFIELD(worldAngularVelocityID, env->GetFieldID(clazz, "m_worldAngularVelocity", "[D"), "LinkState: can't access m_worldAngularVelocity\n", linkState);
+  CHECKFIELD(worldAABBMinID, env->GetFieldID(clazz, "m_worldAABBMin", "[D"), "LinkState: can't access m_worldAABBMin\n", linkState);
+  CHECKFIELD(worldAABBMaxID, env->GetFieldID(clazz, "m_worldAABBMax", "[D"), "LinkState: can't access m_worldAABBMax\n", linkState);
+
+  jdoubleArray jworldPosition = (jdoubleArray)env->GetObjectField(jv, worldPositionID);
+  jdoubleArray jworldOrientation = (jdoubleArray)env->GetObjectField(jv, worldOrientationID);
+  jdoubleArray jlocalInertialPosition = (jdoubleArray)env->GetObjectField(jv, localInertialPositionID);
+  jdoubleArray jlocalInertialOrientation = (jdoubleArray)env->GetObjectField(jv, localInertialOrientationID);
+  jdoubleArray jworldLinkFramePosition = (jdoubleArray)env->GetObjectField(jv, worldLinkFramePositionID);
+  jdoubleArray jworldLinkFrameOrientation = (jdoubleArray)env->GetObjectField(jv, worldLinkFrameOrientationID);
+  jdoubleArray jworldLinearVelocity = (jdoubleArray)env->GetObjectField(jv, worldLinearVelocityID);
+  jdoubleArray jworldAngularVelocity = (jdoubleArray)env->GetObjectField(jv, worldAngularVelocityID);
+  jdoubleArray jworldAABBMin = (jdoubleArray)env->GetObjectField(jv, worldAABBMinID);
+  jdoubleArray jworldAABBMax = (jdoubleArray)env->GetObjectField(jv, worldAABBMaxID);
+
+  CHECKVALUE(jworldPosition, "LinkState: worldPosition is null", linkState);
+  CHECKVALUE(jworldOrientation, "LinkState: worldOrientation is null", linkState);
+  CHECKVALUE(jlocalInertialPosition, "LinkState: localInertialPosition is null", linkState); 
+  CHECKVALUE(jlocalInertialOrientation, "LinkState: localInertialOrientation is null", linkState);
+  CHECKVALUE(jworldLinkFramePosition, "LinkState: worldLinkFramePosition is null", linkState);
+  CHECKVALUE(jworldLinkFrameOrientation, "LinkState: worldLinkFrameOrientation is null", linkState);
+  CHECKVALUE(jworldLinearVelocity, "LinkState: worldLinearVelocity is null", linkState); 
+  CHECKVALUE(jworldAngularVelocity, "LinkState: worldAngularVelocity is null", linkState);
+  CHECKVALUE(jworldAABBMin, "LinkState: worldAABBMin is null", linkState);
+  CHECKVALUE(jworldAABBMax, "LinkState: worldAABBMax is null", linkState);
+
+  double *worldPosition = env->GetDoubleArrayElements(jworldPosition, NULL);
+  double *worldOrientation = env->GetDoubleArrayElements(jworldOrientation, NULL);
+  double *localInertialPosition = env->GetDoubleArrayElements(jlocalInertialPosition, NULL);
+  double *localInertialOrientation = env->GetDoubleArrayElements(jlocalInertialOrientation, NULL);
+  double *worldLinkFramePosition = env->GetDoubleArrayElements(jworldLinkFramePosition, NULL);
+  double *worldLinkFrameOrientation = env->GetDoubleArrayElements(jworldLinkFrameOrientation, NULL);
+  double *worldLinearVelocity = env->GetDoubleArrayElements(jworldLinearVelocity, NULL);
+  double *worldAngularVelocity = env->GetDoubleArrayElements(jworldAngularVelocity, NULL);
+  double *worldAABBMin = env->GetDoubleArrayElements(jworldAABBMin, NULL);
+  double *worldAABBMax = env->GetDoubleArrayElements(jworldAABBMax, NULL);
+
+  linkState.m_worldPosition[0] = worldPosition[0];
+  linkState.m_worldPosition[1] = worldPosition[1];
+  linkState.m_worldPosition[2] = worldPosition[2];
+  linkState.m_worldOrientation[0] = worldOrientation[0];
+  linkState.m_worldOrientation[1] = worldOrientation[1];
+  linkState.m_worldOrientation[2] = worldOrientation[2];
+  linkState.m_worldOrientation[3] = worldOrientation[3];
+
+  linkState.m_localInertialPosition[0] = localInertialPosition[0];
+  linkState.m_localInertialPosition[1] = localInertialPosition[1];
+  linkState.m_localInertialPosition[2] = localInertialPosition[2];
+  linkState.m_localInertialOrientation[0] = localInertialOrientation[0];
+  linkState.m_localInertialOrientation[1] = localInertialOrientation[1];
+  linkState.m_localInertialOrientation[2] = localInertialOrientation[2];
+  linkState.m_localInertialOrientation[3] = localInertialOrientation[3];
+
+  linkState.m_worldLinkFramePosition[0] = worldLinkFramePosition[0];
+  linkState.m_worldLinkFramePosition[1] = worldLinkFramePosition[1];
+  linkState.m_worldLinkFramePosition[2] = worldLinkFramePosition[2];
+  linkState.m_worldLinkFrameOrientation[0] = worldLinkFrameOrientation[0];
+  linkState.m_worldLinkFrameOrientation[1] = worldLinkFrameOrientation[1];
+  linkState.m_worldLinkFrameOrientation[2] = worldLinkFrameOrientation[2];
+  linkState.m_worldLinkFrameOrientation[3] = worldLinkFrameOrientation[3];
+
+  linkState.m_worldLinearVelocity[0] = worldLinearVelocity[0];
+  linkState.m_worldLinearVelocity[1] = worldLinearVelocity[1];
+  linkState.m_worldLinearVelocity[2] = worldLinearVelocity[2];
+  linkState.m_worldAngularVelocity[0] = worldAngularVelocity[0];
+  linkState.m_worldAngularVelocity[1] = worldAngularVelocity[1];
+  linkState.m_worldAngularVelocity[2] = worldAngularVelocity[2];
+
+  linkState.m_worldAABBMin[0] = worldAABBMin[0];
+  linkState.m_worldAABBMin[1] = worldAABBMin[1];
+  linkState.m_worldAABBMin[2] = worldAABBMin[2];
+  linkState.m_worldAABBMax[0] = worldAABBMax[0];
+  linkState.m_worldAABBMax[1] = worldAABBMax[1];
+  linkState.m_worldAABBMax[2] = worldAABBMax[2];
+
+  env->ReleaseDoubleArrayElements(jworldAABBMax, worldAABBMax, 0);
+  env->ReleaseDoubleArrayElements(jworldAABBMin, worldAABBMin, 0);
+  env->ReleaseDoubleArrayElements(jworldAngularVelocity, worldAngularVelocity, 0);
+  env->ReleaseDoubleArrayElements(jworldLinearVelocity, worldLinearVelocity, 0);
+  env->ReleaseDoubleArrayElements(jworldLinkFrameOrientation, worldLinkFrameOrientation, 0);
+  env->ReleaseDoubleArrayElements(jworldLinkFramePosition, worldLinkFramePosition, 0);
+  env->ReleaseDoubleArrayElements(jlocalInertialOrientation, localInertialOrientation, 0);
+  env->ReleaseDoubleArrayElements(jlocalInertialPosition, localInertialPosition, 0);
+  env->ReleaseDoubleArrayElements(jworldOrientation, worldOrientation, 0);
+  env->ReleaseDoubleArrayElements(jworldPosition, worldPosition, 0);
   
+  return linkState;
+}
+
+static void nativeLinkStateToJava(JNIEnv *env, jobject jv, struct b3LinkState &linkState) {
+  int n, i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/LinkState");
+  CHECKFIELD(worldPositionID, env->GetFieldID(clazz, "m_worldPosition", "[D"), "LinkState: can't access m_worldPosition\n",);
+  CHECKFIELD(worldOrientationID, env->GetFieldID(clazz, "m_worldOrientation", "[D"), "LinkState: can't access m_worldOrientation\n",);
+  CHECKFIELD(localInertialPositionID, env->GetFieldID(clazz, "m_localInertialPosition", "[D"), "LinkState: can't access m_localInertialPosition\n",);
+  CHECKFIELD(localInertialOrientationID, env->GetFieldID(clazz, "m_localInertialOrientation", "[D"), "LinkState: can't access m_localInertialOrientation\n",);
+  CHECKFIELD(worldLinkFramePositionID, env->GetFieldID(clazz, "m_worldLinkFramePosition", "[D"), "LinkState: can't access m_worldLinkFramePosition\n",);
+  CHECKFIELD(worldLinkFrameOrientationID, env->GetFieldID(clazz, "m_worldLinkFrameOrientation", "[D"), "LinkState: can't access m_worldLinkFrameOrientation\n",);
+  CHECKFIELD(worldLinearVelocityID, env->GetFieldID(clazz, "m_worldLinearVelocity", "[D"), "LinkState: can't access m_worldLinearVelocity\n",);
+  CHECKFIELD(worldAngularVelocityID, env->GetFieldID(clazz, "m_worldAngularVelocity", "[D"), "LinkState: can't access m_worldAngularVelocity\n",);
+  CHECKFIELD(worldAABBMinID, env->GetFieldID(clazz, "m_worldAABBMin", "[D"), "LinkState: can't access m_worldAABBMin\n",);
+  CHECKFIELD(worldAABBMaxID, env->GetFieldID(clazz, "m_worldAABBMax", "[D"), "LinkState: can't access m_worldAABBMax\n",);
+
+  jdoubleArray jworldPosition = (jdoubleArray)env->GetObjectField(jv, worldPositionID);
+  jdoubleArray jworldOrientation = (jdoubleArray)env->GetObjectField(jv, worldOrientationID);
+  jdoubleArray jlocalInertialPosition = (jdoubleArray)env->GetObjectField(jv, localInertialPositionID);
+  jdoubleArray jlocalInertialOrientation = (jdoubleArray)env->GetObjectField(jv, localInertialOrientationID);
+  jdoubleArray jworldLinkFramePosition = (jdoubleArray)env->GetObjectField(jv, worldLinkFramePositionID);
+  jdoubleArray jworldLinkFrameOrientation = (jdoubleArray)env->GetObjectField(jv, worldLinkFrameOrientationID);
+  jdoubleArray jworldLinearVelocity = (jdoubleArray)env->GetObjectField(jv, worldLinearVelocityID);
+  jdoubleArray jworldAngularVelocity = (jdoubleArray)env->GetObjectField(jv, worldAngularVelocityID);
+  jdoubleArray jworldAABBMin = (jdoubleArray)env->GetObjectField(jv, worldAABBMinID);
+  jdoubleArray jworldAABBMax = (jdoubleArray)env->GetObjectField(jv, worldAABBMaxID);
+
+  CHECKVALUE(jworldPosition, "LinkState: worldPosition is null",);
+  CHECKVALUE(jworldOrientation, "LinkState: worldOrientation is null",);
+  CHECKVALUE(jlocalInertialPosition, "LinkState: localInertialPosition is null",); 
+  CHECKVALUE(jlocalInertialOrientation, "LinkState: localInertialOrientation is null",);
+  CHECKVALUE(jworldLinkFramePosition, "LinkState: worldLinkFramePosition is null",);
+  CHECKVALUE(jworldLinkFrameOrientation, "LinkState: worldLinkFrameOrientation is null",);
+  CHECKVALUE(jworldLinearVelocity, "LinkState: worldLinearVelocity is null",); 
+  CHECKVALUE(jworldAngularVelocity, "LinkState: worldAngularVelocity is null",);
+  CHECKVALUE(jworldAABBMin, "LinkState: worldAABBMin is null",);
+  CHECKVALUE(jworldAABBMax, "LinkState: worldAABBMax is null",);
+
+  double *worldPosition = env->GetDoubleArrayElements(jworldPosition, NULL);
+  double *worldOrientation = env->GetDoubleArrayElements(jworldOrientation, NULL);
+  double *localInertialPosition = env->GetDoubleArrayElements(jlocalInertialPosition, NULL);
+  double *localInertialOrientation = env->GetDoubleArrayElements(jlocalInertialOrientation, NULL);
+  double *worldLinkFramePosition = env->GetDoubleArrayElements(jworldLinkFramePosition, NULL);
+  double *worldLinkFrameOrientation = env->GetDoubleArrayElements(jworldLinkFrameOrientation, NULL);
+  double *worldLinearVelocity = env->GetDoubleArrayElements(jworldLinearVelocity, NULL);
+  double *worldAngularVelocity = env->GetDoubleArrayElements(jworldAngularVelocity, NULL);
+  double *worldAABBMin = env->GetDoubleArrayElements(jworldAABBMin, NULL);
+  double *worldAABBMax = env->GetDoubleArrayElements(jworldAABBMax, NULL);
+
+  worldPosition[0] = linkState.m_worldPosition[0];
+  worldPosition[1] = linkState.m_worldPosition[1];
+  worldPosition[2] = linkState.m_worldPosition[2];
+  worldOrientation[0] = linkState.m_worldOrientation[0];
+  worldOrientation[1] = linkState.m_worldOrientation[1];
+  worldOrientation[2] = linkState.m_worldOrientation[2];
+  worldOrientation[3] = linkState.m_worldOrientation[3];
+
+  localInertialPosition[0] = linkState.m_localInertialPosition[0];
+  localInertialPosition[1] = linkState.m_localInertialPosition[1];
+  localInertialPosition[2] = linkState.m_localInertialPosition[2];
+  localInertialOrientation[0] = linkState.m_localInertialOrientation[0];
+  localInertialOrientation[1] = linkState.m_localInertialOrientation[1];
+  localInertialOrientation[2] = linkState.m_localInertialOrientation[2];
+  localInertialOrientation[3] = linkState.m_localInertialOrientation[3];
+
+  worldLinkFramePosition[0] = linkState.m_worldLinkFramePosition[0];
+  worldLinkFramePosition[1] = linkState.m_worldLinkFramePosition[1];
+  worldLinkFramePosition[2] = linkState.m_worldLinkFramePosition[2];
+  worldLinkFrameOrientation[0] = linkState.m_worldLinkFrameOrientation[0];
+  worldLinkFrameOrientation[1] = linkState.m_worldLinkFrameOrientation[1];
+  worldLinkFrameOrientation[2] = linkState.m_worldLinkFrameOrientation[2];
+  worldLinkFrameOrientation[3] = linkState.m_worldLinkFrameOrientation[3];
+
+  worldLinearVelocity[0] = linkState.m_worldLinearVelocity[0];
+  worldLinearVelocity[1] = linkState.m_worldLinearVelocity[1];
+  worldLinearVelocity[2] = linkState.m_worldLinearVelocity[2];
+  worldAngularVelocity[0] = linkState.m_worldAngularVelocity[0];
+  worldAngularVelocity[1] = linkState.m_worldAngularVelocity[1];
+  worldAngularVelocity[2] = linkState.m_worldAngularVelocity[2];
+
+  worldAABBMin[0] = linkState.m_worldAABBMin[0];
+  worldAABBMin[1] = linkState.m_worldAABBMin[1];
+  worldAABBMin[2] = linkState.m_worldAABBMin[2];
+  worldAABBMax[0] = linkState.m_worldAABBMax[0];
+  worldAABBMax[1] = linkState.m_worldAABBMax[1];
+  worldAABBMax[2] = linkState.m_worldAABBMax[2];
+
+  env->ReleaseDoubleArrayElements(jworldAABBMax, worldAABBMax, 0);
+  env->ReleaseDoubleArrayElements(jworldAABBMin, worldAABBMin, 0);
+  env->ReleaseDoubleArrayElements(jworldAngularVelocity, worldAngularVelocity, 0);
+  env->ReleaseDoubleArrayElements(jworldLinearVelocity, worldLinearVelocity, 0);
+  env->ReleaseDoubleArrayElements(jworldLinkFrameOrientation, worldLinkFrameOrientation, 0);
+  env->ReleaseDoubleArrayElements(jworldLinkFramePosition, worldLinkFramePosition, 0);
+  env->ReleaseDoubleArrayElements(jlocalInertialOrientation, localInertialOrientation, 0);
+  env->ReleaseDoubleArrayElements(jlocalInertialPosition, localInertialPosition, 0);
+  env->ReleaseDoubleArrayElements(jworldOrientation, worldOrientation, 0);
+  env->ReleaseDoubleArrayElements(jworldPosition, worldPosition, 0);
+}
+
+static struct b3KeyboardEventsData javaKeyboardEventsDataToNative(JNIEnv *env, jobject jv) {
+  int nevents, i;
+  struct b3KeyboardEventsData data;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/KeyboardEventsData");
+  CHECKFIELD(numKeyboardEventsID, env->GetFieldID(clazz, "m_numKeyboardEvents", "I"), "KeyboardEventsData: can't access m_numKeyboardEvents\n", data);
+  CHECKFIELD(keyboardEventsID, env->GetFieldID(clazz, "m_keyboardEvents", "[Ledu/berkeley/bid/bullet/KeyboardEvent"), "KeyboardEventsData: can't access m_keyboardEvents\n", data);
+  jclass eclass = (jclass) env->FindClass("edu/berkeley/bid/bullet/KeyboardEvent");
+  CHECKFIELD(keyCodeID, env->GetFieldID(eclass, "m_keyCode", "I"), "KeyboardEvent: can't access m_keyCode\n", data);
+  CHECKFIELD(keyStateID, env->GetFieldID(eclass, "m_keyState", "I"), "KeyboardEvent: can't access m_keyState\n", data);
+  nevents =  env->GetIntField(jv, numKeyboardEventsID);
+  data.m_numKeyboardEvents = nevents;
+  jobjectArray jkeyboardEvents = (jobjectArray)env->GetObjectField(jv, keyboardEventsID);
+  if (nevents > 0) {
+    CHECKVALUE(jkeyboardEvents, "KeyboardEventsData: m_keyboardEvents is null", data);
+    data.m_keyboardEvents = new b3KeyboardEvent[nevents];
+    for (i = 0; i < nevents; i++) {
+      jobject keyEvent = env->GetObjectArrayElement(jkeyboardEvents, i);
+      data.m_keyboardEvents[i].m_keyCode = env->GetIntField(keyEvent, keyCodeID);
+      data.m_keyboardEvents[i].m_keyState = env->GetIntField(keyEvent, keyStateID);
+    }
+  }
+  return data;
+}
+
+static void nativeKeyboardEventsDataToJava(JNIEnv *env, jobject jv, struct b3KeyboardEventsData &data) {
+  int nevents, i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/KeyboardEventsData");
+  CHECKFIELD(numKeyboardEventsID, env->GetFieldID(clazz, "m_numKeyboardEvents", "I"), "KeyboardEventsData: can't access m_numKeyboardEvents\n",);
+  CHECKFIELD(keyboardEventsID, env->GetFieldID(clazz, "m_keyboardEvents", "[Ledu/berkeley/bid/bullet/KeyboardEvent"), "KeyboardEventsData: can't access m_keyboardEvents\n",);
+  jclass eclass = (jclass) env->FindClass("edu/berkeley/bid/bullet/KeyboardEvent");
+  jmethodID econstructor = env->GetMethodID(eclass, "<init>", "V");
+  if (econstructor == 0) {fprintf(stderr, "KeyboardEvent: can't access constructor\n"); return;}
+  CHECKFIELD(keyCodeID, env->GetFieldID(eclass, "m_keyCode", "I"), "KeyboardEvent: can't access m_keyCode\n",);
+  CHECKFIELD(keyStateID, env->GetFieldID(eclass, "m_keyState", "I"), "KeyboardEvent: can't access m_keyState\n",);
+  nevents = data.m_numKeyboardEvents;
+  env->SetIntField(jv, numKeyboardEventsID, nevents);
+  if (nevents > 0) {
+    jobjectArray jkeyboardEvents = env->NewObjectArray(nevents, eclass, NULL);
+    env->SetObjectField(jv, keyboardEventsID, jkeyboardEvents);
+    for (i = 0; i < nevents; i++) {
+      jobject keyEvent = env->NewObject(eclass, econstructor);
+      env->SetObjectArrayElement(jkeyboardEvents, i, keyEvent);
+      env->SetIntField(keyEvent, keyCodeID, data.m_keyboardEvents[i].m_keyCode);
+      env->SetIntField(keyEvent, keyStateID, data.m_keyboardEvents[i].m_keyState);
+    }
+  }
+}
+
 extern "C" {
 
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
-(JNIEnv *env, jobject obj, jobject min, jobject mout)
-{
-  b3Matrix3x3 m = javaMatrix3x3ToNative(env, min);
-  nativeMatrix3x3ToJava(env, mout, m);
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testTransform3
-(JNIEnv *env, jobject obj, jobject min, jobject mout)
-{
-  b3Transform m = javaTransform3ToNative(env, min);
-  nativeTransform3ToJava(env, mout, m);
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointInfo
-(JNIEnv *env, jobject obj, jobject min, jobject mout)
-{
-  b3JointInfo m = javaJointInfoToNative(env, min);
-  nativeJointInfoToJava(env, mout, m);
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointSensorState
-(JNIEnv *env, jobject obj, jobject min, jobject mout)
-{
-  b3JointSensorState m = javaJointSensorStateToNative(env, min);
-  nativeJointSensorStateToJava(env, mout, m);
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointStates2
-(JNIEnv *env, jobject obj, jobject min, jobject mout, jint numJoints)
-{
-  struct b3JointStates2 m = javaJointStates2ToNative(env, min, numJoints);
-  nativeJointStates2ToJava(env, mout, m, numJoints);
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointMotorArgs
-(JNIEnv *env, jobject obj, jobject min, jobject mout)
-{
-  struct b3RobotSimulatorJointMotorArgs m = javaJointMotorArgsToNative(env, min);
-  nativeJointMotorArgsToJava(env, mout, m);
-}
 
 JNIEXPORT jint JNICALL Java_edu_berkeley_bid_Bullet_newRobotSimulatorClientAPI
 (JNIEnv *env, jobject jRoboSimAPI)
@@ -1125,11 +1328,133 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyJacobian
   return status;
 }
 
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getLinkState
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, jobject jlinkState)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3LinkState linkState;
+  bool status = jrsa -> getLinkState(bodyUniqueId, linkIndex, &linkState);
+  nativeLinkStateToJava(env, jlinkState, linkState);
+  return status; 
+}
+
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_configureDebugVisualizer
 (JNIEnv *env, jobject jRoboSimAPI, jint flags, jint enable)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> configureDebugVisualizer((b3ConfigureDebugVisualizerEnum)flags, enable);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_resetDebugVisualizerCamera
+(JNIEnv *env, jobject jRoboSimAPI, jdouble cameraDistance, jdouble cameraPitch, jdouble cameraYaw, jobject jtargetPos)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3Vector3 targetPos = javaVector3ToNative(env, jtargetPos);
+  jrsa -> resetDebugVisualizerCamera(cameraDistance, cameraPitch, cameraYaw, targetPos);
+}
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_startStateLogging
+(JNIEnv *env, jobject jRoboSimAPI, jint loggingType, jstring jfileName, jintArray jobjectUniqueIds, jint maxLogDof)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  CHECKVALUE(jfileName, "startStateLogging: fileName is null", 0);
+  CHECKVALUE(jobjectUniqueIds, "startStateLogging: objectUniqueIds array is null", 0);
+  const char *fileName = env->GetStringUTFChars(jfileName, NULL);
+  jint *arrayObjectUniqueIds = env->GetIntArrayElements(jobjectUniqueIds, NULL);
+  jint size = env->GetArrayLength(jobjectUniqueIds);
+  b3AlignedObjectArray<int> objectUniqueIds = b3AlignedObjectArray<int>();
+  objectUniqueIds.resize(size);
+  for (int i = 0; i < size; i++) {
+    objectUniqueIds[i] = arrayObjectUniqueIds[i];
+  }
+  jint logid = jrsa -> startStateLogging((b3StateLoggingType)loggingType, fileName, objectUniqueIds, maxLogDof);
+  env->ReleaseIntArrayElements(jobjectUniqueIds, arrayObjectUniqueIds, 0);
+  env->ReleaseStringUTFChars(jfileName, fileName);
+  return logid;
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_stopStateLogging
+(JNIEnv *env, jobject jRoboSimAPI, jint stateLoggerUniqueId)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> stopStateLogging(stateLoggerUniqueId);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_getKeyboardEventsData
+(JNIEnv *env, jobject jRoboSimAPI, jobject jkeyboardEventsData)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3KeyboardEventsData keyboardEventsData;
+  jrsa -> getKeyboardEvents(&keyboardEventsData);
+  nativeKeyboardEventsDataToJava(env, jkeyboardEventsData, keyboardEventsData);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
+(JNIEnv *env, jobject jRoboSimAPI, jstring jprofileName, int durationInMicroseconds)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  CHECKVALUE(jprofileName, "submitProfileTiming: profileName is null",);
+  const char *profileName = env->GetStringUTFChars(jprofileName, NULL);
+
+  jrsa -> submitProfileTiming(profileName, durationInMicroseconds);
+
+  env->ReleaseStringUTFChars(jprofileName, profileName);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3Matrix3x3 m = javaMatrix3x3ToNative(env, min);
+  nativeMatrix3x3ToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testTransform3
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3Transform m = javaTransform3ToNative(env, min);
+  nativeTransform3ToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointInfo
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3JointInfo m = javaJointInfoToNative(env, min);
+  nativeJointInfoToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointSensorState
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3JointSensorState m = javaJointSensorStateToNative(env, min);
+  nativeJointSensorStateToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointStates2
+(JNIEnv *env, jobject obj, jobject min, jobject mout, jint numJoints)
+{
+  struct b3JointStates2 m = javaJointStates2ToNative(env, min, numJoints);
+  nativeJointStates2ToJava(env, mout, m, numJoints);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointMotorArgs
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  struct b3RobotSimulatorJointMotorArgs m = javaJointMotorArgsToNative(env, min);
+  nativeJointMotorArgsToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testLinkState
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  struct b3LinkState m = javaLinkStateToNative(env, min);
+  nativeLinkStateToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testKeyboardEventsData
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  struct b3KeyboardEventsData m = javaKeyboardEventsDataToNative(env, min);
+  nativeKeyboardEventsDataToJava(env, mout, m);
 }
 
 }

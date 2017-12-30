@@ -23,18 +23,6 @@ public class Bullet implements Serializable {
         }
     }
 
-    public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
-
-    public static native void testTransform3(Transform3 min, Transform3 mout);
-
-    public static native void testJointInfo(JointInfo min, JointInfo mout);
-
-    public static native void testJointSensorState(JointSensorState min, JointSensorState mout);
-
-    public static native void testJointStates2(JointStates2 min, JointStates2 mout, int numJoints);
-
-    public static native void testJointMotorArgs(JointMotorArgs min, JointMotorArgs mout);
-
     private native int newRobotSimulatorClientAPI();
 
     private native int deleteRobotSimulatorClientAPI();
@@ -100,8 +88,6 @@ public class Bullet implements Serializable {
 
     public native int[] loadBullet(String fname);
 
-    public native void configureDebugVisualizer(int flags, int enable);
-
     public native boolean getBodyInfo(int bodyUniqueId, BodyInfo bodyInfo);
 
     public native boolean getBasePositionAndOrientation(int bodyUniqueId, Vector3 basePosition, Quaternion baseOrientation);
@@ -148,6 +134,43 @@ public class Bullet implements Serializable {
 
     public native void setContactBreakingThreshold(double threshold);
 
+    public native boolean calculateInverseKinematics(InverseKinematicArgs args, InverseKinematicsResults results);
+
+    public native boolean getBodyJacobian(int bodyUniqueId, int linkIndex, double [] localPosition, double [] jointPositions, double [] jointVelocities,
+					  double [] jointAccelerations, double [] linearJacobian, double [] angularJacobian);
+
+    public native boolean getLinkState(int bodyUniqueId, int linkIndex, LinkState linkState);
+
+    public native void configureDebugVisualizer(int flags, int enable);
+
+    public native void resetDebugVisualizerCamera(double cameraDistance, double cameraPitch, double cameraYaw, Vector3 targetPos);
+
+    public native void startStateLogging(int loggingType, String fileName, int [] objectUniqueIds, int maxLogDof);
+
+    public native void stopStateLogging(int stateLoggerUniqueId);
+
+    public native void getKeyboardEventsData(KeyboardEventsData keyboardEventsData);
+
+    public native void submitProfileTiming(String jprofileName, int durationInMicroseconds);
+
+
+    public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
+
+    public static native void testTransform3(Transform3 min, Transform3 mout);
+
+    public static native void testJointInfo(JointInfo min, JointInfo mout);
+
+    public static native void testJointSensorState(JointSensorState min, JointSensorState mout);
+
+    public static native void testJointStates2(JointStates2 min, JointStates2 mout, int numJoints);
+
+    public static native void testJointMotorArgs(JointMotorArgs min, JointMotorArgs mout);
+
+    public static native void testLinkState(LinkState min, LinkState mout);
+
+    public static native void testKeyboardEventsData(KeyboardEventsData min, KeyboardEventsData mout);
+
+
     public static final int eCONNECT_GUI = 1;
     public static final int eCONNECT_DIRECT = 2;
     public static final int eCONNECT_SHARED_MEMORY = 3;
@@ -171,5 +194,13 @@ public class Bullet implements Serializable {
     public static final int COV_ENABLE_RGB_BUFFER_PREVIEW=13;
     public static final int COV_ENABLE_DEPTH_BUFFER_PREVIEW=14;
     public static final int COV_ENABLE_SEGMENTATION_MARK_PREVIEW=15;
+
+    public static final int STATE_LOGGING_MINITAUR = 0;
+    public static final int STATE_LOGGING_GENERIC_ROBOT = 1;
+    public static final int STATE_LOGGING_VR_CONTROLLERS = 2;
+    public static final int STATE_LOGGING_VIDEO_MP4 = 3;
+    public static final int STATE_LOGGING_COMMANDS = 4;
+    public static final int STATE_LOGGING_CONTACT_POINTS = 5;
+    public static final int STATE_LOGGING_PROFILE_TIMINGS = 6;
 
 }
