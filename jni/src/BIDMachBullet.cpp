@@ -530,24 +530,25 @@ static void nativeJointMotorArgsToJava(JNIEnv *env, jobject jv, struct b3RobotSi
 }
 
 static struct b3RobotSimulatorInverseKinematicArgs javaInverseKinematicArgsToNative(JNIEnv *env, jobject jv) {
+  int n, i;
   struct b3RobotSimulatorInverseKinematicArgs args;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/InverseKinematicArgs");
   CHECKFIELD(bodyUniqueIdID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "InverseKinematicArgs: can't access m_bodyUniqueId\n", args);
-  CHECKFIELD(endEffectorTargetPositionID, env->GetFieldID(clazz, "m_endEffectorTargetPosition", "[D"), "InverseKinematicArgs: can't access m_endEffectorTargetPosition\n", args);
-  CHECKFIELD(endEffectorTargetOrientationID, env->GetFieldID(clazz, "m_endEffectorTargetOrientation", "[D"), "InverseKinematicArgs: can't access m_endEffectorTargetOrientation\n", args);
   CHECKFIELD(endEffectorLinkIndexID, env->GetFieldID(clazz, "m_endEffectorLinkIndex", "I"), "InverseKinematicArgs: can't access m_endEffectorLinkIndex\n", args);
   CHECKFIELD(flagsID, env->GetFieldID(clazz, "m_flags", "I"), "InverseKinematicArgs: can't access m_flags\n", args);
   CHECKFIELD(numDegreeOfFreedomID, env->GetFieldID(clazz, "m_numDegreeOfFreedom", "I"), "InverseKinematicArgs: can't access m_numDegreeOfFreedom\n", args);
+  CHECKFIELD(endEffectorTargetPositionID, env->GetFieldID(clazz, "m_endEffectorTargetPosition", "[D"), "InverseKinematicArgs: can't access m_endEffectorTargetPosition\n", args);
+  CHECKFIELD(endEffectorTargetOrientationID, env->GetFieldID(clazz, "m_endEffectorTargetOrientation", "[D"), "InverseKinematicArgs: can't access m_endEffectorTargetOrientation\n", args);
   CHECKFIELD(lowerLimitsID, env->GetFieldID(clazz, "m_lowerLimits", "[D"), "InverseKinematicArgs: can't access m_lowerLimits\n", args);
   CHECKFIELD(upperLimitsID, env->GetFieldID(clazz, "m_upperLimits", "[D"), "InverseKinematicArgs: can't access m_upperLimits\n", args);
   CHECKFIELD(jointRangesID, env->GetFieldID(clazz, "m_jointRanges", "[D"), "InverseKinematicArgs: can't access m_jointRanges\n", args);
   CHECKFIELD(restPosesID, env->GetFieldID(clazz, "m_restPoses", "[D"), "InverseKinematicArgs: can't access m_restPoses\n", args);
   CHECKFIELD(jointDampingID, env->GetFieldID(clazz, "m_jointDamping", "[D"), "InverseKinematicArgs: can't access m_jointDamping\n", args);
 
-  jint bodyUniqueId = env->GetIntField(jv, bodyUniqueIdID);
-  jint endEffectorLinkIndex = env->GetIntField(jv, endEffectorLinkIndexID);
-  jint flags = env->GetIntField(jv, flagsID);
-  jint numDegreeOfFreedom = env->GetIntField(jv, numDegreeOfFreedomID);
+  args.m_bodyUniqueId = env->GetIntField(jv, bodyUniqueIdID);
+  args.m_endEffectorLinkIndex = env->GetIntField(jv, endEffectorLinkIndexID);
+  args.m_flags = env->GetIntField(jv, flagsID);
+  args.m_numDegreeOfFreedom = env->GetIntField(jv, numDegreeOfFreedomID);
   jdoubleArray jendEffectorTargetPosition = (jdoubleArray)env->GetObjectField(jv, endEffectorTargetPositionID);
   jdoubleArray jendEffectorTargetOrientation = (jdoubleArray)env->GetObjectField(jv, endEffectorTargetOrientationID);
   jdoubleArray jlowerLimits = (jdoubleArray)env->GetObjectField(jv, lowerLimitsID);
@@ -555,12 +556,88 @@ static struct b3RobotSimulatorInverseKinematicArgs javaInverseKinematicArgsToNat
   jdoubleArray jjointRanges = (jdoubleArray)env->GetObjectField(jv, jointRangesID);
   jdoubleArray jrestPoses = (jdoubleArray)env->GetObjectField(jv, restPosesID);
   jdoubleArray jjointDamping = (jdoubleArray)env->GetObjectField(jv, jointDampingID);
+  CHECKVALUE(jendEffectorTargetPosition, "InverseKinematicArgs: can't acccess m_endEffectorTargetPosition\n", args);
+  CHECKVALUE(jendEffectorTargetOrientation, "InverseKinematicArgs: can't acccess m_endEffectorTargetOrientation\n", args);
+  CHECKVALUE(jlowerLimits, "InverseKinematicArgs: can't acccess m_lowerLimits\n", args);
+  CHECKVALUE(jupperLimits, "InverseKinematicArgs: can't acccess m_upperLimits\n", args);
+  CHECKVALUE(jjointRanges, "InverseKinematicArgs: can't acccess m_jointRanges\n", args);
+  CHECKVALUE(jrestPoses, "InverseKinematicArgs: can't acccess m_restPoses\n", args);
+  CHECKVALUE(jjointDamping, "InverseKinematicArgs: can't acccess m_jointDamping\n", args);
+
+  double *endEffectorTargetPosition = (jdouble *)env->GetPrimitiveArrayCritical(jendEffectorTargetPosition, JNI_FALSE);
+  double *endEffectorTargetOrientation = (jdouble *)env->GetPrimitiveArrayCritical(jendEffectorTargetOrientation, JNI_FALSE);
+  double *lowerLimits = (jdouble *)env->GetPrimitiveArrayCritical(jlowerLimits, JNI_FALSE);
+  double *upperLimits = (jdouble *)env->GetPrimitiveArrayCritical(jupperLimits, JNI_FALSE);
+  double *jointRanges = (jdouble *)env->GetPrimitiveArrayCritical(jjointRanges, JNI_FALSE);
+  double *restPoses = (jdouble *)env->GetPrimitiveArrayCritical(jrestPoses, JNI_FALSE);
+  double *jointDamping = (jdouble *)env->GetPrimitiveArrayCritical(jjointDamping, JNI_FALSE);
+
+  args.m_endEffectorTargetPosition[0] = endEffectorTargetPosition[0];
+  args.m_endEffectorTargetPosition[1] = endEffectorTargetPosition[1];
+  args.m_endEffectorTargetPosition[2] = endEffectorTargetPosition[2];
+
+  args.m_endEffectorTargetOrientation[0] = endEffectorTargetOrientation[0];
+  args.m_endEffectorTargetOrientation[1] = endEffectorTargetOrientation[1];
+  args.m_endEffectorTargetOrientation[2] = endEffectorTargetOrientation[2];
+  args.m_endEffectorTargetOrientation[3] = endEffectorTargetOrientation[3];
+
+  n = env->GetArrayLength(jlowerLimits);
+  args.m_lowerLimits.resize(n);
+  for (i = 0; i < n; i++) {
+    args.m_lowerLimits[i] = lowerLimits[i];
+  }
+
+  n = env->GetArrayLength(jupperLimits);
+  args.m_upperLimits.resize(n);
+  for (i = 0; i < n; i++) {
+    args.m_upperLimits[i] = upperLimits[i];
+  }
+
+  n = env->GetArrayLength(jjointRanges);
+  args.m_jointRanges.resize(n);
+  for (i = 0; i < n; i++) {
+    args.m_jointRanges[i] = jointRanges[i];
+  }
+
+  n = env->GetArrayLength(jrestPoses);
+  args.m_restPoses.resize(n);
+  for (i = 0; i < n; i++) {
+    args.m_restPoses[i] = restPoses[i];
+  }
+
+  n = env->GetArrayLength(jjointDamping);
+  args.m_jointDamping.resize(n);
+  for (i = 0; i < n; i++) {
+    args.m_jointDamping[i] = jointDamping[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jjointDamping, jointDamping, 0);
+  env->ReleasePrimitiveArrayCritical(jjointRanges, jointRanges, 0);
+  env->ReleasePrimitiveArrayCritical(jrestPoses, restPoses, 0);
+  env->ReleasePrimitiveArrayCritical(jupperLimits, upperLimits, 0);
+  env->ReleasePrimitiveArrayCritical(jlowerLimits, lowerLimits, 0);
+  env->ReleasePrimitiveArrayCritical(jendEffectorTargetOrientation, endEffectorTargetOrientation, 0);
+  env->ReleasePrimitiveArrayCritical(jendEffectorTargetPosition, endEffectorTargetPosition, 0);
 
   return args;
 }
 
-
-
+static void nativeInverseKinematicsResultsToJava(JNIEnv *env, jobject jv, struct b3RobotSimulatorInverseKinematicsResults &results) {
+  int i, n;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/InverseKinematicsResults");
+  CHECKFIELD(bodyUniqueIdID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "InverseKinematicsResults: can't access m_bodyUniqueId\n",);
+  CHECKFIELD(calculatedJointPositionsID, env->GetFieldID(clazz, "m_calculatedJointPositions", "[D"), "InverseKinematicsResults: can't access m_calculatedJointPositions\n",);
+  env->SetIntField(jv, bodyUniqueIdID, results.m_bodyUniqueId);
+  n = results.m_calculatedJointPositions.size();
+  jdoubleArray jcalculatedJointPositions = env->NewDoubleArray(n);
+  env->SetObjectField(jv, calculatedJointPositionsID, jcalculatedJointPositions);
+  jdouble *calculatedJointPositions = (jdouble *)env->GetPrimitiveArrayCritical(jcalculatedJointPositions, JNI_FALSE);
+  for (i = 0; i < n; i++) {
+    calculatedJointPositions[i] = results.m_calculatedJointPositions[i];
+  }
+  env->ReleasePrimitiveArrayCritical(jcalculatedJointPositions, calculatedJointPositions, 0);
+}
+  
 extern "C" {
 
 
@@ -799,13 +876,6 @@ JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadBullet
   return results;
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_configureDebugVisualizer
-(JNIEnv *env, jobject jRoboSimAPI, jint flags, jint enable)
-{
-  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  jrsa -> configureDebugVisualizer((b3ConfigureDebugVisualizerEnum)flags, enable);
-}
-
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyInfo
 (JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBodyInfo)
 {
@@ -1013,5 +1083,53 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setContactBreakingThreshold
   jrsa -> setContactBreakingThreshold(threshold);
 }
 
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseKinematics
+(JNIEnv *env, jobject jRoboSimAPI, jobject jargs, jobject jresults)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3RobotSimulatorInverseKinematicArgs args = javaInverseKinematicArgsToNative(env, jargs);
+  struct b3RobotSimulatorInverseKinematicsResults results;
+  jboolean status = jrsa -> calculateInverseKinematics(args, results);
+  nativeInverseKinematicsResultsToJava(env, jresults, results);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyJacobian
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, jdoubleArray jlocalPosition, jdoubleArray jjointPositions,
+ jdoubleArray jjointVelocities, jdoubleArray jjointAccelerations, jdoubleArray jlinearJacobian, jdoubleArray jangularJacobian)
+{
+  int n, i;
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  CHECKVALUE(jlocalPosition, "getBodyJacobian: localPosition is null", false);
+  CHECKVALUE(jjointPositions, "getBodyJacobian: jointPositions is null", false);
+  CHECKVALUE(jjointVelocities, "getBodyJacobian: jointVelocities is null", false);
+  CHECKVALUE(jjointAccelerations, "getBodyJacobian: jointAccelerations is null", false);
+  CHECKVALUE(jlinearJacobian, "getBodyJacobian: linearJacobian is null", false);
+  CHECKVALUE(jangularJacobian, "getBodyJacobian: angularJacobian is null", false);
+
+  double *localPosition = (jdouble *)env->GetPrimitiveArrayCritical(jlocalPosition, JNI_FALSE);
+  double *jointPositions = (jdouble *)env->GetPrimitiveArrayCritical(jjointPositions, JNI_FALSE);
+  double *jointVelocities = (jdouble *)env->GetPrimitiveArrayCritical(jjointVelocities, JNI_FALSE);
+  double *jointAccelerations = (jdouble *)env->GetPrimitiveArrayCritical(jjointAccelerations, JNI_FALSE);
+  double *linearJacobian = (jdouble *)env->GetPrimitiveArrayCritical(jlinearJacobian, JNI_FALSE);
+  double *angularJacobian = (jdouble *)env->GetPrimitiveArrayCritical(jangularJacobian, JNI_FALSE);
+
+  bool status = jrsa -> getBodyJacobian(bodyUniqueId, linkIndex, localPosition, jointPositions, jointVelocities, jointAccelerations, linearJacobian, angularJacobian);
+  
+  env->ReleasePrimitiveArrayCritical(jangularJacobian, angularJacobian, 0);
+  env->ReleasePrimitiveArrayCritical(jlinearJacobian, linearJacobian, 0);
+  env->ReleasePrimitiveArrayCritical(jjointAccelerations, jointAccelerations, 0);
+  env->ReleasePrimitiveArrayCritical(jjointVelocities, jointVelocities, 0);
+  env->ReleasePrimitiveArrayCritical(jjointPositions, jointPositions, 0);
+  env->ReleasePrimitiveArrayCritical(jlocalPosition, localPosition, 0);
+  return status;
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_configureDebugVisualizer
+(JNIEnv *env, jobject jRoboSimAPI, jint flags, jint enable)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> configureDebugVisualizer((b3ConfigureDebugVisualizerEnum)flags, enable);
+}
 
 }
