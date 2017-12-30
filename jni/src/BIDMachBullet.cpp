@@ -840,7 +840,7 @@ static struct b3KeyboardEventsData javaKeyboardEventsDataToNative(JNIEnv *env, j
   struct b3KeyboardEventsData data;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/KeyboardEventsData");
   CHECKFIELD(numKeyboardEventsID, env->GetFieldID(clazz, "m_numKeyboardEvents", "I"), "KeyboardEventsData: can't access m_numKeyboardEvents\n", data);
-  CHECKFIELD(keyboardEventsID, env->GetFieldID(clazz, "m_keyboardEvents", "[Ledu/berkeley/bid/bullet/KeyboardEvent"), "KeyboardEventsData: can't access m_keyboardEvents\n", data);
+  CHECKFIELD(keyboardEventsID, env->GetFieldID(clazz, "m_keyboardEvents", "[Ledu/berkeley/bid/bullet/KeyboardEvent;"), "KeyboardEventsData: can't access m_keyboardEvents\n", data);
   jclass eclass = (jclass) env->FindClass("edu/berkeley/bid/bullet/KeyboardEvent");
   CHECKFIELD(keyCodeID, env->GetFieldID(eclass, "m_keyCode", "I"), "KeyboardEvent: can't access m_keyCode\n", data);
   CHECKFIELD(keyStateID, env->GetFieldID(eclass, "m_keyState", "I"), "KeyboardEvent: can't access m_keyState\n", data);
@@ -863,9 +863,9 @@ static void nativeKeyboardEventsDataToJava(JNIEnv *env, jobject jv, struct b3Key
   int nevents, i;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/KeyboardEventsData");
   CHECKFIELD(numKeyboardEventsID, env->GetFieldID(clazz, "m_numKeyboardEvents", "I"), "KeyboardEventsData: can't access m_numKeyboardEvents\n",);
-  CHECKFIELD(keyboardEventsID, env->GetFieldID(clazz, "m_keyboardEvents", "[Ledu/berkeley/bid/bullet/KeyboardEvent"), "KeyboardEventsData: can't access m_keyboardEvents\n",);
+  CHECKFIELD(keyboardEventsID, env->GetFieldID(clazz, "m_keyboardEvents", "[Ledu/berkeley/bid/bullet/KeyboardEvent;"), "KeyboardEventsData: can't access m_keyboardEvents\n",);
   jclass eclass = (jclass) env->FindClass("edu/berkeley/bid/bullet/KeyboardEvent");
-  jmethodID econstructor = env->GetMethodID(eclass, "<init>", "V");
+  jmethodID econstructor = env->GetMethodID(eclass, "<init>", "()V");
   if (econstructor == 0) {fprintf(stderr, "KeyboardEvent: can't access constructor\n"); return;}
   CHECKFIELD(keyCodeID, env->GetFieldID(eclass, "m_keyCode", "I"), "KeyboardEvent: can't access m_keyCode\n",);
   CHECKFIELD(keyStateID, env->GetFieldID(eclass, "m_keyState", "I"), "KeyboardEvent: can't access m_keyState\n",);
