@@ -31,6 +31,10 @@ public class Bullet implements Serializable {
 
     public static native void testJointSensorState(JointSensorState min, JointSensorState mout);
 
+    public static native void testJointStates2(JointStates2 min, JointStates2 mout, int numJoints);
+
+    public static native void testJointMotorArgs(JointMotorArgs min, JointMotorArgs mout);
+
     private native int newRobotSimulatorClientAPI();
 
     private native int deleteRobotSimulatorClientAPI();
@@ -58,10 +62,6 @@ public class Bullet implements Serializable {
     public native void syncBodies();
 
     public native void resetSimulation();
-
-    public native boolean canSubmitCommand();
-
-    public native void stepSimulation();
 
     public native void getQuaternionFromEuler(Vector3 euler, Quaternion q);
 
@@ -102,10 +102,6 @@ public class Bullet implements Serializable {
 
     public native void configureDebugVisualizer(int flags, int enable);
 
-    public native void setGravity(Vector3 gravity);
-
-    public native void setTimeStep(double t);
-
     public native boolean getBodyInfo(int bodyUniqueId, BodyInfo bodyInfo);
 
     public native boolean getBasePositionAndOrientation(int bodyUniqueId, Vector3 basePosition, Quaternion baseOrientation);
@@ -125,7 +121,33 @@ public class Bullet implements Serializable {
     public native int changeConstraint(int constraintId, JointInfo jointInfo);
 
     public native void removeConstraint(int constraintId);
-    
+
+    public native boolean getJointState(int bodyUniqueId, int jointIndex, JointSensorState state);
+
+    public native boolean getJointStates(int bodyUniqueId, JointStates2 state);
+
+    public native boolean resetJointState(int bodyUniqueId, int jointIndex, double targetValue);
+
+    public native void setJointMotorControl(int bodyUniqueId, int jointIndex, JointMotorArgs args);
+
+    public native void stepSimulation();
+
+    public native boolean canSubmitCommand();
+
+    public native void setRealTimeSimulation(boolean enable);
+
+    public native void setInternalSimFlags(int flags);
+
+    public native void setGravity(Vector3 gravity);
+
+    public native void setTimeStep(double t);
+
+    public native void setNumSimulationSubSteps(int numSubSteps);
+
+    public native void setNumSolverIterations(int numSolverIterations);
+
+    public native void setContactBreakingThreshold(double threshold);
+
     public static final int eCONNECT_GUI = 1;
     public static final int eCONNECT_DIRECT = 2;
     public static final int eCONNECT_SHARED_MEMORY = 3;

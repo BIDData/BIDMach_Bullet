@@ -25,6 +25,18 @@ public class JointStates2 implements Serializable {
     }
 
     public JointStates2() {
+	m_rootLocalInertialFrame = new Transform3();
+    }
 
+    @Override
+    public String toString () {
+    	return "[" +
+	    "bodyUniqueId=" + m_bodyUniqueId + ", " +
+	    "numDegreeOfFreedomQ=" + m_numDegreeOfFreedomQ + ", " +
+	    "numDegreeOfFreedomU=" + m_numDegreeOfFreedomU + ", " +
+	    "rootLocalInertialFrame=" + m_rootLocalInertialFrame + ", " +
+	    "actualStateQ=" + m_actualStateQ + ", " +
+	    "actualStateQdot=" + m_actualStateQdot + ", " +
+	    "jointReactionForces=" + m_jointReactionForces + "]";
     }
 }

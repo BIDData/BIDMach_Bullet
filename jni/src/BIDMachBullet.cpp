@@ -43,6 +43,20 @@ static void setRobotSimulatorClientAPI(JNIEnv *env, jobject jRoboSimAPI, b3Robot
   env->SetLongField(jRoboSimAPI, handle_id, handle);
 }
 
+#define CHECKFIELD(FIELDID,EXPR,MSG,RETV) \
+  jfieldID FIELDID = (EXPR); \
+  if (FIELDID == NULL) { \
+    fprintf(stderr,MSG); \
+    return RETV; \
+  }
+
+#define CHECKVALUE(VALUEID,MSG,RETV) \
+  if (VALUEID == NULL) { \
+    fprintf(stderr,MSG); \
+    return RETV; \
+  }
+
+
 static void getQuaternionFields(JNIEnv *env, jclass &qclass, jfieldID &qxfield, jfieldID &qyfield, jfieldID &qzfield, jfieldID &qwfield)
 {
   static jclass jqclass = NULL;
@@ -61,7 +75,7 @@ static void getQuaternionFields(JNIEnv *env, jclass &qclass, jfieldID &qxfield, 
     jwfield = env->GetFieldID(jqclass, "w", "F");
   }
   if (jxfield == NULL) {
-    fprintf(stderr, "Couldnt initialize native Quaternion fields");
+    fprintf(stderr, "Couldnt initialize native Quaternion fields\n");
   }
   qclass = jqclass;
   qxfield = jxfield;
@@ -108,7 +122,7 @@ static void getVector3Fields(JNIEnv *env, jclass &vclass, jfieldID &vxfield, jfi
     jzfield = env->GetFieldID(jvclass, "z", "F");
   }
   if (jxfield == NULL) {
-    fprintf(stderr, "Couldnt initialize native Vector3 fields");
+    fprintf(stderr, "Couldnt initialize native Vector3 fields\n");
   }
   vclass = jvclass;
   vxfield = jxfield;
@@ -136,31 +150,12 @@ static void nativeVector3ToJava(JNIEnv *env, jobject jv, b3Vector3 &v) {
   env->SetFloatField(jv, jzfield, v.z);
 }
 
-
-static void nativeMatrix3x3ToJava(JNIEnv *env, jobject jv, b3Matrix3x3 &v) {
-  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Matrix3x3");
-  jfieldID jm_el_ID = env->GetFieldID(clazz, "m_el", "[Ledu/berkeley/bid/bullet/Vector3;");
-  if (jm_el_ID == NULL) {
-    fprintf(stderr, "Couldnt access m_el array");
-    return;
-  }
-  jobjectArray jm_el = (jobjectArray)env->GetObjectField(jv, jm_el_ID);
-  int i;
-  for (i = 0; i < 3; i++) {
-    jobject vec3 = env->GetObjectArrayElement(jm_el, i);
-    nativeVector3ToJava(env, vec3, v[i]);
-  }
-}
-
 static b3Matrix3x3 javaMatrix3x3ToNative(JNIEnv *env, jobject jv) {
   b3Matrix3x3 v;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Matrix3x3");
-  jfieldID jm_el_ID = env->GetFieldID(clazz, "m_el", "[Ledu/berkeley/bid/bullet/Vector3;");
-  if (jm_el_ID == NULL) {
-    fprintf(stderr, "Couldnt access m_el array");
-    return v;
-  }
+  CHECKFIELD(jm_el_ID, env->GetFieldID(clazz, "m_el", "[Ledu/berkeley/bid/bullet/Vector3;"), "Matrix3x3: Couldnt access native m_el array\n",v)
   jobjectArray jm_el = (jobjectArray)env->GetObjectField(jv, jm_el_ID);
+  CHECKVALUE(jm_el, "Matrix3x3: m_el array is null\n", v);
   int i;
   for (i = 0; i < 3; i++) {
     jobject vec3 = env->GetObjectArrayElement(jm_el, i);
@@ -169,111 +164,69 @@ static b3Matrix3x3 javaMatrix3x3ToNative(JNIEnv *env, jobject jv) {
   return v;
 }
 
-static void nativeTransform3ToJava(JNIEnv *env, jobject jv, b3Transform &v) {
-  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Transform3");
-  jfieldID jm_basis_ID = env->GetFieldID(clazz, "m_basis", "Ledu/berkeley/bid/bullet/Matrix3x3;");
-  jfieldID jm_origin_ID = env->GetFieldID(clazz, "m_origin", "Ledu/berkeley/bid/bullet/Vector3;");
-  jobject jm_basis = env->GetObjectField(jv, jm_basis_ID);
-  jobject jm_origin = env->GetObjectField(jv, jm_origin_ID);
-  nativeMatrix3x3ToJava(env, jm_basis, v.getBasis());
-  nativeVector3ToJava(env, jm_origin, v.getOrigin());
+static void nativeMatrix3x3ToJava(JNIEnv *env, jobject jv, b3Matrix3x3 &v) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Matrix3x3");
+  CHECKFIELD(jm_el_ID, env->GetFieldID(clazz, "m_el", "[Ledu/berkeley/bid/bullet/Vector3;"), "Matrix3x3: Couldnt access native m_el array\n",)
+  jobjectArray jm_el = (jobjectArray)env->GetObjectField(jv, jm_el_ID);
+  CHECKVALUE(jm_el,"Matrix3x3: m_el array is null\n",)
+  int i;
+  for (i = 0; i < 3; i++) {
+    jobject vec3 = env->GetObjectArrayElement(jm_el, i);
+    nativeVector3ToJava(env, vec3, v[i]);
+  }
 }
 
 static b3Transform javaTransform3ToNative(JNIEnv *env, jobject jv) {
   b3Transform v;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Transform3");
-  jfieldID jm_basis_ID = env->GetFieldID(clazz, "m_basis", "Ledu/berkeley/bid/bullet/Matrix3x3;");
-  jfieldID jm_origin_ID = env->GetFieldID(clazz, "m_origin", "Ledu/berkeley/bid/bullet/Vector3;");
+  CHECKFIELD(jm_basis_ID, env->GetFieldID(clazz, "m_basis", "Ledu/berkeley/bid/bullet/Matrix3x3;"), "Transform3: Couldnt access m_basis\n", v);
+  CHECKFIELD(jm_origin_ID, env->GetFieldID(clazz, "m_origin", "Ledu/berkeley/bid/bullet/Vector3;"), "Transform3: Couldnt access m_origin\n", v);
   jobject jm_basis = env->GetObjectField(jv, jm_basis_ID);
   jobject jm_origin = env->GetObjectField(jv, jm_origin_ID);
+  CHECKVALUE(jm_basis, "Transform3: m_basis is null\n", v);
+  CHECKVALUE(jm_origin, "Transform3: m_origin is null\n", v);
   v.setBasis(javaMatrix3x3ToNative(env, jm_basis));
   v.setOrigin(javaVector3ToNative(env, jm_origin));
   return v;
 }
 
-static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &jointInfo) {
-  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
-  jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "Ljava/lang/String;");
-  jfieldID jointNameID = env->GetFieldID(clazz, "m_jointName", "Ljava/lang/String;");
-  jfieldID jointTypeID = env->GetFieldID(clazz, "m_jointType", "I");
-  jfieldID qIndexID = env->GetFieldID(clazz, "m_qIndex", "I");
-  jfieldID uIndexID = env->GetFieldID(clazz, "m_uIndex", "I");
-  jfieldID jointIndexID = env->GetFieldID(clazz, "m_jointIndex", "I");
-  jfieldID flagsID = env->GetFieldID(clazz, "m_flags", "I");
-  jfieldID jointDampingID = env->GetFieldID(clazz, "m_jointDamping", "D");
-  jfieldID jointFrictionID = env->GetFieldID(clazz, "m_jointFriction", "D");
-  jfieldID jointLowerLimitID = env->GetFieldID(clazz, "m_jointLowerLimit", "D");
-  jfieldID jointUpperLimitID = env->GetFieldID(clazz, "m_jointUpperLimit", "D");
-  jfieldID jointMaxForceID = env->GetFieldID(clazz, "m_jointMaxForce", "D");
-  jfieldID jointMaxVelocityID = env->GetFieldID(clazz, "m_jointMaxVelocity", "D");
-  jfieldID parentFrameID = env->GetFieldID(clazz, "m_parentFrame", "[D");
-  jfieldID childFrameID = env->GetFieldID(clazz, "m_childFrame", "[D");
-  jfieldID jointAxisID = env->GetFieldID(clazz, "m_jointAxis", "[D");
-  int i;
-
-  jstring jlinkName = env->NewStringUTF(jointInfo.m_linkName);
-  jstring jjointName = env->NewStringUTF(jointInfo.m_jointName);
-      
-  env->SetObjectField(jv, linkNameID, jlinkName);
-  env->SetObjectField(jv, jointNameID, jjointName);
-  env->SetIntField(jv, jointTypeID, jointInfo.m_jointType);
-  env->SetIntField(jv, qIndexID, jointInfo.m_qIndex);
-  env->SetIntField(jv, uIndexID, jointInfo.m_uIndex);
-  env->SetIntField(jv, jointIndexID, jointInfo.m_jointIndex);
-  env->SetIntField(jv, flagsID, jointInfo.m_flags);
-  env->SetDoubleField(jv, jointDampingID, jointInfo.m_jointDamping);
-  env->SetDoubleField(jv, jointFrictionID, jointInfo.m_jointFriction);
-  env->SetDoubleField(jv, jointLowerLimitID, jointInfo.m_jointLowerLimit);
-  env->SetDoubleField(jv, jointUpperLimitID, jointInfo.m_jointUpperLimit);
-  env->SetDoubleField(jv, jointMaxForceID, jointInfo.m_jointMaxForce);
-  env->SetDoubleField(jv, jointMaxVelocityID, jointInfo.m_jointMaxVelocity);
-
-  jdoubleArray jParentFrame = (jdoubleArray)env->GetObjectField(jv, parentFrameID);
-  jdoubleArray jChildFrame = (jdoubleArray)env->GetObjectField(jv, childFrameID);
-  jdoubleArray jJointAxis = (jdoubleArray)env->GetObjectField(jv, jointAxisID);
-
-  double *parentFrame = (jdouble *)env->GetPrimitiveArrayCritical(jParentFrame, JNI_FALSE);
-  double *childFrame = (jdouble *)env->GetPrimitiveArrayCritical(jChildFrame, JNI_FALSE);
-  double *jointAxis = (jdouble *)env->GetPrimitiveArrayCritical(jJointAxis, JNI_FALSE);
-
-  for (i = 0; i < 7; i++) {
-    parentFrame[i] = jointInfo.m_parentFrame[i];
-  }
-  for (i = 0; i < 7; i++) {
-    childFrame[i] = jointInfo.m_childFrame[i];
-  }
-  for (i = 0; i < 3; i++) {
-    jointAxis[i] = jointInfo.m_jointAxis[i];
-  }
-
-  env->ReleasePrimitiveArrayCritical(jJointAxis, jointAxis, 0);
-  env->ReleasePrimitiveArrayCritical(jChildFrame, childFrame, 0);
-  env->ReleasePrimitiveArrayCritical(jParentFrame, parentFrame, 0);
+static void nativeTransform3ToJava(JNIEnv *env, jobject jv, b3Transform &v) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/Transform3");
+  CHECKFIELD(jm_basis_ID, env->GetFieldID(clazz, "m_basis", "Ledu/berkeley/bid/bullet/Matrix3x3;"), "Transform3: Couldnt access m_basis\n",);
+  CHECKFIELD(jm_origin_ID, env->GetFieldID(clazz, "m_origin", "Ledu/berkeley/bid/bullet/Vector3;"), "Transform3: Couldnt access m_origin\n",);
+  jobject jm_basis = env->GetObjectField(jv, jm_basis_ID);
+  jobject jm_origin = env->GetObjectField(jv, jm_origin_ID);
+  CHECKVALUE(jm_basis, "Transform3: m_basis is null\n",);
+  CHECKVALUE(jm_origin, "Transform3: m_origin is null\n",);
+  nativeMatrix3x3ToJava(env, jm_basis, v.getBasis());
+  nativeVector3ToJava(env, jm_origin, v.getOrigin());
 }
 
 static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   struct b3JointInfo jointInfo;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
-  jfieldID linkNameID = env->GetFieldID(clazz, "m_linkName", "Ljava/lang/String;");
-  jfieldID jointNameID = env->GetFieldID(clazz, "m_jointName", "Ljava/lang/String;");
-  jfieldID jointTypeID = env->GetFieldID(clazz, "m_jointType", "I");
-  jfieldID qIndexID = env->GetFieldID(clazz, "m_qIndex", "I");
-  jfieldID uIndexID = env->GetFieldID(clazz, "m_uIndex", "I");
-  jfieldID jointIndexID = env->GetFieldID(clazz, "m_jointIndex", "I");
-  jfieldID flagsID = env->GetFieldID(clazz, "m_flags", "I");
-  jfieldID jointDampingID = env->GetFieldID(clazz, "m_jointDamping", "D");
-  jfieldID jointFrictionID = env->GetFieldID(clazz, "m_jointFriction", "D");
-  jfieldID jointLowerLimitID = env->GetFieldID(clazz, "m_jointLowerLimit", "D");
-  jfieldID jointUpperLimitID = env->GetFieldID(clazz, "m_jointUpperLimit", "D");
-  jfieldID jointMaxForceID = env->GetFieldID(clazz, "m_jointMaxForce", "D");
-  jfieldID jointMaxVelocityID = env->GetFieldID(clazz, "m_jointMaxVelocity", "D");
-  jfieldID parentFrameID = env->GetFieldID(clazz, "m_parentFrame", "[D");
-  jfieldID childFrameID = env->GetFieldID(clazz, "m_childFrame", "[D");
-  jfieldID jointAxisID = env->GetFieldID(clazz, "m_jointAxis", "[D");
+  CHECKFIELD(linkNameID, env->GetFieldID(clazz, "m_linkName", "Ljava/lang/String;"), "JointInfo: can't acccess m_linkName\n", jointInfo);
+  CHECKFIELD(jointNameID, env->GetFieldID(clazz, "m_jointName", "Ljava/lang/String;"), "JointInfo: can't acccess m_jointName\n", jointInfo);
+  CHECKFIELD(jointTypeID, env->GetFieldID(clazz, "m_jointType", "I"), "JointInfo: can't acccess m_jointType\n", jointInfo);
+  CHECKFIELD(qIndexID, env->GetFieldID(clazz, "m_qIndex", "I"), "JointInfo: can't acccess m_qIndex\n", jointInfo);
+  CHECKFIELD(uIndexID, env->GetFieldID(clazz, "m_uIndex", "I"), "JointInfo: can't acccess m_uIndex\n", jointInfo);
+  CHECKFIELD(jointIndexID, env->GetFieldID(clazz, "m_jointIndex", "I"), "JointInfo: can't acccess m_jointIndex\n", jointInfo);
+  CHECKFIELD(flagsID, env->GetFieldID(clazz, "m_flags", "I"), "JointInfo: can't acccess m_flags\n", jointInfo);
+  CHECKFIELD(jointDampingID, env->GetFieldID(clazz, "m_jointDamping", "D"), "JointInfo: can't acccess m_jointDamping\n", jointInfo);
+  CHECKFIELD(jointFrictionID, env->GetFieldID(clazz, "m_jointFriction", "D"), "JointInfo: can't acccess m_jointFriction\n", jointInfo);
+  CHECKFIELD(jointLowerLimitID, env->GetFieldID(clazz, "m_jointLowerLimit", "D"), "JointInfo: can't acccess m_jointLowerLimit\n", jointInfo);
+  CHECKFIELD(jointUpperLimitID, env->GetFieldID(clazz, "m_jointUpperLimit", "D"), "JointInfo: can't acccess m_jointUpperLimit\n", jointInfo);
+  CHECKFIELD(jointMaxForceID, env->GetFieldID(clazz, "m_jointMaxForce", "D"), "JointInfo: can't acccess m_jointMaxForce\n", jointInfo);
+  CHECKFIELD(jointMaxVelocityID, env->GetFieldID(clazz, "m_jointMaxVelocity", "D"), "JointInfo: can't acccess m_jointMaxVelocity\n", jointInfo);
+  CHECKFIELD(parentFrameID, env->GetFieldID(clazz, "m_parentFrame", "[D"), "JointInfo: can't acccess m_parentFrame\n", jointInfo);
+  CHECKFIELD(childFrameID, env->GetFieldID(clazz, "m_childFrame", "[D"), "JointInfo: can't acccess m_childFrame\n", jointInfo);
+  CHECKFIELD(jointAxisID, env->GetFieldID(clazz, "m_jointAxis", "[D"), "JointInfo: can't acccess m_jointAxis\n", jointInfo);
   int i;
 
   jstring jLinkName = (jstring)env->GetObjectField(jv, linkNameID);
   jstring jJointName = (jstring)env->GetObjectField(jv, jointNameID);
+  CHECKVALUE(jLinkName, "JointInfo: m_linkName is null\n", jointInfo);
+  CHECKVALUE(jJointName, "JointInfo: m_jointName is null\n", jointInfo);
 
   char *linkName = (char *)(env->GetStringUTFChars(jLinkName, 0));
   char *jointName = (char *)(env->GetStringUTFChars(jJointName, 0));
@@ -299,6 +252,9 @@ static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   jdoubleArray jParentFrame = (jdoubleArray)env->GetObjectField(jv, parentFrameID);
   jdoubleArray jChildFrame = (jdoubleArray)env->GetObjectField(jv, childFrameID);
   jdoubleArray jJointAxis = (jdoubleArray)env->GetObjectField(jv, jointAxisID);
+  CHECKVALUE(jParentFrame, "JointInfo: m_parentFrame is null\n", jointInfo);
+  CHECKVALUE(jChildFrame, "JointInfo: m_childFrame is null\n", jointInfo);
+  CHECKVALUE(jJointAxis, "JointInfo: m_jointAxis is null\n", jointInfo);
 
   double *parentFrame = (jdouble *)env->GetPrimitiveArrayCritical(jParentFrame, JNI_FALSE);
   double *childFrame = (jdouble *)env->GetPrimitiveArrayCritical(jChildFrame, JNI_FALSE);
@@ -321,12 +277,103 @@ static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   return jointInfo;
 }
 
+static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &jointInfo) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
+  CHECKFIELD(linkNameID, env->GetFieldID(clazz, "m_linkName", "Ljava/lang/String;"), "JointInfo: can't access m_linkName\n",);
+  CHECKFIELD(jointNameID, env->GetFieldID(clazz, "m_jointName", "Ljava/lang/String;"), "JointInfo: can't access m_linkName\n",);
+  CHECKFIELD(jointTypeID, env->GetFieldID(clazz, "m_jointType", "I"), "JointInfo: can't acccess m_jointType\n",);
+  CHECKFIELD(qIndexID, env->GetFieldID(clazz, "m_qIndex", "I"), "JointInfo: can't acccess m_qIndex\n",);
+  CHECKFIELD(uIndexID, env->GetFieldID(clazz, "m_uIndex", "I"), "JointInfo: can't acccess m_uIndex\n",);
+  CHECKFIELD(jointIndexID, env->GetFieldID(clazz, "m_jointIndex", "I"), "JointInfo: can't acccess m_jointIndex\n",);
+  CHECKFIELD(flagsID, env->GetFieldID(clazz, "m_flags", "I"), "JointInfo: can't acccess m_flags\n",);
+  CHECKFIELD(jointDampingID, env->GetFieldID(clazz, "m_jointDamping", "D"), "JointInfo: can't acccess m_jointDamping\n",);
+  CHECKFIELD(jointFrictionID, env->GetFieldID(clazz, "m_jointFriction", "D"), "JointInfo: can't acccess m_jointFriction\n",);
+  CHECKFIELD(jointLowerLimitID, env->GetFieldID(clazz, "m_jointLowerLimit", "D"), "JointInfo: can't acccess m_jointLowerLimit\n",);
+  CHECKFIELD(jointUpperLimitID, env->GetFieldID(clazz, "m_jointUpperLimit", "D"), "JointInfo: can't acccess m_jointUpperLimit\n",);
+  CHECKFIELD(jointMaxForceID, env->GetFieldID(clazz, "m_jointMaxForce", "D"), "JointInfo: can't acccess m_jointMaxForce\n",);
+  CHECKFIELD(jointMaxVelocityID, env->GetFieldID(clazz, "m_jointMaxVelocity", "D"), "JointInfo: can't acccess m_jointMaxVelocity\n",);
+  CHECKFIELD(parentFrameID, env->GetFieldID(clazz, "m_parentFrame", "[D"), "JointInfo: can't acccess m_parentFrame\n",);
+  CHECKFIELD(childFrameID, env->GetFieldID(clazz, "m_childFrame", "[D"), "JointInfo: can't acccess m_childFrame\n",);
+  CHECKFIELD(jointAxisID, env->GetFieldID(clazz, "m_jointAxis", "[D"), "JointInfo: can't acccess m_jointAxis\n",);
+  int i;
+
+  jstring jlinkName = env->NewStringUTF(jointInfo.m_linkName);
+  jstring jjointName = env->NewStringUTF(jointInfo.m_jointName);
+  CHECKVALUE(jlinkName, "JointInfo: m_linkName is null\n",);
+  CHECKVALUE(jjointName, "JointInfo: m_jointName is null\n",);
+      
+  env->SetObjectField(jv, linkNameID, jlinkName);
+  env->SetObjectField(jv, jointNameID, jjointName);
+  env->SetIntField(jv, jointTypeID, jointInfo.m_jointType);
+  env->SetIntField(jv, qIndexID, jointInfo.m_qIndex);
+  env->SetIntField(jv, uIndexID, jointInfo.m_uIndex);
+  env->SetIntField(jv, jointIndexID, jointInfo.m_jointIndex);
+  env->SetIntField(jv, flagsID, jointInfo.m_flags);
+  env->SetDoubleField(jv, jointDampingID, jointInfo.m_jointDamping);
+  env->SetDoubleField(jv, jointFrictionID, jointInfo.m_jointFriction);
+  env->SetDoubleField(jv, jointLowerLimitID, jointInfo.m_jointLowerLimit);
+  env->SetDoubleField(jv, jointUpperLimitID, jointInfo.m_jointUpperLimit);
+  env->SetDoubleField(jv, jointMaxForceID, jointInfo.m_jointMaxForce);
+  env->SetDoubleField(jv, jointMaxVelocityID, jointInfo.m_jointMaxVelocity);
+
+  jdoubleArray jParentFrame = (jdoubleArray)env->GetObjectField(jv, parentFrameID);
+  jdoubleArray jChildFrame = (jdoubleArray)env->GetObjectField(jv, childFrameID);
+  jdoubleArray jJointAxis = (jdoubleArray)env->GetObjectField(jv, jointAxisID);
+  CHECKVALUE(jParentFrame, "JointInfo: m_parentFrame is null\n",);
+  CHECKVALUE(jChildFrame, "JointInfo: m_childFrame is null\n",);
+  CHECKVALUE(jJointAxis, "JointInfo: m_jointAxis is null\n",);
+
+  double *parentFrame = (jdouble *)env->GetPrimitiveArrayCritical(jParentFrame, JNI_FALSE);
+  double *childFrame = (jdouble *)env->GetPrimitiveArrayCritical(jChildFrame, JNI_FALSE);
+  double *jointAxis = (jdouble *)env->GetPrimitiveArrayCritical(jJointAxis, JNI_FALSE);
+
+  for (i = 0; i < 7; i++) {
+    parentFrame[i] = jointInfo.m_parentFrame[i];
+  }
+  for (i = 0; i < 7; i++) {
+    childFrame[i] = jointInfo.m_childFrame[i];
+  }
+  for (i = 0; i < 3; i++) {
+    jointAxis[i] = jointInfo.m_jointAxis[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jJointAxis, jointAxis, 0);
+  env->ReleasePrimitiveArrayCritical(jChildFrame, childFrame, 0);
+  env->ReleasePrimitiveArrayCritical(jParentFrame, parentFrame, 0);
+}
+
+static struct b3JointSensorState javaJointSensorStateToNative(JNIEnv *env, jobject jv) {
+  struct b3JointSensorState jointSensorState;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointSensorState");
+  CHECKFIELD(jointPositionID, env->GetFieldID(clazz, "m_jointPosition", "D"), "JointSensorState: can't acccess m_jointPosition\n", jointSensorState;);
+  CHECKFIELD(jointVelocityID, env->GetFieldID(clazz, "m_jointVelocity", "D"), "JointSensorState: can't acccess m_jointVelocity\n", jointSensorState;);
+  CHECKFIELD(jointMotorTorqueID, env->GetFieldID(clazz, "m_jointMotorTorque", "D"), "JointSensorState: can't acccess m_jointMotorTorque\n", jointSensorState;);
+  CHECKFIELD(jointForceTorqueID, env->GetFieldID(clazz, "m_jointForceTorque", "[D"), "JointSensorState: can't acccess m_jointForceTorque\n", jointSensorState;);
+  int i;
+
+  jointSensorState.m_jointPosition = env->GetDoubleField(jv, jointPositionID);
+  jointSensorState.m_jointVelocity = env->GetDoubleField(jv, jointVelocityID);
+  jointSensorState.m_jointMotorTorque = env->GetDoubleField(jv, jointMotorTorqueID);
+
+  jdoubleArray jJointForceTorque = (jdoubleArray)env->GetObjectField(jv, jointForceTorqueID);
+  CHECKVALUE(jJointForceTorque, "JointSensorState: m_jointForceTorque is null\n", jointSensorState);
+  
+  double *jointForceTorque = (jdouble *)env->GetPrimitiveArrayCritical(jJointForceTorque, JNI_FALSE);
+
+  for (i = 0; i < 6; i++) {
+    jointSensorState.m_jointForceTorque[i] = jointForceTorque[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jJointForceTorque, jointForceTorque, 0);
+  return jointSensorState;
+}
+
 static void nativeJointSensorStateToJava(JNIEnv *env, jobject jv, struct b3JointSensorState &jointSensorState) {
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointSensorState");
-  jfieldID jointPositionID = env->GetFieldID(clazz, "m_jointPosition", "D");
-  jfieldID jointVelocityID = env->GetFieldID(clazz, "m_jointVelocity", "D");
-  jfieldID jointMotorTorqueID = env->GetFieldID(clazz, "m_jointMotorTorque", "D");
-  jfieldID jointForceTorqueID = env->GetFieldID(clazz, "m_jointForceTorque", "[D");
+  CHECKFIELD(jointPositionID, env->GetFieldID(clazz, "m_jointPosition", "D"), "JointSensorState: can't acccess m_jointPosition\n",);
+  CHECKFIELD(jointVelocityID, env->GetFieldID(clazz, "m_jointVelocity", "D"), "JointSensorState: can't acccess m_jointVelocity\n",);
+  CHECKFIELD(jointMotorTorqueID, env->GetFieldID(clazz, "m_jointMotorTorque", "D"), "JointSensorState: can't acccess m_jointMotorTorque\n",);
+  CHECKFIELD(jointForceTorqueID, env->GetFieldID(clazz, "m_jointForceTorque", "[D"), "JointSensorState: can't acccess m_jointForceTorque\n",);
   int i;
 
   env->SetDoubleField(jv, jointPositionID, jointSensorState.m_jointPosition);
@@ -334,6 +381,7 @@ static void nativeJointSensorStateToJava(JNIEnv *env, jobject jv, struct b3Joint
   env->SetDoubleField(jv, jointMotorTorqueID, jointSensorState.m_jointMotorTorque);
 
   jdoubleArray jJointForceTorque = (jdoubleArray)env->GetObjectField(jv, jointForceTorqueID);
+  CHECKVALUE(jJointForceTorque, "JointSensorState: m_jointForceTorque is null\n",);
 
   double *jointForceTorque = (jdouble *)env->GetPrimitiveArrayCritical(jJointForceTorque, JNI_FALSE);
 
@@ -344,30 +392,143 @@ static void nativeJointSensorStateToJava(JNIEnv *env, jobject jv, struct b3Joint
   env->ReleasePrimitiveArrayCritical(jJointForceTorque, jointForceTorque, 0);
 }
 
-static struct b3JointSensorState javaJointSensorStateToNative(JNIEnv *env, jobject jv) {
-  struct b3JointSensorState jointSensorState;
-  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointSensorState");
-  jfieldID jointPositionID = env->GetFieldID(clazz, "m_jointPosition", "D");
-  jfieldID jointVelocityID = env->GetFieldID(clazz, "m_jointVelocity", "D");
-  jfieldID jointMotorTorqueID = env->GetFieldID(clazz, "m_jointMotorTorque", "D");
-  jfieldID jointForceTorqueID = env->GetFieldID(clazz, "m_jointForceTorque", "[D");
+static struct b3JointStates2 javaJointStates2ToNative(JNIEnv *env, jobject jv, int numJoints) {
   int i;
+  struct b3JointStates2 jointStates2;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointStates2");
+  CHECKFIELD(bodyUniqueID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "JointStates2: can't acccess m_bodyUniqueId\n", jointStates2);
+  CHECKFIELD(numDegreeOfFreedomQID, env->GetFieldID(clazz, "m_numDegreeOfFreedomQ", "I"), "JointStates2: can't acccess m_numDegreeOfFreedomQ\n", jointStates2);
+  CHECKFIELD(numDegreeOfFreedomUID, env->GetFieldID(clazz, "m_numDegreeOfFreedomU", "I"), "JointStates2: can't acccess m_numDegreeOfFreedomU\n", jointStates2);
+  CHECKFIELD(rootLocalInertialFrameID, env->GetFieldID(clazz, "m_rootLocalInertialFrame", "Ledu/berkeley/bid/bullet/Transform3;"),
+	     "JointStates2: can't access m_rootLocalInertialFrame\n", jointStates2);
+  CHECKFIELD(actualStateQID, env->GetFieldID(clazz, "m_actualStateQ", "[D"), "JointStates2: can't acccess m_actualStateQ\n", jointStates2);
+  CHECKFIELD(actualStateQdotID, env->GetFieldID(clazz, "m_actualStateQdot", "[D"), "JointStates2: can't acccess m_actualStateQdot\n", jointStates2);
+  CHECKFIELD(jointReactionForcesID, env->GetFieldID(clazz, "m_jointReactionForces", "[D"), "JointStates2: can't acccess m_jointReactionForces\n", jointStates2);
 
-  jointSensorState.m_jointPosition = env->GetDoubleField(jv, jointPositionID);
-  jointSensorState.m_jointVelocity = env->GetDoubleField(jv, jointVelocityID);
-  jointSensorState.m_jointMotorTorque = env->GetDoubleField(jv, jointMotorTorqueID);
+  jointStates2.m_bodyUniqueId = env->GetIntField(jv, bodyUniqueID);
+  jointStates2.m_numDegreeOfFreedomQ = env->GetIntField(jv, numDegreeOfFreedomQID);
+  jointStates2.m_numDegreeOfFreedomU = env->GetIntField(jv, numDegreeOfFreedomUID);
 
-  jdoubleArray jJointForceTorque = (jdoubleArray)env->GetObjectField(jv, jointForceTorqueID);
+  jobject jrootLocalInertialFrame = env->GetObjectField(jv, rootLocalInertialFrameID);
+  CHECKVALUE(jrootLocalInertialFrame, "JointStates2: m_rootLocalInertialFrame is null\n", jointStates2);
+  jointStates2.m_rootLocalInertialFrame = javaTransform3ToNative(env, jrootLocalInertialFrame);
 
-  double *jointForceTorque = (jdouble *)env->GetPrimitiveArrayCritical(jJointForceTorque, JNI_FALSE);
+  jdoubleArray jactualStateQ = (jdoubleArray)env->GetObjectField(jv, actualStateQID);
+  jdoubleArray jactualStateQdot = (jdoubleArray)env->GetObjectField(jv, actualStateQdotID);
+  jdoubleArray jjointReactionForces = (jdoubleArray)env->GetObjectField(jv, jointReactionForcesID);
+  CHECKVALUE(jactualStateQ, "JointStates2: m_actualStateQ is null\n", jointStates2);
+  CHECKVALUE(jactualStateQdot, "JointStates2: m_actualStateQdot is null\n", jointStates2);
+  CHECKVALUE(jjointReactionForces, "JointStates2: m_jointReactionForces is null\n", jointStates2);
 
-  for (i = 0; i < 6; i++) {
-    jointSensorState.m_jointForceTorque[i] = jointForceTorque[i];
+  double *actualStateQ = (jdouble *)env->GetPrimitiveArrayCritical(jactualStateQ, JNI_FALSE);
+  double *actualStateQdot = (jdouble *)env->GetPrimitiveArrayCritical(jactualStateQdot, JNI_FALSE);
+  double *jointReactionForces = (jdouble *)env->GetPrimitiveArrayCritical(jjointReactionForces, JNI_FALSE);
+
+  jointStates2.m_actualStateQ.resize(jointStates2.m_numDegreeOfFreedomQ);
+  jointStates2.m_actualStateQdot.resize(jointStates2.m_numDegreeOfFreedomU);
+  jointStates2.m_jointReactionForces.resize(numJoints*6);
+
+  for (i = 0; i < jointStates2.m_numDegreeOfFreedomQ; i++) {
+    jointStates2.m_actualStateQ[i] = actualStateQ[i];
+  }
+  for (i = 0; i < jointStates2.m_numDegreeOfFreedomU; i++) {
+    jointStates2.m_actualStateQdot[i] = actualStateQdot[i];
+  }
+  for (i = 0; i < numJoints*6; i++) {
+    jointStates2.m_jointReactionForces[i] = jointReactionForces[i];
   }
 
-  env->ReleasePrimitiveArrayCritical(jJointForceTorque, jointForceTorque, 0);
-  return jointSensorState;
+  env->ReleasePrimitiveArrayCritical(jjointReactionForces, jointReactionForces, 0);
+  env->ReleasePrimitiveArrayCritical(jactualStateQdot, actualStateQdot, 0);
+  env->ReleasePrimitiveArrayCritical(jactualStateQ, actualStateQ, 0);
+  return jointStates2;
 }
+
+static void nativeJointStates2ToJava(JNIEnv *env, jobject jv, struct b3JointStates2 &jointStates2, int numJoints) {
+  int i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointStates2");
+  CHECKFIELD(bodyUniqueID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "JointStates2: can't acccess m_bodyUniqueId\n",);
+  CHECKFIELD(numDegreeOfFreedomQID, env->GetFieldID(clazz, "m_numDegreeOfFreedomQ", "I"), "JointStates2: can't acccess m_numDegreeOfFreedomQ\n",);
+  CHECKFIELD(numDegreeOfFreedomUID, env->GetFieldID(clazz, "m_numDegreeOfFreedomU", "I"), "JointStates2: can't acccess m_numDegreeOfFreedomU\n",);
+  CHECKFIELD(rootLocalInertialFrameID, env->GetFieldID(clazz, "m_rootLocalInertialFrame", "Ledu/berkeley/bid/bullet/Transform3;"),
+	     "JointStates2: can't acccess m_rootLocalInertialFrame\n",);
+  CHECKFIELD(actualStateQID, env->GetFieldID(clazz, "m_actualStateQ", "[D"), "JointStates2: can't acccess m_actualStateQ\n",);
+  CHECKFIELD(actualStateQdotID, env->GetFieldID(clazz, "m_actualStateQdot", "[D"), "JointStates2: can't acccess m_actualStateQdot\n",);
+  CHECKFIELD(jointReactionForcesID, env->GetFieldID(clazz, "m_jointReactionForces", "[D"), "JointStates2: can't acccess m_jointReactionForces\n",);
+
+  env->SetIntField(jv, bodyUniqueID, jointStates2.m_bodyUniqueId);
+  env->SetIntField(jv, numDegreeOfFreedomQID, jointStates2.m_numDegreeOfFreedomQ);
+  env->SetIntField(jv, numDegreeOfFreedomUID, jointStates2.m_numDegreeOfFreedomU);
+
+  jobject jrootLocalInertialFrame = env->GetObjectField(jv, rootLocalInertialFrameID);
+  CHECKVALUE(jrootLocalInertialFrame, "JointStates2: m_rootLocalInertialFrame is null\n",);
+  nativeTransform3ToJava(env, jrootLocalInertialFrame, jointStates2.m_rootLocalInertialFrame);
+
+  jdoubleArray jactualStateQ = env->NewDoubleArray(jointStates2.m_numDegreeOfFreedomQ);
+  jdoubleArray jactualStateQdot = env->NewDoubleArray(jointStates2.m_numDegreeOfFreedomU);
+  jdoubleArray jjointReactionForces = env->NewDoubleArray(numJoints*6);
+
+  env->SetObjectField(jv, actualStateQID, jactualStateQ);
+  env->SetObjectField(jv, actualStateQdotID, jactualStateQdot);
+  env->SetObjectField(jv, jointReactionForcesID, jjointReactionForces);
+
+  double *actualStateQ = (jdouble *)env->GetPrimitiveArrayCritical(jactualStateQ, JNI_FALSE);
+  double *actualStateQdot = (jdouble *)env->GetPrimitiveArrayCritical(jactualStateQdot, JNI_FALSE);
+  double *jointReactionForces = (jdouble *)env->GetPrimitiveArrayCritical(jjointReactionForces, JNI_FALSE);
+
+  for (i = 0; i < jointStates2.m_numDegreeOfFreedomQ; i++) {
+    actualStateQ[i] = jointStates2.m_actualStateQ[i];
+  }
+  for (i = 0; i < jointStates2.m_numDegreeOfFreedomU; i++) {
+    actualStateQdot[i] = jointStates2.m_actualStateQdot[i];
+  }
+  for (i = 0; i < numJoints*6; i++) {
+    jointReactionForces[i] = jointStates2.m_jointReactionForces[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jjointReactionForces, jointReactionForces, 0);
+  env->ReleasePrimitiveArrayCritical(jactualStateQdot, actualStateQdot, 0);
+  env->ReleasePrimitiveArrayCritical(jactualStateQ, actualStateQ, 0);  
+}
+
+static struct b3RobotSimulatorJointMotorArgs javaJointMotorArgsToNative(JNIEnv *env, jobject jv) {
+  struct b3RobotSimulatorJointMotorArgs motorArgs(0);
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointMotorArgs");
+  CHECKFIELD(controlModeID, env->GetFieldID(clazz, "m_controlMode", "I"), "JointMotorArgs: can't acccess m_controlMode\n", motorArgs);
+  CHECKFIELD(targetPositionID, env->GetFieldID(clazz, "m_targetPosition", "D"), "JointMotorArgs: can't acccess m_targetPosition\n", motorArgs);
+  CHECKFIELD(kpID, env->GetFieldID(clazz, "m_kp", "D"), "JointMotorArgs: can't acccess m_kp\n", motorArgs);
+  CHECKFIELD(targetVelocityID, env->GetFieldID(clazz, "m_targetVelocity", "D"), "JointMotorArgs: can't acccess m_targetVelocity\n", motorArgs);
+  CHECKFIELD(kdID, env->GetFieldID(clazz, "m_kd", "D"), "JointMotorArgs: can't acccess m_kd\n", motorArgs);
+  CHECKFIELD(maxTorqueValueID, env->GetFieldID(clazz, "m_maxTorqueValue", "D"), "JointMotorArgs: can't acccess m_maxTorqueValue\n", motorArgs);
+
+  motorArgs.m_controlMode = env->GetIntField(jv, controlModeID);
+  motorArgs.m_targetPosition = env->GetDoubleField(jv, targetPositionID);
+  motorArgs.m_kp = env->GetDoubleField(jv, kpID);
+  motorArgs.m_targetVelocity = env->GetDoubleField(jv, targetVelocityID);
+  motorArgs.m_kd = env->GetDoubleField(jv, kdID);
+  motorArgs.m_maxTorqueValue = env->GetDoubleField(jv, maxTorqueValueID);
+
+  return motorArgs;
+}
+
+static void nativeJointMotorArgsToJava(JNIEnv *env, jobject jv, struct b3RobotSimulatorJointMotorArgs &motorArgs) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointMotorArgs");
+  CHECKFIELD(controlModeID, env->GetFieldID(clazz, "m_controlMode", "I"), "JointMotorArgs: can't acccess m_controlMode\n",);
+  CHECKFIELD(targetPositionID, env->GetFieldID(clazz, "m_targetPosition", "D"), "JointMotorArgs: can't acccess m_targetPosition\n",);
+  CHECKFIELD(kpID, env->GetFieldID(clazz, "m_kp", "D"), "JointMotorArgs: can't acccess m_kp\n",);
+  CHECKFIELD(targetVelocityID, env->GetFieldID(clazz, "m_targetVelocity", "D"), "JointMotorArgs: can't acccess m_targetVelocity\n",);
+  CHECKFIELD(kdID, env->GetFieldID(clazz, "m_kd", "D"), "JointMotorArgs: can't acccess m_kd\n",);
+  CHECKFIELD(maxTorqueValueID, env->GetFieldID(clazz, "m_maxTorqueValue", "D"), "JointMotorArgs: can't acccess m_maxTorqueValue\n",);
+
+  env->SetIntField(jv, controlModeID, motorArgs.m_controlMode);
+  env->SetDoubleField(jv, targetPositionID, motorArgs.m_targetPosition);
+  env->SetDoubleField(jv, kpID, motorArgs.m_kp);
+  env->SetDoubleField(jv, targetVelocityID, motorArgs.m_targetVelocity);
+  env->SetDoubleField(jv, kdID, motorArgs.m_kd);
+  env->SetDoubleField(jv, maxTorqueValueID, motorArgs.m_maxTorqueValue);
+
+}
+
 
 extern "C" {
 
@@ -400,6 +561,20 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointSensorState
   nativeJointSensorStateToJava(env, mout, m);
 }
 
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointStates2
+(JNIEnv *env, jobject obj, jobject min, jobject mout, jint numJoints)
+{
+  struct b3JointStates2 m = javaJointStates2ToNative(env, min, numJoints);
+  nativeJointStates2ToJava(env, mout, m, numJoints);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointMotorArgs
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  struct b3RobotSimulatorJointMotorArgs m = javaJointMotorArgsToNative(env, min);
+  nativeJointMotorArgsToJava(env, mout, m);
+}
+
 JNIEXPORT jint JNICALL Java_edu_berkeley_bid_Bullet_newRobotSimulatorClientAPI
 (JNIEnv *env, jobject jRoboSimAPI)
 {
@@ -428,7 +603,6 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_renderScene
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> renderScene();
 }
-
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_debugDraw
 (JNIEnv *env, jobject jRoboSimAPI, jint debugDrawMode)
@@ -482,20 +656,6 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_resetSimulation
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> resetSimulation();
-}
-
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_canSubmitCommand
-(JNIEnv *env, jobject jRoboSimAPI)
-{
-  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  return jrsa -> canSubmitCommand();
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_stepSimulation
-(JNIEnv *env, jobject jRoboSimAPI)
-{
-  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  jrsa -> stepSimulation();
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_getQuaternionFromEuler
@@ -615,21 +775,6 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_configureDebugVisualizer
   jrsa -> configureDebugVisualizer((b3ConfigureDebugVisualizerEnum)flags, enable);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setGravity
-(JNIEnv *env, jobject jRoboSimAPI, jobject jgravity)
-{
-  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  b3Vector3 gravity = javaVector3ToNative(env, jgravity);
-  jrsa -> setGravity(gravity);
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setTimeStep
-(JNIEnv *env, jobject jRoboSimAPI, jdouble t)
-{
-  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  jrsa -> setTimeStep(t);
-}
-
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyInfo
 (JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBodyInfo)
 {
@@ -639,8 +784,8 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyInfo
   jstring jbaseName = env->NewStringUTF(bodyInfo.m_baseName);
   jstring jbodyName = env->NewStringUTF(bodyInfo.m_bodyName);
   jclass clazz = env->GetObjectClass(jBodyInfo);
-  jfieldID baseNameField = env->GetFieldID(clazz, "m_baseName", "Ljava/lang/String;");
-  jfieldID bodyNameField = env->GetFieldID(clazz, "m_bodyName", "Ljava/lang/String;");
+  CHECKFIELD(baseNameField, env->GetFieldID(clazz, "m_baseName", "Ljava/lang/String;"), "Bullet: can't access m_baseName field\n", false);
+  CHECKFIELD(bodyNameField, env->GetFieldID(clazz, "m_bodyName", "Ljava/lang/String;"), "Bullet: can't access m_bodyName field\n", false);
   env->SetObjectField(jBodyInfo, baseNameField, jbaseName);
   env->SetObjectField(jBodyInfo, bodyNameField, jbodyName);
   return status;
@@ -734,6 +879,107 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_removeConstraint
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> removeConstraint(constraintId);
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointState
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject state)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3JointSensorState jointSensorState;
+  bool status = jrsa -> getJointState(bodyUniqueId, jointIndex, &jointSensorState);
+  nativeJointSensorStateToJava(env, state, jointSensorState);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointStates
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jobject state)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3JointStates2 jointStates;
+  bool status = jrsa -> getJointStates(bodyUniqueId, jointStates);
+  int numJoints = jrsa -> getNumJoints(bodyUniqueId);
+  nativeJointStates2ToJava(env, state, jointStates, numJoints);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetJointState
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jdouble targetValue)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  int status = jrsa -> resetJointState(bodyUniqueId, jointIndex, targetValue);
+  return status;
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, JointMotorArgs args)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3RobotSimulatorJointMotorArgs motorArgs = javaJointMotorArgsToNative(env, args);
+  jrsa -> setJointMotorControl(bodyUniqueId, jointIndex, motorArgs);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_stepSimulation
+(JNIEnv *env, jobject jRoboSimAPI)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> stepSimulation();
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_canSubmitCommand
+(JNIEnv *env, jobject jRoboSimAPI)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  return jrsa -> canSubmitCommand();
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setRealTimeSimulation
+(JNIEnv *env, jobject jRoboSimAPI, jboolean enableRealTimeSimulation)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> setRealTimeSimulation(enableRealTimeSimulation);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setInternalSimFlags
+(JNIEnv *env, jobject jRoboSimAPI, jint flags)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> setInternalSimFlags(flags);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setGravity
+(JNIEnv *env, jobject jRoboSimAPI, jobject jgravity)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3Vector3 gravity = javaVector3ToNative(env, jgravity);
+  jrsa -> setGravity(gravity);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setTimeStep
+(JNIEnv *env, jobject jRoboSimAPI, jdouble t)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> setTimeStep(t);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setNumSimulationSubSteps
+(JNIEnv *env, jobject jRoboSimAPI, jint numSubSteps)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> setNumSimulationSubSteps(numSubSteps);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setNumSolverIterations
+(JNIEnv *env, jobject jRoboSimAPI, jint numSolverIterations)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> setNumSolverIterations(numSolverIterations);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_setContactBreakingThreshold
+(JNIEnv *env, jobject jRoboSimAPI, jdouble threshold)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  jrsa -> setContactBreakingThreshold(threshold);
 }
 
 
