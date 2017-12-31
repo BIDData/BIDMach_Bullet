@@ -60,12 +60,11 @@ public class JointInfo implements Serializable {
     @Override
     public String toString () {
 	return "[" +
-	    "linkName=" + m_linkName + ", " +
+	    "jointIndex=" + m_jointIndex + ", " +
 	    "jointName=" + m_jointName + ", " +
 	    "jointType=" + m_jointType + ", " +
 	    "qIndex=" + m_qIndex + ", " +
 	    "uIndex=" + m_uIndex + ", " +
-	    "jointIndex=" + m_jointIndex + ", " +
 	    "flags=" + m_flags + ", " +
 	    "jointDamping=" + m_jointDamping + ", " +
 	    "jointFriction=" + m_jointFriction + ", " +
@@ -73,6 +72,7 @@ public class JointInfo implements Serializable {
 	    "jointUpperLimit=" + m_jointUpperLimit + ", " +
 	    "jointMaxForce=" + m_jointMaxForce + ", " +
 	    "jointMaxVelocity=" + m_jointMaxVelocity + ", " +
+	    "linkName=" + m_linkName + ", " +
 	    "parentFrame=" + m_parentFrame + ", " +
 	    "childFrame=" + m_childFrame + ", " +
 	    "jointAxis=" + m_jointAxis + "]";

@@ -3,24 +3,22 @@ import edu.berkeley.bid.bullet._
 
 val sim = new Bullet;
 
-sim.connect(Bullet.eCONNECT_GUI);
+//sim.connect(Bullet.eCONNECT_GUI);
 
-//sim.connect(Bullet.eCONNECT_DIRECT);
+sim.connect(Bullet.eCONNECT_DIRECT);
 
 sim.configureDebugVisualizer(Bullet.COV_ENABLE_GUI, 0);
 
-sim.setTimeOut(10);
+sim.setGravity(new Vector3(0,0,-9.8f));
 
-sim.setTimeStep(1f/240);
+val planeId = sim.loadURDF("/code/bullet3/data/plane.urdf")
 
-val v = new Vector3(0.1f,0.2f,0.3f);
+val cubeStartPos = new Vector3(0,0,1);
 
-val q = Bullet.getQuaternionFromEuler(v);
+val cubeStartOrient = Bullet.getQuaternionFromEuler(new Vector3(0,0,0));
 
-val rpy = Bullet.getEulerFromQuaternion(q);
+val boxId = sim.loadURDF("/code/bullet3/data/r2d2.urdf", cubeStartPos, cubeStartOrient)
 
-val gravity = new Vector3(0,0,-9.8f); 
+sim.stepSimulation()
 
-sim.setGravity(gravity);
-
-sim.loadURDF("/code/bullet3/data/plane.urdf")
+val img = sim.getCameraImage(64, 64)

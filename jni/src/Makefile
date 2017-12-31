@@ -2,7 +2,7 @@ include Makefile.incl
 
 CUDA_OBJS=
 
-CPU_OBJS=BIDMachBullet.$(OBJ) 
+CPU_OBJS=b3RobotSimulatorClientAPI2.$(OBJ) BIDMachBullet.$(OBJ) 
 
 .SUFFIXES: .$(OBJ) .c .cpp .cu
 

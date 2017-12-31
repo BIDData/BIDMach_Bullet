@@ -80,3 +80,17 @@ val ked2 = new KeyboardEventsData();
 Bullet.testKeyboardEventsData(ked1,ked2);
 ked1
 ked2
+
+
+val img1 = new CameraImageData(2,2);
+Array[Byte](70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85).copyToArray(img1.m_rgbColorData)
+Array[Float](1,2,3,4).copyToArray(img1.m_depthValues)
+Array[Int](1,2,3,4).copyToArray(img1.m_segmentationMaskValues)
+val img2 = new CameraImageData();
+Bullet.testCameraImageData(img1,img2);
+img1.m_rgbColorData
+img2.m_rgbColorData
+img1.m_depthValues
+img2.m_depthValues
+img1.m_segmentationMaskValues;
+img2.m_segmentationMaskValues;

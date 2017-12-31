@@ -194,6 +194,13 @@ public class Bullet implements Serializable {
 
     public native void submitProfileTiming(String jprofileName, int durationInMicroseconds);
 
+    public native int getCameraImage(CameraImageData cameraImage, int width, int height,
+				     float [] viewMatrix, float [] projectionMatrix,
+				     float [] lightProjection, float [] lightColor,
+				     float lightDistance, int hasShadow,
+				     float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
+				     int renderer);
+    
 
     public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
 
@@ -210,6 +217,9 @@ public class Bullet implements Serializable {
     public static native void testLinkState(LinkState min, LinkState mout);
 
     public static native void testKeyboardEventsData(KeyboardEventsData min, KeyboardEventsData mout);
+
+    public static native void testCameraImageData(CameraImageData min, CameraImageData mout);
+
 
 
     public static final int eCONNECT_GUI = 1;

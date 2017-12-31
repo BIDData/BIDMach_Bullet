@@ -15,7 +15,27 @@ class Bullet extends edu.berkeley.bid.Bullet {
 	val baseAngularVelocity = new Vector3
 	getBaseVelocity(bodyUniqueId, baseVelocity, baseAngularVelocity);
 	(baseVelocity, baseAngularVelocity);
+    };
+
+    def getCameraImage(width:Int, height:Int,
+		       viewMatrix:Array[Float]=null, projectionMatrix:Array[Float]=null,
+		       lightProjection:Array[Float]=null, lightColor:Array[Float]=null,
+		       lightDistance:Float= -1f, hasShadow:Int = -1,
+		       lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
+		       renderer:Int = -1):CameraImageData = {
+
+	val cameraImage = new CameraImageData();
+
+	getCameraImage(cameraImage, width, height,
+		       viewMatrix, projectionMatrix,
+		       lightProjection, lightColor,
+		       lightDistance, hasShadow,
+		       lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
+		       renderer);
+
+	cameraImage;
     }
+
 }
 
 object Bullet {

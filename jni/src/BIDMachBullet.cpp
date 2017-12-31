@@ -20,6 +20,20 @@ static void* long2void(jlong l) {
   return v.p;
 }
 
+// TODO: wont need this after 2.8.7 since these fields change from char * to char[1024] in b3JointInfo
+
+static void deleteJointInfo(b3JointInfo * ptr) {
+  if (ptr != NULL) {
+    if (ptr->m_linkName != NULL) {
+      delete [] ptr->m_linkName;
+    }
+    if (ptr->m_jointName != NULL) {
+      delete [] ptr->m_jointName;
+    }
+    delete ptr;
+  }
+}
+
 static b3RobotSimulatorClientAPI *getRobotSimulatorClientAPI(JNIEnv *env, jobject jRoboSimAPI)
 {
   static jclass clazz = NULL;
@@ -202,8 +216,8 @@ static void nativeTransform3ToJava(JNIEnv *env, jobject jv, b3Transform &v) {
   nativeVector3ToJava(env, jm_origin, v.getOrigin());
 }
 
-static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
-  struct b3JointInfo jointInfo;
+static b3JointInfo * javaJointInfoToNative(JNIEnv *env, jobject jv) {
+  b3JointInfo * jointInfo = new b3JointInfo();
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
   CHECKFIELD(linkNameID, env->GetFieldID(clazz, "m_linkName", "Ljava/lang/String;"), "JointInfo: can't acccess m_linkName\n", jointInfo);
   CHECKFIELD(jointNameID, env->GetFieldID(clazz, "m_jointName", "Ljava/lang/String;"), "JointInfo: can't acccess m_jointName\n", jointInfo);
@@ -231,23 +245,26 @@ static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   char *linkName = (char *)(env->GetStringUTFChars(jLinkName, 0));
   char *jointName = (char *)(env->GetStringUTFChars(jJointName, 0));
 
-  strncpy(jointInfo.m_linkName, linkName, 1024);
-  strncpy(jointInfo.m_jointName, jointName, 1024);
-
+  // TODO: will need to be changed for versions > 2.8.7 since these fields change from char * to char [1024]
+  jointInfo->m_linkName = new char[strlen(linkName)+1];
+  jointInfo->m_jointName = new char[strlen(jointName)+1];
+  strcpy(jointInfo->m_linkName, linkName);
+  strcpy(jointInfo->m_jointName, jointName);
+  
   env -> ReleaseStringUTFChars(jJointName, jointName);
   env -> ReleaseStringUTFChars(jLinkName, linkName);
 
-  jointInfo.m_jointType = env->GetIntField(jv, jointTypeID);
-  jointInfo.m_qIndex = env->GetIntField(jv, qIndexID);
-  jointInfo.m_uIndex = env->GetIntField(jv, uIndexID);
-  jointInfo.m_jointIndex = env->GetIntField(jv, jointIndexID);
-  jointInfo.m_flags = env->GetIntField(jv, flagsID);
-  jointInfo.m_jointDamping = env->GetDoubleField(jv, jointDampingID);
-  jointInfo.m_jointFriction = env->GetDoubleField(jv, jointFrictionID);
-  jointInfo.m_jointLowerLimit = env->GetDoubleField(jv, jointLowerLimitID);
-  jointInfo.m_jointUpperLimit = env->GetDoubleField(jv, jointUpperLimitID);
-  jointInfo.m_jointMaxForce = env->GetDoubleField(jv, jointMaxForceID);
-  jointInfo.m_jointMaxVelocity = env->GetDoubleField(jv, jointMaxVelocityID);
+  jointInfo->m_jointType = env->GetIntField(jv, jointTypeID);
+  jointInfo->m_qIndex = env->GetIntField(jv, qIndexID);
+  jointInfo->m_uIndex = env->GetIntField(jv, uIndexID);
+  jointInfo->m_jointIndex = env->GetIntField(jv, jointIndexID);
+  jointInfo->m_flags = env->GetIntField(jv, flagsID);
+  jointInfo->m_jointDamping = env->GetDoubleField(jv, jointDampingID);
+  jointInfo->m_jointFriction = env->GetDoubleField(jv, jointFrictionID);
+  jointInfo->m_jointLowerLimit = env->GetDoubleField(jv, jointLowerLimitID);
+  jointInfo->m_jointUpperLimit = env->GetDoubleField(jv, jointUpperLimitID);
+  jointInfo->m_jointMaxForce = env->GetDoubleField(jv, jointMaxForceID);
+  jointInfo->m_jointMaxVelocity = env->GetDoubleField(jv, jointMaxVelocityID);
 
   jdoubleArray jParentFrame = (jdoubleArray)env->GetObjectField(jv, parentFrameID);
   jdoubleArray jChildFrame = (jdoubleArray)env->GetObjectField(jv, childFrameID);
@@ -261,13 +278,13 @@ static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   double *jointAxis = (jdouble *)env->GetPrimitiveArrayCritical(jJointAxis, JNI_FALSE);
 
   for (i = 0; i < 7; i++) {
-    jointInfo.m_parentFrame[i] = parentFrame[i];
+    jointInfo->m_parentFrame[i] = parentFrame[i];
   }
   for (i = 0; i < 7; i++) {
-    jointInfo.m_childFrame[i] = childFrame[i];
+    jointInfo->m_childFrame[i] = childFrame[i];
   }
   for (i = 0; i < 3; i++) {
-    jointInfo.m_jointAxis[i] = jointAxis[i];
+    jointInfo->m_jointAxis[i] = jointAxis[i];
   }
 
   env->ReleasePrimitiveArrayCritical(jJointAxis, jointAxis, 0);
@@ -277,7 +294,7 @@ static struct b3JointInfo javaJointInfoToNative(JNIEnv *env, jobject jv) {
   return jointInfo;
 }
 
-static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &jointInfo) {
+static void nativeJointInfoToJava(JNIEnv *env, jobject jv, b3JointInfo *jointInfo) {
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointInfo");
   CHECKFIELD(linkNameID, env->GetFieldID(clazz, "m_linkName", "Ljava/lang/String;"), "JointInfo: can't access m_linkName\n",);
   CHECKFIELD(jointNameID, env->GetFieldID(clazz, "m_jointName", "Ljava/lang/String;"), "JointInfo: can't access m_linkName\n",);
@@ -297,24 +314,26 @@ static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &j
   CHECKFIELD(jointAxisID, env->GetFieldID(clazz, "m_jointAxis", "[D"), "JointInfo: can't acccess m_jointAxis\n",);
   int i;
 
-  jstring jlinkName = env->NewStringUTF(jointInfo.m_linkName);
-  jstring jjointName = env->NewStringUTF(jointInfo.m_jointName);
-  CHECKVALUE(jlinkName, "JointInfo: m_linkName is null\n",);
-  CHECKVALUE(jjointName, "JointInfo: m_jointName is null\n",);
+  jstring jlinkName = NULL;
+  jstring jjointName = NULL;
+  int len1 = strlen(jointInfo->m_linkName);
+  int len2 = strlen(jointInfo->m_jointName);
+  if (len1 > 0) jlinkName = env->NewStringUTF(jointInfo->m_linkName);
+  if (len2 > 0) jjointName = env->NewStringUTF(jointInfo->m_jointName);
       
   env->SetObjectField(jv, linkNameID, jlinkName);
   env->SetObjectField(jv, jointNameID, jjointName);
-  env->SetIntField(jv, jointTypeID, jointInfo.m_jointType);
-  env->SetIntField(jv, qIndexID, jointInfo.m_qIndex);
-  env->SetIntField(jv, uIndexID, jointInfo.m_uIndex);
-  env->SetIntField(jv, jointIndexID, jointInfo.m_jointIndex);
-  env->SetIntField(jv, flagsID, jointInfo.m_flags);
-  env->SetDoubleField(jv, jointDampingID, jointInfo.m_jointDamping);
-  env->SetDoubleField(jv, jointFrictionID, jointInfo.m_jointFriction);
-  env->SetDoubleField(jv, jointLowerLimitID, jointInfo.m_jointLowerLimit);
-  env->SetDoubleField(jv, jointUpperLimitID, jointInfo.m_jointUpperLimit);
-  env->SetDoubleField(jv, jointMaxForceID, jointInfo.m_jointMaxForce);
-  env->SetDoubleField(jv, jointMaxVelocityID, jointInfo.m_jointMaxVelocity);
+  env->SetIntField(jv, jointTypeID, jointInfo->m_jointType);
+  env->SetIntField(jv, qIndexID, jointInfo->m_qIndex);
+  env->SetIntField(jv, uIndexID, jointInfo->m_uIndex);
+  env->SetIntField(jv, jointIndexID, jointInfo->m_jointIndex);
+  env->SetIntField(jv, flagsID, jointInfo->m_flags);
+  env->SetDoubleField(jv, jointDampingID, jointInfo->m_jointDamping);
+  env->SetDoubleField(jv, jointFrictionID, jointInfo->m_jointFriction);
+  env->SetDoubleField(jv, jointLowerLimitID, jointInfo->m_jointLowerLimit);
+  env->SetDoubleField(jv, jointUpperLimitID, jointInfo->m_jointUpperLimit);
+  env->SetDoubleField(jv, jointMaxForceID, jointInfo->m_jointMaxForce);
+  env->SetDoubleField(jv, jointMaxVelocityID, jointInfo->m_jointMaxVelocity);
 
   jdoubleArray jParentFrame = (jdoubleArray)env->GetObjectField(jv, parentFrameID);
   jdoubleArray jChildFrame = (jdoubleArray)env->GetObjectField(jv, childFrameID);
@@ -328,13 +347,13 @@ static void nativeJointInfoToJava(JNIEnv *env, jobject jv, struct b3JointInfo &j
   double *jointAxis = (jdouble *)env->GetPrimitiveArrayCritical(jJointAxis, JNI_FALSE);
 
   for (i = 0; i < 7; i++) {
-    parentFrame[i] = jointInfo.m_parentFrame[i];
+    parentFrame[i] = jointInfo->m_parentFrame[i];
   }
   for (i = 0; i < 7; i++) {
-    childFrame[i] = jointInfo.m_childFrame[i];
+    childFrame[i] = jointInfo->m_childFrame[i];
   }
   for (i = 0; i < 3; i++) {
-    jointAxis[i] = jointInfo.m_jointAxis[i];
+    jointAxis[i] = jointInfo->m_jointAxis[i];
   }
 
   env->ReleasePrimitiveArrayCritical(jJointAxis, jointAxis, 0);
@@ -392,9 +411,9 @@ static void nativeJointSensorStateToJava(JNIEnv *env, jobject jv, struct b3Joint
   env->ReleasePrimitiveArrayCritical(jJointForceTorque, jointForceTorque, 0);
 }
 
-static struct b3JointStates2 javaJointStates2ToNative(JNIEnv *env, jobject jv, int numJoints) {
+static b3JointStates2 javaJointStates2ToNative(JNIEnv *env, jobject jv, int numJoints) {
   int i;
-  struct b3JointStates2 jointStates2;
+  b3JointStates2 jointStates2;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointStates2");
   CHECKFIELD(bodyUniqueID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "JointStates2: can't acccess m_bodyUniqueId\n", jointStates2);
   CHECKFIELD(numDegreeOfFreedomQID, env->GetFieldID(clazz, "m_numDegreeOfFreedomQ", "I"), "JointStates2: can't acccess m_numDegreeOfFreedomQ\n", jointStates2);
@@ -444,7 +463,7 @@ static struct b3JointStates2 javaJointStates2ToNative(JNIEnv *env, jobject jv, i
   return jointStates2;
 }
 
-static void nativeJointStates2ToJava(JNIEnv *env, jobject jv, struct b3JointStates2 &jointStates2, int numJoints) {
+static void nativeJointStates2ToJava(JNIEnv *env, jobject jv, b3JointStates2 &jointStates2, int numJoints) {
   int i;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointStates2");
   CHECKFIELD(bodyUniqueID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "JointStates2: can't acccess m_bodyUniqueId\n",);
@@ -883,6 +902,100 @@ static void nativeKeyboardEventsDataToJava(JNIEnv *env, jobject jv, struct b3Key
   }
 }
 
+static struct b3CameraImageData javaCameraImageDataToNative(JNIEnv *env, jobject jv) {
+  struct b3CameraImageData data;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/CameraImageData");
+
+  CHECKFIELD(pixelWidthID, env->GetFieldID(clazz, "m_pixelWidth", "I"), "CameraImageData: can't access m_pixelWidth\n", data);
+  CHECKFIELD(pixelHeightID, env->GetFieldID(clazz, "m_pixelHeight", "I"), "CameraImageData: can't access m_pixelHeight\n", data);
+  CHECKFIELD(rgbColorDataID, env->GetFieldID(clazz, "m_rgbColorData", "[B"), "CameraImageData: can't access m_rgbColorData\n", data);
+  CHECKFIELD(depthValuesID, env->GetFieldID(clazz, "m_depthValues", "[F"), "CameraImageData: can't access m_depthValues\n", data);
+  CHECKFIELD(segmentationMaskValuesID, env->GetFieldID(clazz, "m_segmentationMaskValues", "[I"), "CameraImageData: can't access m_segmentationMaskValues\n", data);
+
+  jint width = env->GetIntField(jv, pixelWidthID);
+  jint height = env->GetIntField(jv, pixelHeightID);
+  jbyteArray jrgbData = (jbyteArray)env->GetObjectField(jv, rgbColorDataID);
+  jfloatArray jdepthValues = (jfloatArray)env->GetObjectField(jv, depthValuesID);
+  jintArray jsegmentation = (jintArray)env->GetObjectField(jv, segmentationMaskValuesID);
+
+  CHECKVALUE(jrgbData, "CameraImageData: m_rgbColorData is null", data);
+  CHECKVALUE(jdepthValues, "CameraImageData: m_depthValues is null", data);
+  CHECKVALUE(jsegmentation, "CameraImageData: m_segmentationMaskValues is null", data);
+
+  data.m_pixelWidth = width;
+  data.m_pixelHeight = height;
+  int length = width * height;
+  if (length > 0) {
+    unsigned char *rgbData = (unsigned char *)env->GetPrimitiveArrayCritical(jrgbData, JNI_FALSE);
+    float *depthValues = (float *)env->GetPrimitiveArrayCritical(jdepthValues, JNI_FALSE);
+    int *segmentation = (int *)env->GetPrimitiveArrayCritical(jsegmentation, JNI_FALSE);
+
+    unsigned char *newRgbData = new unsigned char[length*4];
+    float *newDepthValues = new float[length];
+    int *newSegmentation = new int[length];
+
+    memcpy(newRgbData, rgbData, 4*length);
+    memcpy(newDepthValues, depthValues, length*sizeof(float));
+    memcpy(newSegmentation, segmentation, length*sizeof(int));
+
+    data.m_rgbColorData = newRgbData;
+    data.m_depthValues = newDepthValues;
+    data.m_segmentationMaskValues = newSegmentation;
+
+    env->ReleasePrimitiveArrayCritical(jsegmentation, segmentation, 0);
+    env->ReleasePrimitiveArrayCritical(jdepthValues, depthValues, 0);
+    env->ReleasePrimitiveArrayCritical(jrgbData, rgbData, 0);
+  }
+  return data;
+}
+
+static void nativeCameraImageDataToJava(JNIEnv *env, jobject jv, b3CameraImageData &data) {
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/CameraImageData");
+
+  CHECKFIELD(pixelWidthID, env->GetFieldID(clazz, "m_pixelWidth", "I"), "CameraImageData: can't access m_pixelWidth\n",);
+  CHECKFIELD(pixelHeightID, env->GetFieldID(clazz, "m_pixelHeight", "I"), "CameraImageData: can't access m_pixelHeight\n",);
+  CHECKFIELD(rgbColorDataID, env->GetFieldID(clazz, "m_rgbColorData", "[B"), "CameraImageData: can't access m_rgbColorData\n",);
+  CHECKFIELD(depthValuesID, env->GetFieldID(clazz, "m_depthValues", "[F"), "CameraImageData: can't access m_depthValues\n",);
+  CHECKFIELD(segmentationMaskValuesID, env->GetFieldID(clazz, "m_segmentationMaskValues", "[I"), "CameraImageData: can't access m_segmentationMaskValues\n",);
+
+  jint width = data.m_pixelWidth;
+  jint height = data.m_pixelHeight;
+  jint length = width * height;
+  env->SetIntField(jv, pixelWidthID, width);
+  env->SetIntField(jv, pixelHeightID, height);
+
+  if (length > 0) {
+    jbyteArray jrgbData = (jbyteArray)env->GetObjectField(jv, rgbColorDataID);
+    jfloatArray jdepthValues = (jfloatArray)env->GetObjectField(jv, depthValuesID);
+    jintArray jsegmentation = (jintArray)env->GetObjectField(jv, segmentationMaskValuesID);
+
+    if (jrgbData == NULL || env->GetArrayLength(jrgbData) != 4*length) {
+      jrgbData = env->NewByteArray(length*4);
+      env->SetObjectField(jv, rgbColorDataID, jrgbData);
+    }
+    if (jdepthValues == NULL || env->GetArrayLength(jdepthValues) != length) {
+      jdepthValues = env->NewFloatArray(length);
+      env->SetObjectField(jv, depthValuesID, jdepthValues);
+    }
+    if (jsegmentation == NULL  || env->GetArrayLength(jsegmentation) != length) {
+      jsegmentation = env->NewIntArray(length);
+      env->SetObjectField(jv, segmentationMaskValuesID, jsegmentation);
+    }
+
+    unsigned char *rgbData = (unsigned char *)env->GetPrimitiveArrayCritical(jrgbData, JNI_FALSE);
+    float *depthValues = (float *)env->GetPrimitiveArrayCritical(jdepthValues, JNI_FALSE);
+    int *segmentation = (int *)env->GetPrimitiveArrayCritical(jsegmentation, JNI_FALSE);
+
+    memcpy(rgbData, data.m_rgbColorData, 4*length);
+    memcpy(depthValues, data.m_depthValues, length*sizeof(float));
+    memcpy(segmentation, data.m_segmentationMaskValues, length*sizeof(int));
+
+    env->ReleasePrimitiveArrayCritical(jsegmentation, segmentation, 0);
+    env->ReleasePrimitiveArrayCritical(jdepthValues, depthValues, 0);
+    env->ReleasePrimitiveArrayCritical(jrgbData, rgbData, 0);
+  }
+}
+
 extern "C" {
 
 
@@ -901,7 +1014,7 @@ JNIEXPORT jint JNICALL Java_edu_berkeley_bid_Bullet_deleteRobotSimulatorClientAP
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  delete [] jrsa;
+  delete jrsa;
 
   setRobotSimulatorClientAPI(env, jRoboSimAPI, NULL);
 
@@ -1151,10 +1264,10 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointInfo
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject jJointInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3JointInfo jointInfo;
-  bool status = jrsa -> getJointInfo(bodyUniqueId, jointIndex, &jointInfo);
+  b3JointInfo *jointInfo = new b3JointInfo;
+  bool status = jrsa -> getJointInfo(bodyUniqueId, jointIndex, jointInfo);
   nativeJointInfoToJava(env, jJointInfo, jointInfo);
-  
+  deleteJointInfo(jointInfo);
   return status;
 }
 
@@ -1162,9 +1275,9 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createConstraint
 (JNIEnv *env, jobject jRoboSimAPI, jint parentBodyIndex, jint parentJointIndex, jint childBodyIndex, jint childJointIndex, jobject jJointInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3JointInfo jointInfo = javaJointInfoToNative(env, jJointInfo);
-  int constraintId = jrsa -> createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, &jointInfo);
-  
+  b3JointInfo *jointInfo = javaJointInfoToNative(env, jJointInfo);
+  int constraintId = jrsa -> createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, jointInfo);
+  deleteJointInfo(jointInfo);
   return constraintId;
 }
 
@@ -1172,9 +1285,9 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_changeConstraint
 (JNIEnv *env, jobject jRoboSimAPI, jint constraintId, jobject jJointInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3JointInfo jointInfo = javaJointInfoToNative(env, jJointInfo);
-  int retval = jrsa -> changeConstraint(constraintId, &jointInfo);
-  
+  b3JointInfo *jointInfo = javaJointInfoToNative(env, jJointInfo);
+  int retval = jrsa -> changeConstraint(constraintId, jointInfo);
+  deleteJointInfo(jointInfo);
   return retval;
 }
 
@@ -1401,6 +1514,41 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
   env->ReleaseStringUTFChars(jprofileName, profileName);
 }
 
+JNIEXPORT int Java_edu_berkeley_bid_Bullet_getCameraImage
+(JNIEnv *env, jobject jRoboSimAPI, jobject jcameraImage, jint width, jint height,
+ jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
+ jfloatArray jlightProjection, jfloatArray jlightColor,
+ jfloat lightDistance, jint hasShadow,
+ jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
+ jint renderer)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3CameraImageData data;
+  float *viewMatrix = NULL;
+  float *projectionMatrix = NULL;
+  float *lightProjection = NULL;
+  float *lightColor = NULL;
+  if (jviewMatrix != NULL) viewMatrix = (float *)env->GetPrimitiveArrayCritical(jviewMatrix, JNI_FALSE);
+  if (jprojectionMatrix != NULL) projectionMatrix = (float *)env->GetPrimitiveArrayCritical(jprojectionMatrix, JNI_FALSE);
+  if (jlightProjection != NULL) lightProjection = (float *)env->GetPrimitiveArrayCritical(jlightProjection, JNI_FALSE);
+  if (jlightColor != NULL) lightColor = (float *)env->GetPrimitiveArrayCritical(jlightColor, JNI_FALSE);
+
+  int status = jrsa -> getCameraImage(data, width, height,
+				      viewMatrix, projectionMatrix,
+				      lightProjection, lightColor,
+				      lightDistance, hasShadow,
+				      lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
+				      renderer);
+
+  nativeCameraImageDataToJava(env, jcameraImage, data);
+
+  if (lightColor != NULL) env->ReleasePrimitiveArrayCritical(jlightColor, lightColor, 0);
+  if (lightProjection != NULL) env->ReleasePrimitiveArrayCritical(jlightProjection, lightProjection, 0);
+  if (projectionMatrix != NULL) env->ReleasePrimitiveArrayCritical(jprojectionMatrix, projectionMatrix, 0);
+  if (viewMatrix != NULL) env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
+  return status;
+}
+
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
@@ -1418,8 +1566,9 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_testTransform3
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointInfo
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
-  b3JointInfo m = javaJointInfoToNative(env, min);
-  nativeJointInfoToJava(env, mout, m);
+  b3JointInfo *jointInfo = javaJointInfoToNative(env, min);
+  nativeJointInfoToJava(env, mout, jointInfo);
+  deleteJointInfo(jointInfo);
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointSensorState
@@ -1432,7 +1581,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointSensorState
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointStates2
 (JNIEnv *env, jobject obj, jobject min, jobject mout, jint numJoints)
 {
-  struct b3JointStates2 m = javaJointStates2ToNative(env, min, numJoints);
+  b3JointStates2 m = javaJointStates2ToNative(env, min, numJoints);
   nativeJointStates2ToJava(env, mout, m, numJoints);
 }
 
@@ -1455,6 +1604,13 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_testKeyboardEventsData
 {
   struct b3KeyboardEventsData m = javaKeyboardEventsDataToNative(env, min);
   nativeKeyboardEventsDataToJava(env, mout, m);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testCameraImageData
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  struct b3CameraImageData m = javaCameraImageDataToNative(env, min);
+  nativeCameraImageDataToJava(env, mout, m);
 }
 
 }
