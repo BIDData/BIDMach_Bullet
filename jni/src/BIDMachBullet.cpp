@@ -1514,7 +1514,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
   env->ReleaseStringUTFChars(jprofileName, profileName);
 }
 
-JNIEXPORT int Java_edu_berkeley_bid_Bullet_getCameraImage
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
 (JNIEnv *env, jobject jRoboSimAPI, jobject jcameraImage, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
  jfloatArray jlightProjection, jfloatArray jlightColor,
@@ -1533,12 +1533,12 @@ JNIEXPORT int Java_edu_berkeley_bid_Bullet_getCameraImage
   if (jlightProjection != NULL) lightProjection = (float *)env->GetPrimitiveArrayCritical(jlightProjection, JNI_FALSE);
   if (jlightColor != NULL) lightColor = (float *)env->GetPrimitiveArrayCritical(jlightColor, JNI_FALSE);
 
-  int status = jrsa -> getCameraImage(data, width, height,
-				      viewMatrix, projectionMatrix,
-				      lightProjection, lightColor,
-				      lightDistance, hasShadow,
-				      lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
-				      renderer);
+  jboolean status = jrsa -> getCameraImage(data, width, height,
+					   viewMatrix, projectionMatrix,
+					   lightProjection, lightColor,
+					   lightDistance, hasShadow,
+					   lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
+					   renderer);
 
   nativeCameraImageDataToJava(env, jcameraImage, data);
 

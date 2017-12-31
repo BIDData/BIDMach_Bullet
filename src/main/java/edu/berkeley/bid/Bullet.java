@@ -194,12 +194,12 @@ public class Bullet implements Serializable {
 
     public native void submitProfileTiming(String jprofileName, int durationInMicroseconds);
 
-    public native int getCameraImage(CameraImageData cameraImage, int width, int height,
-				     float [] viewMatrix, float [] projectionMatrix,
-				     float [] lightProjection, float [] lightColor,
-				     float lightDistance, int hasShadow,
-				     float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
-				     int renderer);
+    public native boolean getCameraImage(CameraImageData cameraImage, int width, int height,
+					 float [] viewMatrix, float [] projectionMatrix,
+					 float [] lightProjection, float [] lightColor,
+					 float lightDistance, int hasShadow,
+					 float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
+					 int renderer);
     
 
     public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);

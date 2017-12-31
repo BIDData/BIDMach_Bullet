@@ -15,13 +15,18 @@ struct b3RobotSimulatorClientAPI_InternalData
 	}
 };
 
-int b3RobotSimulatorClientAPI::getCameraImage(struct b3CameraImageData &imageData, int width, int height,
-					      float *viewMatrix, float *projectionMatrix,
-					      float *lightDirection, float *lightColor,
-					      float lightDistance, int hasShadow,
-					      float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
-					      int renderer)
+bool b3RobotSimulatorClientAPI::getCameraImage(struct b3CameraImageData &imageData, int width, int height,
+					       float *viewMatrix, float *projectionMatrix,
+					       float *lightDirection, float *lightColor,
+					       float lightDistance, int hasShadow,
+					       float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
+					       int renderer)
 {
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return false;
+  }
+  
   b3SharedMemoryCommandHandle command;
 
   command = b3InitRequestCameraImage(m_data->m_physicsClientHandle);
@@ -75,7 +80,9 @@ int b3RobotSimulatorClientAPI::getCameraImage(struct b3CameraImageData &imageDat
     if (statusType == CMD_CAMERA_IMAGE_COMPLETED) {
       b3GetCameraImageData(m_data->m_physicsClientHandle, &imageData);
     }
+  } else {
+    return false;
   }
-  return 1;
+  return true;
 }
 
