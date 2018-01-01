@@ -15,4 +15,10 @@ public class BodyInfo implements Serializable {
 
     public BodyInfo() {
     }
+
+    @Override
+    public String toString () {
+	return "BodyInfo[baseName=" + m_baseName + ",bodyName=" + m_bodyName + "]";
+    }
+
 }

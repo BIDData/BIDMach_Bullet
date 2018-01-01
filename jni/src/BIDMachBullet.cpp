@@ -1235,7 +1235,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointInfo
   b3JointInfo *jointInfo = new b3JointInfo;
   bool status = jrsa -> getJointInfo(bodyUniqueId, jointIndex, jointInfo);
   nativeJointInfoToJava(env, jJointInfo, jointInfo);
-  deleteJointInfo(jointInfo);
+  delete jointInfo;
   return status;
 }
 
