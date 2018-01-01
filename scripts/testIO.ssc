@@ -58,12 +58,6 @@ js2.m_actualStateQdot
 js1.m_jointReactionForces
 js2.m_jointReactionForces
 
-val jma1 = new JointMotorArgs(1,2.0,3.0,4.0,5.0,6.0);
-val jma2 = new JointMotorArgs(2);
-Bullet.testJointMotorArgs(jma1,jma2);
-jma1
-jma2
-
 val ls1 = new LinkState(Array(1.0,2.0,3.0), Array(4.0,5.0,6.0,7.0), Array(11.0,12.0,13.0), Array(14.0,15.0,16.0,17.0), Array(21.0,22.0,23.0), Array(24.0,25.0,26.0,27.0),
 Array(31.0,32.0,33.0), Array(34.0,35.0,36.0), Array(41.0,42.0,43.0), Array(44.0,45.0,46.0))
 val ls2 = new LinkState();
@@ -94,3 +88,9 @@ img1.m_depthValues
 img2.m_depthValues
 img1.m_segmentationMaskValues;
 img2.m_segmentationMaskValues;
+
+val di1 = new DynamicsInfo(1, Array(2.0,3.0,4.0), 5);
+val di2 = new DynamicsInfo();
+Bullet.testDynamicsInfo(di1,di2)
+di1
+di2

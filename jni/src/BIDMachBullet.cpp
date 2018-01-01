@@ -1833,4 +1833,11 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_testCameraImageData
   nativeCameraImageDataToJava(env, mout, m);
 }
 
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testDynamicsInfo
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3DynamicsInfo dynamicsInfo = javaDynamicsInfoToNative(env, min);
+  nativeDynamicsInfoToJava(env, mout, dynamicsInfo);
+}
+
 }
