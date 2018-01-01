@@ -1792,7 +1792,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
     int g = ((int)(data[ii+1])) & 0xff;
     int b = ((int)(data[ii+2])) & 0xff;
     int a = ((int)(data[ii+3])) & 0xff;
-    rgbColorData[i] = b | ((g | ((r | (a << 8)) << 8)) << 8);
+    rgbColorData[i] = b | (g << 8) | (r << 16) | (a << 24);
   }
   env->ReleasePrimitiveArrayCritical(jrgbColorData, rgbColorData, 0);
 

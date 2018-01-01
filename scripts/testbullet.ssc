@@ -25,7 +25,7 @@ val imgsize = 512
 
 //val img = sim.getCameraImage(imgsize, imgsize)
 
-val view = Bullet.computeViewMatrixFromPositions(row(1,1,0.5f),row(0,0,0),row(0,0,1));
+val view = Bullet.computeViewMatrixFromPositions(row(1,1,1),row(0,0,0),row(0,0,1));
 
 val proj = Bullet.computeProjectionMatrixFOV(100, 1, 0.01f, 100);
 
