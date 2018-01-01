@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <../examples/SharedMemory/PhysicsClientC_API.h>
 #include <../examples/RobotSimulator/b3RobotSimulatorClientAPI.h>
 #include <string.h>
 
@@ -1633,6 +1634,66 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
   env->ReleaseStringUTFChars(jprofileName, profileName);
 }
 
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrixFromPositions
+(JNIEnv *env, jobject obj, jfloatArray jcameraPosition, jfloatArray jcameraTargetPosition,
+ jfloatArray jcameraUp, jfloatArray jviewMatrix)
+{
+  float *cameraPosition = NULL;
+  float *cameraTargetPosition = NULL;
+  float *cameraUp = NULL;
+  float *viewMatrix = NULL;
+
+  CHECKVALUE(jcameraPosition, "computeViewMatrixFromPositions: cameraPosition is null",);
+  CHECKDIMS(jcameraPosition, 3, "computeViewMatrixFromPositions: cameraPosition must have dimension 3",);
+  CHECKVALUE(jcameraTargetPosition, "computeViewMatrixFromPositions: cameraTargetPosition is null",);
+  CHECKDIMS(jcameraTargetPosition, 3, "computeViewMatrixFromPositions: cameraTargetPosition must have dimension 3",);
+  CHECKVALUE(jcameraUp, "computeViewMatrixFromPositions: cameraUp is null",);
+  CHECKDIMS(jcameraUp, 3, "computeViewMatrixFromPositions: cameraUp must have dimension 3",);
+  CHECKVALUE(jviewMatrix, "computeViewMatrixFromPositions: viewMatrix is null",);
+  CHECKDIMS(jviewMatrix, 16, "computeViewMatrixFromPositions: viewMatrix must have dimension 16",);
+
+  cameraPosition = (float *)env->GetPrimitiveArrayCritical(jcameraPosition, JNI_FALSE);
+  cameraTargetPosition = (float *)env->GetPrimitiveArrayCritical(jcameraTargetPosition, JNI_FALSE);
+  cameraUp = (float *)env->GetPrimitiveArrayCritical(jcameraUp, JNI_FALSE);
+  viewMatrix = (float *)env->GetPrimitiveArrayCritical(jviewMatrix, JNI_FALSE);
+
+  b3ComputeViewMatrixFromPositions(cameraPosition, cameraTargetPosition, cameraUp, viewMatrix);
+
+  env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
+  env->ReleasePrimitiveArrayCritical(jcameraUp, cameraUp, 0);
+  env->ReleasePrimitiveArrayCritical(jcameraTargetPosition, cameraTargetPosition, 0);
+  env->ReleasePrimitiveArrayCritical(jcameraPosition, cameraPosition, 0);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeProjectionMatrix
+(JNIEnv *env, jobject obj, jfloat left, jfloat right, jfloat bottom, jfloat top,
+ jfloat nearVal, jfloat farVal, jfloatArray jprojectionMatrix)
+{
+  float *projectionMatrix = NULL;
+  CHECKVALUE(jprojectionMatrix, "computeProjectionMatrix: projectionMatrix is null",);
+  CHECKDIMS(jprojectionMatrix, 16, "computeProjectionMatrix: projectionMatrix must have dimension 16",);
+
+  projectionMatrix = (float *)env->GetPrimitiveArrayCritical(jprojectionMatrix, JNI_FALSE);
+
+  b3ComputeProjectionMatrix(left, right, bottom, top, nearVal, farVal, projectionMatrix);
+
+  env->ReleasePrimitiveArrayCritical(jprojectionMatrix, projectionMatrix, 0);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeProjectionMatrixFOV
+(JNIEnv *env, jobject obj, jfloat fov, jfloat aspect, jfloat nearVal, jfloat farVal, jfloatArray jprojectionMatrix)
+{
+  float *projectionMatrix = NULL;
+  CHECKVALUE(jprojectionMatrix, "computeProjectionMatrix: projectionMatrix is null",);
+  CHECKDIMS(jprojectionMatrix, 16, "computeProjectionMatrix: projectionMatrix must have dimension 16",);
+
+  projectionMatrix = (float *)env->GetPrimitiveArrayCritical(jprojectionMatrix, JNI_FALSE);
+
+  b3ComputeProjectionMatrixFOV(fov, aspect, nearVal, farVal, projectionMatrix);
+
+  env->ReleasePrimitiveArrayCritical(jprojectionMatrix, projectionMatrix, 0);
+}
+
 jboolean getCameraImageBasic
 (JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
@@ -1646,10 +1707,23 @@ jboolean getCameraImageBasic
   float *projectionMatrix = NULL;
   float *lightProjection = NULL;
   float *lightColor = NULL;
-  if (jviewMatrix != NULL) viewMatrix = (float *)env->GetPrimitiveArrayCritical(jviewMatrix, JNI_FALSE);
-  if (jprojectionMatrix != NULL) projectionMatrix = (float *)env->GetPrimitiveArrayCritical(jprojectionMatrix, JNI_FALSE);
-  if (jlightProjection != NULL) lightProjection = (float *)env->GetPrimitiveArrayCritical(jlightProjection, JNI_FALSE);
-  if (jlightColor != NULL) lightColor = (float *)env->GetPrimitiveArrayCritical(jlightColor, JNI_FALSE);
+  
+  if (jviewMatrix != NULL) {
+    CHECKDIMS(jviewMatrix, 16, "getCameraImage: viewMatrix must have dimension 16", false);
+    viewMatrix = (float *)env->GetPrimitiveArrayCritical(jviewMatrix, JNI_FALSE);
+  }
+  if (jprojectionMatrix != NULL) {
+    CHECKDIMS(jprojectionMatrix, 16, "getCameraImage: projectionMatrix must have dimension 16", false);
+    projectionMatrix = (float *)env->GetPrimitiveArrayCritical(jprojectionMatrix, JNI_FALSE);
+  }
+  if (jlightProjection != NULL) {
+    CHECKDIMS(jlightProjection, 3, "getCameraImage: lightProjection must have dimension 3", false);
+    lightProjection = (float *)env->GetPrimitiveArrayCritical(jlightProjection, JNI_FALSE);
+  }
+  if (jlightColor != NULL) {
+    CHECKDIMS(jlightColor, 3, "getCameraImage: lightColor must have dimension 3", false);
+    lightColor = (float *)env->GetPrimitiveArrayCritical(jlightColor, JNI_FALSE);
+  }
 
   jboolean status = jrsa -> getCameraImage(cameraImage, width, height,
 					   viewMatrix, projectionMatrix,
@@ -1685,13 +1759,14 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
 }
 
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
-(JNIEnv *env, jobject jRoboSimAPI, jobject jcameraImage, jint width, jint height,
+(JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
  jfloatArray jlightProjection, jfloatArray jlightColor,
  jfloat lightDistance, jint hasShadow,
  jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
  jint renderer, jintArray jrgbColorData, jfloatArray jdepthValues, jintArray jsegmentationMaskValues)
 {
+  int i;
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   struct b3CameraImageData cameraImage;
   int *rgbColorData = NULL;
@@ -1710,7 +1785,15 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
   CHECKDIMS(jrgbColorData, length, "getCameraImageInts: rgb output array dimension doesnt match image size", false);
 
   rgbColorData = (int *)env->GetPrimitiveArrayCritical(jrgbColorData, JNI_FALSE);
-  memcpy(rgbColorData, cameraImage.m_rgbColorData, length*sizeof(int));
+  const unsigned char *data = cameraImage.m_rgbColorData;
+  for (i = 0; i < length; i++) {
+    int ii = i << 2;
+    int r = ((int)(data[ii])) & 0xff;
+    int g = ((int)(data[ii+1])) & 0xff;
+    int b = ((int)(data[ii+2])) & 0xff;
+    int a = ((int)(data[ii+3])) & 0xff;
+    rgbColorData[i] = b | ((g | ((r | (a << 8)) << 8)) << 8);
+  }
   env->ReleasePrimitiveArrayCritical(jrgbColorData, rgbColorData, 0);
 
   if (jdepthValues != NULL) {

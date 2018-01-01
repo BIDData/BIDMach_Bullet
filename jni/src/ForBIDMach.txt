@@ -1,10 +1,11 @@
-in examples/RobotSimulator/CMakeLists.txt modify lines:
+in examples/RobotSimulator/CMakeLists.txt replace the "ADD_EXECUTABLE(..." line with these lines:
 
 ADD_LIBRARY(RobotSimulator  ${RobotSimulator_SRCS})
 ADD_EXECUTABLE(App_RobotSimulator RobotSimulatorMain.cpp ${RobotSimulator_SRCS})
-and remove RobotSimulatorMain.cpp from RobotSimulator_SRCS
 
-In the root directory CMakeFiles.txt, add these lines after other FLAG modifiers
+and remove RobotSimulatorMain.cpp from RobotSimulator_SRCS near line 12
+
+In the root directory CMakeFiles.txt, add these lines after the last CFLAGS modifier
 IF (NOT MSVC)
      # GCC, Clang
      SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")

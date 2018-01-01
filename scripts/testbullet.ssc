@@ -13,7 +13,7 @@ sim.setGravity(new Vector3(0,0,-9.8f));
 
 val planeId = sim.loadURDF("/code/bullet3/data/plane.urdf")
 
-val cubeStartPos = new Vector3(0,0,1);
+val cubeStartPos = new Vector3(0,0,0.6f);
 
 val cubeStartOrient = Bullet.getQuaternionFromEuler(new Vector3(0,0,0));
 
@@ -21,4 +21,14 @@ val boxId = sim.loadURDF("/code/bullet3/data/r2d2.urdf", cubeStartPos, cubeStart
 
 sim.stepSimulation()
 
-val img = sim.getCameraImage(64, 64)
+val imgsize = 512
+
+//val img = sim.getCameraImage(imgsize, imgsize)
+
+val view = Bullet.computeViewMatrixFromPositions(row(1,1,0.5f),row(0,0,0),row(0,0,1));
+
+val proj = Bullet.computeProjectionMatrixFOV(100, 1, 0.01f, 100);
+
+val img = sim.getCameraImageInts1(imgsize, imgsize, view, proj);
+
+show(img)

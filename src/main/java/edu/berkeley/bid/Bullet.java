@@ -167,6 +167,14 @@ public class Bullet implements Serializable {
 
     public native void stopStateLogging(int stateLoggerUniqueId);
 
+    public static native void computeViewMatrixFromPositions(float [] jcameraPosition, float [] jcameraTargetPosition,
+							     float [] jcameraUp, float [] jviewMatrix);
+
+    public static native void computeProjectionMatrix(float left, float right, float bottom, float top,
+						      float nearVal, float farVal, float [] jprojectionMatrix);
+
+    public static native void computeProjectionMatrixFOV(float fov, float aspect, float nearVal, float farVal, float [] jprojectionMatrix);
+
     public native boolean getCameraImage(int width, int height,
 					 float [] viewMatrix, float [] projectionMatrix,
 					 float [] lightProjection, float [] lightColor,

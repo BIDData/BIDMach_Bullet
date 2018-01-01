@@ -1,5 +1,9 @@
 package BIDMach.rl.environments;
 import edu.berkeley.bid.bullet._;
+import BIDMat.{BMat,FMat,IMat}
+import BIDMat.MatFunctions
+
+
 
 class Bullet extends edu.berkeley.bid.Bullet {
 	
@@ -17,9 +21,17 @@ class Bullet extends edu.berkeley.bid.Bullet {
 	(baseVelocity, baseAngularVelocity);
     };
 
+    def getData(mat:FMat):Array[Float] = {
+	if (mat.asInstanceOf[AnyRef] == null) {
+	    null;
+	} else {
+	    mat.data;
+	}
+    }
+
     def getCameraImage(width:Int, height:Int,
-		       viewMatrix:Array[Float]=null, projectionMatrix:Array[Float]=null,
-		       lightProjection:Array[Float]=null, lightColor:Array[Float]=null,
+		       viewMatrix:FMat=null, projectionMatrix:FMat=null,
+		       lightProjection:FMat=null, lightColor:FMat=null,
 		       lightDistance:Float= -1f, hasShadow:Int = -1,
 		       lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
 		       renderer:Int = -1):CameraImageData = {
@@ -27,8 +39,8 @@ class Bullet extends edu.berkeley.bid.Bullet {
 	val cameraImage = new CameraImageData();
 
 	getCameraImage(width, height,
-		       viewMatrix, projectionMatrix,
-		       lightProjection, lightColor,
+		       getData(viewMatrix), getData(projectionMatrix),
+		       getData(lightProjection), getData(lightColor),
 		       lightDistance, hasShadow,
 		       lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
 		       renderer, cameraImage);
@@ -36,6 +48,43 @@ class Bullet extends edu.berkeley.bid.Bullet {
 	cameraImage;
     }
 
+    def getCameraImageInts1(width:Int, height:Int,
+			    viewMatrix:FMat=null, projectionMatrix:FMat=null,
+			    lightProjection:FMat=null, lightColor:FMat=null,
+			    lightDistance:Float= -1f, hasShadow:Int = -1,
+			    lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
+			    renderer:Int = -1):IMat = {
+
+	val cameraImage = IMat.izeros(width, height);
+	
+	getCameraImageInts(width, height,
+			   getData(viewMatrix), getData(projectionMatrix),
+			   getData(lightProjection), getData(lightColor),
+			   lightDistance, hasShadow,
+			   lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
+			   renderer, cameraImage.data, null, null);
+
+	cameraImage;
+    };
+
+    def getCameraImageBytes1(width:Int, height:Int,
+			     viewMatrix:FMat=null, projectionMatrix:FMat=null,
+			     lightProjection:FMat=null, lightColor:FMat=null,
+			     lightDistance:Float= -1f, hasShadow:Int = -1,
+			     lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
+			     renderer:Int = -1):BMat = {
+
+	val cameraImage = BMat.bzeros(MatFunctions.irow(4,height,width));
+	
+	getCameraImageBytes(width, height,
+			    getData(viewMatrix), getData(projectionMatrix),
+			    getData(lightProjection), getData(lightColor),
+			    lightDistance, hasShadow,
+			    lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
+			    renderer, cameraImage.data, null, null);
+
+	cameraImage;
+    }
 }
 
 object Bullet {
@@ -50,6 +99,31 @@ object Bullet {
 	val v = new Vector3();
 	edu.berkeley.bid.Bullet.getEulerFromQuaternion(q, v);
 	v;
+    }
+
+    def computeViewMatrixFromPositions(cameraPosition:FMat, cameraTargetPosition:FMat, cameraUp:FMat):FMat = {
+	val viewMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeViewMatrixFromPositions(cameraPosition.data, cameraTargetPosition.data,
+							       cameraUp.data, viewMatrix.data);
+	viewMatrix;
+    }
+
+    def computeProjectionMatrix(left:Float, right:Float, bottom:Float, top:Float,
+				nearVal:Float, farVal:Float):FMat = {
+	val projectionMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeProjectionMatrix(left, right, bottom, top, nearVal, farVal, projectionMatrix.data);
+
+	projectionMatrix;
+    }
+
+    def computeProjectionMatrixFOV(fov:Float, aspect:Float, nearVal:Float, farVal:Float):FMat = {
+	val projectionMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeProjectionMatrixFOV(fov, aspect, nearVal, farVal, projectionMatrix.data);
+
+	projectionMatrix;
     }
 
     final val eCONNECT_GUI = 1;
