@@ -1,0 +1,25 @@
+in examples/RobotSimulator/CMakeLists.txt modify lines:
+
+ADD_LIBRARY(RobotSimulator  ${RobotSimulator_SRCS})
+ADD_EXECUTABLE(App_RobotSimulator RobotSimulatorMain.cpp ${RobotSimulator_SRCS})
+and remove RobotSimulatorMain.cpp from RobotSimulator_SRCS
+
+In the root directory CMakeFiles.txt, add these lines after other FLAG modifiers
+IF (NOT MSVC)
+     # GCC, Clang
+     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+     SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
+     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
+     SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
+     SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
+     SET(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -fPIC")
+     SET(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -fPIC")
+     SET(CMAKE_C_FLAGS_RELWITHDEBUGINFO "${CMAKE_C_FLAGS_RELWITHDEBUGINFO} -fPIC")
+     SET(CMAKE_CXX_FLAGS_RELWITHDEBUGINFO "${CMAKE_CXX_FLAGS_RELWITHDEBUGINFO} -fPIC")
+ENDIF (NOT MSVC)
+
+cd to main directory:
+cmake -DBUILD_PYBULLET=OFF .
+
+make
