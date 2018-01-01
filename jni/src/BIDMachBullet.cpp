@@ -2,6 +2,25 @@
 #include <../examples/RobotSimulator/b3RobotSimulatorClientAPI.h>
 #include <string.h>
 
+#define CHECKFIELD(FIELDID,EXPR,MSG,RETV) \
+  jfieldID FIELDID = (EXPR); \
+  if (FIELDID == NULL) { \
+    b3Warning(MSG); \
+    return RETV; \
+  }
+
+#define CHECKVALUE(VALUEID,MSG,RETV) \
+  if (VALUEID == NULL) { \
+    b3Warning(MSG); \
+    return RETV; \
+  }
+
+#define CHECKDIMS(JARRAY,NDIMS,MSG,RETV)	\
+  if (env->GetArrayLength(JARRAY) != NDIMS) {	\
+    b3Warning(MSG); \
+    return RETV; \
+  }
+
 union VoidLong {
   jlong l;
   void* p;
@@ -57,18 +76,6 @@ static void setRobotSimulatorClientAPI(JNIEnv *env, jobject jRoboSimAPI, b3Robot
   env->SetLongField(jRoboSimAPI, handle_id, handle);
 }
 
-#define CHECKFIELD(FIELDID,EXPR,MSG,RETV) \
-  jfieldID FIELDID = (EXPR); \
-  if (FIELDID == NULL) { \
-    fprintf(stderr,MSG); \
-    return RETV; \
-  }
-
-#define CHECKVALUE(VALUEID,MSG,RETV) \
-  if (VALUEID == NULL) { \
-    fprintf(stderr,MSG); \
-    return RETV; \
-  }
 
 
 static void getQuaternionFields(JNIEnv *env, jclass &qclass, jfieldID &qxfield, jfieldID &qyfield, jfieldID &qzfield, jfieldID &qwfield)
@@ -510,151 +517,17 @@ static void nativeJointStates2ToJava(JNIEnv *env, jobject jv, b3JointStates2 &jo
   env->ReleasePrimitiveArrayCritical(jactualStateQ, actualStateQ, 0);  
 }
 
-static struct b3RobotSimulatorJointMotorArgs javaJointMotorArgsToNative(JNIEnv *env, jobject jv) {
-  struct b3RobotSimulatorJointMotorArgs motorArgs(0);
-  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointMotorArgs");
-  CHECKFIELD(controlModeID, env->GetFieldID(clazz, "m_controlMode", "I"), "JointMotorArgs: can't acccess m_controlMode\n", motorArgs);
-  CHECKFIELD(targetPositionID, env->GetFieldID(clazz, "m_targetPosition", "D"), "JointMotorArgs: can't acccess m_targetPosition\n", motorArgs);
-  CHECKFIELD(kpID, env->GetFieldID(clazz, "m_kp", "D"), "JointMotorArgs: can't acccess m_kp\n", motorArgs);
-  CHECKFIELD(targetVelocityID, env->GetFieldID(clazz, "m_targetVelocity", "D"), "JointMotorArgs: can't acccess m_targetVelocity\n", motorArgs);
-  CHECKFIELD(kdID, env->GetFieldID(clazz, "m_kd", "D"), "JointMotorArgs: can't acccess m_kd\n", motorArgs);
-  CHECKFIELD(maxTorqueValueID, env->GetFieldID(clazz, "m_maxTorqueValue", "D"), "JointMotorArgs: can't acccess m_maxTorqueValue\n", motorArgs);
-
-  motorArgs.m_controlMode = env->GetIntField(jv, controlModeID);
-  motorArgs.m_targetPosition = env->GetDoubleField(jv, targetPositionID);
-  motorArgs.m_kp = env->GetDoubleField(jv, kpID);
-  motorArgs.m_targetVelocity = env->GetDoubleField(jv, targetVelocityID);
-  motorArgs.m_kd = env->GetDoubleField(jv, kdID);
-  motorArgs.m_maxTorqueValue = env->GetDoubleField(jv, maxTorqueValueID);
-
-  return motorArgs;
-}
-
-static void nativeJointMotorArgsToJava(JNIEnv *env, jobject jv, struct b3RobotSimulatorJointMotorArgs &motorArgs) {
-  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/JointMotorArgs");
-  CHECKFIELD(controlModeID, env->GetFieldID(clazz, "m_controlMode", "I"), "JointMotorArgs: can't acccess m_controlMode\n",);
-  CHECKFIELD(targetPositionID, env->GetFieldID(clazz, "m_targetPosition", "D"), "JointMotorArgs: can't acccess m_targetPosition\n",);
-  CHECKFIELD(kpID, env->GetFieldID(clazz, "m_kp", "D"), "JointMotorArgs: can't acccess m_kp\n",);
-  CHECKFIELD(targetVelocityID, env->GetFieldID(clazz, "m_targetVelocity", "D"), "JointMotorArgs: can't acccess m_targetVelocity\n",);
-  CHECKFIELD(kdID, env->GetFieldID(clazz, "m_kd", "D"), "JointMotorArgs: can't acccess m_kd\n",);
-  CHECKFIELD(maxTorqueValueID, env->GetFieldID(clazz, "m_maxTorqueValue", "D"), "JointMotorArgs: can't acccess m_maxTorqueValue\n",);
-
-  env->SetIntField(jv, controlModeID, motorArgs.m_controlMode);
-  env->SetDoubleField(jv, targetPositionID, motorArgs.m_targetPosition);
-  env->SetDoubleField(jv, kpID, motorArgs.m_kp);
-  env->SetDoubleField(jv, targetVelocityID, motorArgs.m_targetVelocity);
-  env->SetDoubleField(jv, kdID, motorArgs.m_kd);
-  env->SetDoubleField(jv, maxTorqueValueID, motorArgs.m_maxTorqueValue);
-
-}
-
-static struct b3RobotSimulatorInverseKinematicArgs javaInverseKinematicArgsToNative(JNIEnv *env, jobject jv) {
-  int n, i;
-  struct b3RobotSimulatorInverseKinematicArgs args;
-  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/InverseKinematicArgs");
-  CHECKFIELD(bodyUniqueIdID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "InverseKinematicArgs: can't access m_bodyUniqueId\n", args);
-  CHECKFIELD(endEffectorLinkIndexID, env->GetFieldID(clazz, "m_endEffectorLinkIndex", "I"), "InverseKinematicArgs: can't access m_endEffectorLinkIndex\n", args);
-  CHECKFIELD(flagsID, env->GetFieldID(clazz, "m_flags", "I"), "InverseKinematicArgs: can't access m_flags\n", args);
-  CHECKFIELD(numDegreeOfFreedomID, env->GetFieldID(clazz, "m_numDegreeOfFreedom", "I"), "InverseKinematicArgs: can't access m_numDegreeOfFreedom\n", args);
-  CHECKFIELD(endEffectorTargetPositionID, env->GetFieldID(clazz, "m_endEffectorTargetPosition", "[D"), "InverseKinematicArgs: can't access m_endEffectorTargetPosition\n", args);
-  CHECKFIELD(endEffectorTargetOrientationID, env->GetFieldID(clazz, "m_endEffectorTargetOrientation", "[D"), "InverseKinematicArgs: can't access m_endEffectorTargetOrientation\n", args);
-  CHECKFIELD(lowerLimitsID, env->GetFieldID(clazz, "m_lowerLimits", "[D"), "InverseKinematicArgs: can't access m_lowerLimits\n", args);
-  CHECKFIELD(upperLimitsID, env->GetFieldID(clazz, "m_upperLimits", "[D"), "InverseKinematicArgs: can't access m_upperLimits\n", args);
-  CHECKFIELD(jointRangesID, env->GetFieldID(clazz, "m_jointRanges", "[D"), "InverseKinematicArgs: can't access m_jointRanges\n", args);
-  CHECKFIELD(restPosesID, env->GetFieldID(clazz, "m_restPoses", "[D"), "InverseKinematicArgs: can't access m_restPoses\n", args);
-  CHECKFIELD(jointDampingID, env->GetFieldID(clazz, "m_jointDamping", "[D"), "InverseKinematicArgs: can't access m_jointDamping\n", args);
-
-  args.m_bodyUniqueId = env->GetIntField(jv, bodyUniqueIdID);
-  args.m_endEffectorLinkIndex = env->GetIntField(jv, endEffectorLinkIndexID);
-  args.m_flags = env->GetIntField(jv, flagsID);
-  args.m_numDegreeOfFreedom = env->GetIntField(jv, numDegreeOfFreedomID);
-  jdoubleArray jendEffectorTargetPosition = (jdoubleArray)env->GetObjectField(jv, endEffectorTargetPositionID);
-  jdoubleArray jendEffectorTargetOrientation = (jdoubleArray)env->GetObjectField(jv, endEffectorTargetOrientationID);
-  jdoubleArray jlowerLimits = (jdoubleArray)env->GetObjectField(jv, lowerLimitsID);
-  jdoubleArray jupperLimits = (jdoubleArray)env->GetObjectField(jv, upperLimitsID);
-  jdoubleArray jjointRanges = (jdoubleArray)env->GetObjectField(jv, jointRangesID);
-  jdoubleArray jrestPoses = (jdoubleArray)env->GetObjectField(jv, restPosesID);
-  jdoubleArray jjointDamping = (jdoubleArray)env->GetObjectField(jv, jointDampingID);
-  CHECKVALUE(jendEffectorTargetPosition, "InverseKinematicArgs: can't acccess m_endEffectorTargetPosition\n", args);
-  CHECKVALUE(jendEffectorTargetOrientation, "InverseKinematicArgs: can't acccess m_endEffectorTargetOrientation\n", args);
-  CHECKVALUE(jlowerLimits, "InverseKinematicArgs: can't acccess m_lowerLimits\n", args);
-  CHECKVALUE(jupperLimits, "InverseKinematicArgs: can't acccess m_upperLimits\n", args);
-  CHECKVALUE(jjointRanges, "InverseKinematicArgs: can't acccess m_jointRanges\n", args);
-  CHECKVALUE(jrestPoses, "InverseKinematicArgs: can't acccess m_restPoses\n", args);
-  CHECKVALUE(jjointDamping, "InverseKinematicArgs: can't acccess m_jointDamping\n", args);
-
-  double *endEffectorTargetPosition = (jdouble *)env->GetPrimitiveArrayCritical(jendEffectorTargetPosition, JNI_FALSE);
-  double *endEffectorTargetOrientation = (jdouble *)env->GetPrimitiveArrayCritical(jendEffectorTargetOrientation, JNI_FALSE);
-  double *lowerLimits = (jdouble *)env->GetPrimitiveArrayCritical(jlowerLimits, JNI_FALSE);
-  double *upperLimits = (jdouble *)env->GetPrimitiveArrayCritical(jupperLimits, JNI_FALSE);
-  double *jointRanges = (jdouble *)env->GetPrimitiveArrayCritical(jjointRanges, JNI_FALSE);
-  double *restPoses = (jdouble *)env->GetPrimitiveArrayCritical(jrestPoses, JNI_FALSE);
-  double *jointDamping = (jdouble *)env->GetPrimitiveArrayCritical(jjointDamping, JNI_FALSE);
-
-  args.m_endEffectorTargetPosition[0] = endEffectorTargetPosition[0];
-  args.m_endEffectorTargetPosition[1] = endEffectorTargetPosition[1];
-  args.m_endEffectorTargetPosition[2] = endEffectorTargetPosition[2];
-
-  args.m_endEffectorTargetOrientation[0] = endEffectorTargetOrientation[0];
-  args.m_endEffectorTargetOrientation[1] = endEffectorTargetOrientation[1];
-  args.m_endEffectorTargetOrientation[2] = endEffectorTargetOrientation[2];
-  args.m_endEffectorTargetOrientation[3] = endEffectorTargetOrientation[3];
-
-  n = env->GetArrayLength(jlowerLimits);
-  args.m_lowerLimits.resize(n);
-  for (i = 0; i < n; i++) {
-    args.m_lowerLimits[i] = lowerLimits[i];
-  }
-
-  n = env->GetArrayLength(jupperLimits);
-  args.m_upperLimits.resize(n);
-  for (i = 0; i < n; i++) {
-    args.m_upperLimits[i] = upperLimits[i];
-  }
-
-  n = env->GetArrayLength(jjointRanges);
-  args.m_jointRanges.resize(n);
-  for (i = 0; i < n; i++) {
-    args.m_jointRanges[i] = jointRanges[i];
-  }
-
-  n = env->GetArrayLength(jrestPoses);
-  args.m_restPoses.resize(n);
-  for (i = 0; i < n; i++) {
-    args.m_restPoses[i] = restPoses[i];
-  }
-
-  n = env->GetArrayLength(jjointDamping);
-  args.m_jointDamping.resize(n);
-  for (i = 0; i < n; i++) {
-    args.m_jointDamping[i] = jointDamping[i];
-  }
-
-  env->ReleasePrimitiveArrayCritical(jjointDamping, jointDamping, 0);
-  env->ReleasePrimitiveArrayCritical(jjointRanges, jointRanges, 0);
-  env->ReleasePrimitiveArrayCritical(jrestPoses, restPoses, 0);
-  env->ReleasePrimitiveArrayCritical(jupperLimits, upperLimits, 0);
-  env->ReleasePrimitiveArrayCritical(jlowerLimits, lowerLimits, 0);
-  env->ReleasePrimitiveArrayCritical(jendEffectorTargetOrientation, endEffectorTargetOrientation, 0);
-  env->ReleasePrimitiveArrayCritical(jendEffectorTargetPosition, endEffectorTargetPosition, 0);
-
-  return args;
-}
-
-static void nativeInverseKinematicsResultsToJava(JNIEnv *env, jobject jv, struct b3RobotSimulatorInverseKinematicsResults &results) {
+static jboolean nativeInverseKinematicsResultsToJava(JNIEnv *env, jdoubleArray jv, struct b3RobotSimulatorInverseKinematicsResults &results) {
   int i, n;
-  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/InverseKinematicsResults");
-  CHECKFIELD(bodyUniqueIdID, env->GetFieldID(clazz, "m_bodyUniqueId", "I"), "InverseKinematicsResults: can't access m_bodyUniqueId\n",);
-  CHECKFIELD(calculatedJointPositionsID, env->GetFieldID(clazz, "m_calculatedJointPositions", "[D"), "InverseKinematicsResults: can't access m_calculatedJointPositions\n",);
-  env->SetIntField(jv, bodyUniqueIdID, results.m_bodyUniqueId);
   n = results.m_calculatedJointPositions.size();
-  jdoubleArray jcalculatedJointPositions = env->NewDoubleArray(n);
-  env->SetObjectField(jv, calculatedJointPositionsID, jcalculatedJointPositions);
-  jdouble *calculatedJointPositions = (jdouble *)env->GetPrimitiveArrayCritical(jcalculatedJointPositions, JNI_FALSE);
+  CHECKVALUE(jv, "calculateInverseKinematics: output array is null", false);
+  CHECKDIMS(jv, n, "calculateInverseKinematics: output array dims must be numObjects", false);
+  jdouble *calculatedJointPositions = (jdouble *)env->GetPrimitiveArrayCritical(jv, JNI_FALSE);
   for (i = 0; i < n; i++) {
     calculatedJointPositions[i] = results.m_calculatedJointPositions[i];
   }
-  env->ReleasePrimitiveArrayCritical(jcalculatedJointPositions, calculatedJointPositions, 0);
+  env->ReleasePrimitiveArrayCritical(jv, calculatedJointPositions, 0);
+  return true;
 }
 
 static struct b3LinkState javaLinkStateToNative(JNIEnv *env, jobject jv) {
@@ -693,6 +566,17 @@ static struct b3LinkState javaLinkStateToNative(JNIEnv *env, jobject jv) {
   CHECKVALUE(jworldAngularVelocity, "LinkState: worldAngularVelocity is null", linkState);
   CHECKVALUE(jworldAABBMin, "LinkState: worldAABBMin is null", linkState);
   CHECKVALUE(jworldAABBMax, "LinkState: worldAABBMax is null", linkState);
+
+  CHECKDIMS(jworldPosition, 3, "LinkState: worldPosition dimension must be 3", linkState);
+  CHECKDIMS(jworldOrientation, 4, "LinkState: worldOrientation dimension must be 4", linkState);
+  CHECKDIMS(jlocalInertialPosition, 3, "LinkState: localInertialPosition dimension must be 3", linkState); 
+  CHECKDIMS(jlocalInertialOrientation, 4, "LinkState: localInertialOrientation dimension must be 4", linkState);
+  CHECKDIMS(jworldLinkFramePosition, 3, "LinkState: worldLinkFramePosition dimension must be 3", linkState);
+  CHECKDIMS(jworldLinkFrameOrientation, 4, "LinkState: worldLinkFrameOrientation dimension must be 4", linkState);
+  CHECKDIMS(jworldLinearVelocity, 3, "LinkState: worldLinearVelocity dimension must be 3", linkState); 
+  CHECKDIMS(jworldAngularVelocity, 3, "LinkState: worldAngularVelocity dimension must be 3", linkState);
+  CHECKDIMS(jworldAABBMin, 3, "LinkState: worldAABBMin dimension must be 3", linkState);
+  CHECKDIMS(jworldAABBMax, 3, "LinkState: worldAABBMax dimension must be 3", linkState);
 
   double *worldPosition = env->GetDoubleArrayElements(jworldPosition, NULL);
   double *worldOrientation = env->GetDoubleArrayElements(jworldOrientation, NULL);
@@ -792,6 +676,17 @@ static void nativeLinkStateToJava(JNIEnv *env, jobject jv, struct b3LinkState &l
   CHECKVALUE(jworldAngularVelocity, "LinkState: worldAngularVelocity is null",);
   CHECKVALUE(jworldAABBMin, "LinkState: worldAABBMin is null",);
   CHECKVALUE(jworldAABBMax, "LinkState: worldAABBMax is null",);
+
+  CHECKDIMS(jworldPosition, 3, "LinkState: worldPosition dimension must be 3",);
+  CHECKDIMS(jworldOrientation, 4, "LinkState: worldOrientation dimension must be 4",);
+  CHECKDIMS(jlocalInertialPosition, 3, "LinkState: localInertialPosition dimension must be 3",); 
+  CHECKDIMS(jlocalInertialOrientation, 4, "LinkState: localInertialOrientation dimension must be 4",);
+  CHECKDIMS(jworldLinkFramePosition, 3, "LinkState: worldLinkFramePosition dimension must be 3",);
+  CHECKDIMS(jworldLinkFrameOrientation, 4, "LinkState: worldLinkFrameOrientation dimension must be 4",);
+  CHECKDIMS(jworldLinearVelocity, 3, "LinkState: worldLinearVelocity dimension must be 3",); 
+  CHECKDIMS(jworldAngularVelocity, 3, "LinkState: worldAngularVelocity dimension must be 3",);
+  CHECKDIMS(jworldAABBMin, 3, "LinkState: worldAABBMin dimension must be 3",);
+  CHECKDIMS(jworldAABBMax, 3, "LinkState: worldAABBMax dimension must be 3",);
 
   double *worldPosition = env->GetDoubleArrayElements(jworldPosition, NULL);
   double *worldOrientation = env->GetDoubleArrayElements(jworldOrientation, NULL);
@@ -1328,10 +1223,19 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetJointState
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
-(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject args)
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex,
+ int controlMode,  double targetPosition, double kp,  double targetVelocity,
+ double kd, double maxTorqueValue)
 {
+  struct b3RobotSimulatorJointMotorArgs motorArgs(0);
+  motorArgs.m_controlMode = controlMode;
+  motorArgs.m_targetPosition = targetPosition;
+  motorArgs.m_kp = kp;
+  motorArgs.m_targetVelocity = targetVelocity;
+  motorArgs.m_kd = kd;
+  motorArgs.m_maxTorqueValue = maxTorqueValue;
+
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3RobotSimulatorJointMotorArgs motorArgs = javaJointMotorArgsToNative(env, args);
   jrsa -> setJointMotorControl(bodyUniqueId, jointIndex, motorArgs);
 }
 
@@ -1400,13 +1304,131 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setContactBreakingThreshold
 }
 
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseKinematics
-(JNIEnv *env, jobject jRoboSimAPI, jobject jargs, jobject jresults)
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint endEffectorLinkIndex,
+ jdoubleArray jendEffectorTargetPosition, jdoubleArray jendEffectorTargetOrientation, 
+ jdoubleArray jlowerLimits, jdoubleArray jupperLimits, jdoubleArray jjointRanges, jdoubleArray jrestPoses,
+ jdoubleArray jjointDamping, jdoubleArray jresults)
 {
+  int i;
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3RobotSimulatorInverseKinematicArgs args = javaInverseKinematicArgsToNative(env, jargs);
+  struct b3RobotSimulatorInverseKinematicArgs args;
+  jdouble *endEffectorTargetPosition = NULL;
+  jdouble *endEffectorTargetOrientation = NULL;
+  jdouble *lowerLimits = NULL;
+  jdouble *upperLimits = NULL;
+  jdouble *jointRanges = NULL;
+  jdouble *restPoses = NULL;
+  jdouble *jointDamping = NULL;
+  int numJoints = jrsa->getNumJoints(bodyUniqueId);
+
+  args.m_flags = 0;
+  args.m_bodyUniqueId = bodyUniqueId;
+  args.m_endEffectorLinkIndex = endEffectorLinkIndex;
+
+  // Process required args endEffectorTargetPosition
+  CHECKVALUE(jendEffectorTargetPosition, "calculateInverseKinematics: m_endEffectorTargetPosition is null\n", false);
+  CHECKDIMS(jendEffectorTargetPosition, 3, "calculateInverseKinematics: endEffectorTargetPosition dimension must be 3", false);
+  endEffectorTargetPosition = (jdouble *)env->GetPrimitiveArrayCritical(jendEffectorTargetPosition, JNI_FALSE);
+  args.m_endEffectorTargetPosition[0] = endEffectorTargetPosition[0];
+  args.m_endEffectorTargetPosition[1] = endEffectorTargetPosition[1];
+  args.m_endEffectorTargetPosition[2] = endEffectorTargetPosition[2];
+  env->ReleasePrimitiveArrayCritical(jendEffectorTargetPosition, endEffectorTargetPosition, 0);
+  
+  // Process optional arg endEffectorTargetOrientation
+  if (jendEffectorTargetOrientation != NULL) {
+    CHECKDIMS(jendEffectorTargetOrientation, 4, "calculateInverseKinematics: endEffectorTargetOrientation dimension must be 4", false);
+    endEffectorTargetOrientation = (jdouble *)env->GetPrimitiveArrayCritical(jendEffectorTargetOrientation, JNI_FALSE);
+    args.m_endEffectorTargetOrientation[0] = endEffectorTargetOrientation[0];
+    args.m_endEffectorTargetOrientation[1] = endEffectorTargetOrientation[1];
+    args.m_endEffectorTargetOrientation[2] = endEffectorTargetOrientation[2];
+    args.m_endEffectorTargetOrientation[3] = endEffectorTargetOrientation[3];
+    env->ReleasePrimitiveArrayCritical(jendEffectorTargetOrientation, endEffectorTargetOrientation, 0);
+    args.m_flags |= B3_HAS_IK_TARGET_ORIENTATION;
+  }
+
+  // Process optional arg group upperLimits, lowerLimits, jointRanges and restPoses
+  if (jlowerLimits != NULL) {
+    CHECKVALUE(jupperLimits, "calculateInverseKinematics: m_upperLimits is null\n", false);
+    CHECKVALUE(jjointRanges, "calculateInverseKinematics: m_jointRanges is null\n", false);
+    CHECKVALUE(jrestPoses, "calculateInverseKinematics: m_restPoses is null\n", false);
+    CHECKDIMS(jlowerLimits, numJoints, "calculateInverseKinematics: lowerLimits dimension must be numJoints", false);
+    CHECKDIMS(jupperLimits, numJoints, "calculateInverseKinematics: upperLimits dimension must be numJoints", false);
+    CHECKDIMS(jjointRanges, numJoints, "calculateInverseKinematics: jointRanges dimension must be numJoints", false);
+    CHECKDIMS(jrestPoses, numJoints, "calculateInverseKinematics: restPoses dimension must be numJoints", false);
+    lowerLimits = (jdouble *)env->GetPrimitiveArrayCritical(jlowerLimits, JNI_FALSE);
+    upperLimits = (jdouble *)env->GetPrimitiveArrayCritical(jupperLimits, JNI_FALSE);
+    jointRanges = (jdouble *)env->GetPrimitiveArrayCritical(jjointRanges, JNI_FALSE);
+    restPoses = (jdouble *)env->GetPrimitiveArrayCritical(jrestPoses, JNI_FALSE);
+    args.m_lowerLimits.resize(numJoints);
+    for (i = 0; i < numJoints; i++) {
+      args.m_lowerLimits[i] = lowerLimits[i];
+    }
+    args.m_upperLimits.resize(numJoints);
+    for (i = 0; i < numJoints; i++) {
+      args.m_upperLimits[i] = upperLimits[i];
+    }
+    args.m_jointRanges.resize(numJoints);
+    for (i = 0; i < numJoints; i++) {
+      args.m_jointRanges[i] = jointRanges[i];
+    }
+    args.m_restPoses.resize(numJoints);
+    for (i = 0; i < numJoints; i++) {
+      args.m_restPoses[i] = restPoses[i];
+    }
+    env->ReleasePrimitiveArrayCritical(jrestPoses, restPoses, 0);
+    env->ReleasePrimitiveArrayCritical(jjointRanges, jointRanges, 0);
+    env->ReleasePrimitiveArrayCritical(jupperLimits, upperLimits, 0);
+    env->ReleasePrimitiveArrayCritical(jlowerLimits, lowerLimits, 0);
+    args.m_flags |= B3_HAS_NULL_SPACE_VELOCITY;
+  }
+
+  if (jjointDamping != NULL) {
+    CHECKDIMS(jjointDamping, numJoints, "calculateInverseKinematics: jointDamping dimension must be numJoints", false);
+    jointDamping = (jdouble *)env->GetPrimitiveArrayCritical(jjointDamping, JNI_FALSE);
+    args.m_jointDamping.resize(numJoints);
+    for (i = 0; i < numJoints; i++) {
+      args.m_jointDamping[i] = jointDamping[i];
+    }
+    env->ReleasePrimitiveArrayCritical(jjointDamping, jointDamping, 0);
+    args.m_flags |= B3_HAS_JOINT_DAMPING;
+  }
+
   struct b3RobotSimulatorInverseKinematicsResults results;
   jboolean status = jrsa -> calculateInverseKinematics(args, results);
-  nativeInverseKinematicsResultsToJava(env, jresults, results);
+  if (status) status = nativeInverseKinematicsResultsToJava(env, jresults, results);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseDynamics
+(JNIEnv *env, jobject jRoboSimAPI, int bodyUniqueId, jdoubleArray jjointPositions, jdoubleArray jjointVelocities,
+ jdoubleArray jjointAccelerations, jdoubleArray jjointForcesOutput) 
+{
+  int n, i;
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  int numJoints = jrsa->getNumJoints(bodyUniqueId);
+
+  CHECKVALUE(jjointPositions, "calculateInverseDynamics: jointPositions is null", false);
+  CHECKVALUE(jjointVelocities, "calculateInverseDynamics: jointVelocities is null", false);
+  CHECKVALUE(jjointAccelerations, "calculateInverseDynamics: jointAccelerations is null", false);
+  CHECKVALUE(jjointForcesOutput, "calculateInverseDynamics: jointForcesOutput is null", false);
+
+  CHECKDIMS(jjointPositions, numJoints, "calculateInverseKinematics: jointPositions dimension must be numJoints", false);
+  CHECKDIMS(jjointPositions, numJoints, "calculateInverseKinematics: jointPositions dimension must be numJoints", false);
+  CHECKDIMS(jjointPositions, numJoints, "calculateInverseKinematics: jointPositions dimension must be numJoints", false);
+  CHECKDIMS(jjointPositions, numJoints, "calculateInverseKinematics: jointPositions dimension must be numJoints", false);
+
+  double *jointPositions = (jdouble *)env->GetPrimitiveArrayCritical(jjointPositions, JNI_FALSE);
+  double *jointVelocities = (jdouble *)env->GetPrimitiveArrayCritical(jjointVelocities, JNI_FALSE);
+  double *jointAccelerations = (jdouble *)env->GetPrimitiveArrayCritical(jjointAccelerations, JNI_FALSE);
+  double *jointForcesOutput = (jdouble *)env->GetPrimitiveArrayCritical(jjointForcesOutput, JNI_FALSE);
+
+  bool status = jrsa -> calculateInverseDynamics(bodyUniqueId, jointPositions, jointVelocities, jointAccelerations, jointForcesOutput);
+
+  env->ReleasePrimitiveArrayCritical(jjointForcesOutput, jointForcesOutput, 0);
+  env->ReleasePrimitiveArrayCritical(jjointAccelerations, jointAccelerations, 0);
+  env->ReleasePrimitiveArrayCritical(jjointVelocities, jointVelocities, 0);
+  env->ReleasePrimitiveArrayCritical(jjointPositions, jointPositions, 0);
+
   return status;
 }
 
@@ -1583,13 +1605,6 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointStates2
 {
   b3JointStates2 m = javaJointStates2ToNative(env, min, numJoints);
   nativeJointStates2ToJava(env, mout, m, numJoints);
-}
-
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointMotorArgs
-(JNIEnv *env, jobject obj, jobject min, jobject mout)
-{
-  struct b3RobotSimulatorJointMotorArgs m = javaJointMotorArgsToNative(env, min);
-  nativeJointMotorArgsToJava(env, mout, m);
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testLinkState

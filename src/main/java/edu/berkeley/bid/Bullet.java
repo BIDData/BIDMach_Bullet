@@ -137,7 +137,9 @@ public class Bullet implements Serializable {
 
     public native boolean resetJointState(int bodyUniqueId, int jointIndex, double targetValue);
 
-    public native void setJointMotorControl(int bodyUniqueId, int jointIndex, JointMotorArgs args);
+    public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
+					    int controlMode,  double targetPosition, double kp,  double targetVelocity,
+					    double kd, double maxTorqueValue);
 
     public native void stepSimulation();
 
@@ -157,16 +159,42 @@ public class Bullet implements Serializable {
 
     public native void setContactBreakingThreshold(double threshold);
 
-    public native boolean calculateInverseKinematics(InverseKinematicArgs args, InverseKinematicsResults results);
+    public native boolean calculateInverseDynamics(int bodyUniqueId, double [] jointPositions, double [] jointVelocities,
+						   double [] jointAccelerations, double [] jointForcesOutput) ;
 
-    public InverseKinematicsResults calculateInverseKinematics(InverseKinematicArgs args) {
-	InverseKinematicsResults results = new InverseKinematicsResults();
-	calculateInverseKinematics(args, results);
-	return results;
+    public double [] calculateInverseDynamics(int bodyUniqueId, double [] jointPositions, double [] jointVelocities, double [] jointAccelerations) {
+	int numJoints = getNumJoints(bodyUniqueId);
+	double [] jointForcesOutput = new double[numJoints];
+	calculateInverseDynamics(bodyUniqueId, jointPositions, jointVelocities, jointAccelerations, jointForcesOutput);
+	return jointForcesOutput;
     }
 
     public native boolean getBodyJacobian(int bodyUniqueId, int linkIndex, double [] localPosition, double [] jointPositions, double [] jointVelocities,
 					  double [] jointAccelerations, double [] linearJacobian, double [] angularJacobian);
+
+    public boolean calculateJacobian(int bodyUniqueId, int linkIndex, double [] localPosition, double [] jointPositions, double [] jointVelocities,
+				     double [] jointAccelerations, double [] linearJacobian, double [] angularJacobian) {
+	return getBodyJacobian(bodyUniqueId, linkIndex, localPosition, jointPositions, jointVelocities,
+					  jointAccelerations, linearJacobian, angularJacobian);
+    }
+
+    public native boolean calculateInverseKinematics(int bodyUniqueId, int endEffectorLinkIndex,
+						     double [] endEffectorTargetPosition, double [] endEffectorTargetOrientation, 
+						     double [] lowerLimits, double [] upperLimits, double [] jointRanges, double [] restPoses,
+						     double [] jointDamping, double [] jointAnglesOutput);
+
+    public double [] calculateInverseKinematics(int bodyUniqueId, int endEffectorLinkIndex,
+						double [] endEffectorTargetPosition, double [] endEffectorTargetOrientation, 
+						double [] lowerLimits, double [] upperLimits, double [] jointRanges, double [] restPoses,
+						double [] jointDamping) {
+	int numJoints = getNumJoints(bodyUniqueId);
+	double [] jointAnglesOutput = new double[numJoints];
+	calculateInverseKinematics(bodyUniqueId, endEffectorLinkIndex, endEffectorTargetPosition, endEffectorTargetOrientation, 
+				   lowerLimits, upperLimits, jointRanges, restPoses,
+				   jointDamping, jointAnglesOutput);
+	return jointAnglesOutput;
+    }
+	
 
     public native boolean getLinkState(int bodyUniqueId, int linkIndex, LinkState linkState);
 
@@ -211,8 +239,6 @@ public class Bullet implements Serializable {
     public static native void testJointSensorState(JointSensorState min, JointSensorState mout);
 
     public static native void testJointStates2(JointStates2 min, JointStates2 mout, int numJoints);
-
-    public static native void testJointMotorArgs(JointMotorArgs min, JointMotorArgs mout);
 
     public static native void testLinkState(LinkState min, LinkState mout);
 

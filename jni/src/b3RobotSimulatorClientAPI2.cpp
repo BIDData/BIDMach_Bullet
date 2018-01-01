@@ -15,6 +15,7 @@ struct b3RobotSimulatorClientAPI_InternalData
 	}
 };
 
+
 bool b3RobotSimulatorClientAPI::getCameraImage(struct b3CameraImageData &imageData, int width, int height,
 					       float *viewMatrix, float *projectionMatrix,
 					       float *lightDirection, float *lightColor,
@@ -86,3 +87,33 @@ bool b3RobotSimulatorClientAPI::getCameraImage(struct b3CameraImageData &imageDa
   return true;
 }
 
+bool b3RobotSimulatorClientAPI::calculateInverseDynamics(int bodyUniqueId, double *jointPositions, double *jointVelocities,
+							 double *jointAccelerations, double *jointForcesOutput) 
+{
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return false;
+  }
+
+  int numJoints = b3GetNumJoints(m_data->m_physicsClientHandle, bodyUniqueId);
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+  b3SharedMemoryCommandHandle commandHandle = b3CalculateInverseDynamicsCommandInit(m_data->m_physicsClientHandle, bodyUniqueId, jointPositions,
+										    jointVelocities, jointAccelerations);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, commandHandle);
+
+  statusType = b3GetStatusType(statusHandle);
+
+  if (statusType == CMD_CALCULATED_INVERSE_DYNAMICS_COMPLETED) {
+    int bodyUniqueId;
+    int dofCount;
+
+    b3GetStatusInverseDynamicsJointForces(statusHandle, &bodyUniqueId, &dofCount, 0);
+
+    if (dofCount) {
+      b3GetStatusInverseDynamicsJointForces(statusHandle, 0, 0,	jointForcesOutput);
+      return true;
+    }
+  }
+  return false;
+}
