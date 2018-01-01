@@ -27,10 +27,6 @@ public class Bullet implements Serializable {
 
     private native int deleteRobotSimulatorClientAPI();
 
-    public native void renderScence();
-
-    public native void debugDraw();
-
     public native boolean connect(int method, String hostname, int port);
 
     public boolean connect(int method, String hostname) {
@@ -45,27 +41,7 @@ public class Bullet implements Serializable {
 
     public native boolean isConnected();
 
-    public native void setTimeOut(double t);
-
-    public native void syncBodies();
-
-    public native void resetSimulation();
-
-    public static native void getQuaternionFromEuler(Vector3 euler, Quaternion q);
-
-    public static Quaternion getQuaternionFromEuler(Vector3 euler) {
-	Quaternion q = new Quaternion();
-	getQuaternionFromEuler(euler, q);
-	return q;
-    }
-
-    public static native void getEulerFromQuaternion(Quaternion q, Vector3 euler);
-
-    public static Vector3 getEulerFromQuaternion(Quaternion q) {
-	Vector3 v = new Vector3();
-	getEulerFromQuaternion(q, v);
-	return v;
-    }
+    public native void setGravity(Vector3 gravity);
 
     public native int loadURDF(String fname, Vector3 startPos, Quaternion startOrient, boolean forceOverrideFixedBase, boolean useMultiBody, int flags);
 
@@ -87,21 +63,29 @@ public class Bullet implements Serializable {
 
     public native int[] loadBullet(String fname);
 
-    public native boolean getBodyInfo(int bodyUniqueId, BodyInfo bodyInfo);
+    public native void stepSimulation();
 
-    public BodyInfo getBodyInfo(int bodyUniqueId) {
-	BodyInfo bodyInfo = new BodyInfo();
-	getBodyInfo(bodyUniqueId, bodyInfo);
-	return bodyInfo;
-    }
+    public native void setRealTimeSimulation(boolean enable);
 
     public native boolean getBasePositionAndOrientation(int bodyUniqueId, Vector3 basePosition, Quaternion baseOrientation);
 
     public native boolean resetBasePositionAndOrientation(int bodyUniqueId, Vector3 basePosition, Quaternion baseOrientation);
 
-    public native boolean getBaseVelocity(int bodyUniqueId, Vector3 baseVelocity, Vector3 baseAngularV);
+    public static native void getQuaternionFromEuler(Vector3 euler, Quaternion q);
 
-    public native boolean resetBaseVelocity(int bodyUniqueId, Vector3 baseVelocity, Vector3 baseAngularV);
+    public static Quaternion getQuaternionFromEuler(Vector3 euler) {
+	Quaternion q = new Quaternion();
+	getQuaternionFromEuler(euler, q);
+	return q;
+    }
+
+    public static native void getEulerFromQuaternion(Quaternion q, Vector3 euler);
+
+    public static Vector3 getEulerFromQuaternion(Quaternion q) {
+	Vector3 v = new Vector3();
+	getEulerFromQuaternion(q, v);
+	return v;
+    }
 
     public native int getNumJoints(int bodyUniqueId);
 
@@ -113,11 +97,17 @@ public class Bullet implements Serializable {
 	return jointInfo;
     }
 
-    public native int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex, JointInfo jointInfo);
+    public native boolean getJointStates(int bodyUniqueId, JointStates2 state);
 
-    public native int changeConstraint(int constraintId, JointInfo jointInfo);
+    public JointStates2 getJointStates(int bodyUniqueId) {
+	JointStates2 jointStates = new JointStates2();
+	getJointStates(bodyUniqueId, jointStates);
+	return jointStates;
+    }
 
-    public native void removeConstraint(int constraintId);
+    public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
+					    int controlMode,  double targetPosition, double kp,  double targetVelocity,
+					    double kd, double maxTorqueValue);
 
     public native boolean getJointState(int bodyUniqueId, int jointIndex, JointSensorState state);
 
@@ -127,37 +117,76 @@ public class Bullet implements Serializable {
 	return jointState;
     }
 
-    public native boolean getJointStates(int bodyUniqueId, JointStates2 state);
-
-    public JointStates2 getJointStates(int bodyUniqueId) {
-	JointStates2 jointStates = new JointStates2();
-	getJointStates(bodyUniqueId, jointStates);
-	return jointStates;
-    }
-
     public native boolean resetJointState(int bodyUniqueId, int jointIndex, double targetValue);
 
-    public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
-					    int controlMode,  double targetPosition, double kp,  double targetVelocity,
-					    double kd, double maxTorqueValue);
+    public native boolean getLinkState(int bodyUniqueId, int linkIndex, LinkState linkState);
 
-    public native void stepSimulation();
+    public LinkState getLinkState(int bodyUniqueId, int linkIndex) {
+	LinkState linkState = new LinkState();
+	getLinkState(bodyUniqueId, linkIndex, linkState);
+	return linkState;
+    }
 
-    public native boolean canSubmitCommand();
+    public native boolean getBaseVelocity(int bodyUniqueId, Vector3 baseVelocity, Vector3 baseAngularV);
 
-    public native void setRealTimeSimulation(boolean enable);
+    public native boolean resetBaseVelocity(int bodyUniqueId, Vector3 baseVelocity, Vector3 baseAngularV);
 
-    public native void setInternalSimFlags(int flags);
+    public native int getNumBodies();
 
-    public native void setGravity(Vector3 gravity);
+    public native int getBodyUniqueId(int bodyId);
+
+    public native boolean removeBody(int bodyUniqeId);
+
+    public native boolean getBodyInfo(int bodyUniqueId, BodyInfo bodyInfo);
+
+    public BodyInfo getBodyInfo(int bodyUniqueId) {
+	BodyInfo bodyInfo = new BodyInfo();
+	getBodyInfo(bodyUniqueId, bodyInfo);
+	return bodyInfo;
+    }
+
+    public native int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex, JointInfo jointInfo);
+
+    public native int changeConstraint(int constraintId, JointInfo jointInfo);
+
+    public native void removeConstraint(int constraintId);
 
     public native void setTimeStep(double t);
+
+    public native void setInternalSimFlags(int flags);
 
     public native void setNumSimulationSubSteps(int numSubSteps);
 
     public native void setNumSolverIterations(int numSolverIterations);
 
     public native void setContactBreakingThreshold(double threshold);
+
+    public native void resetSimulation();
+
+    public native void startStateLogging(int loggingType, String fileName, int [] objectUniqueIds, int maxLogDof);
+
+    public native void stopStateLogging(int stateLoggerUniqueId);
+
+    public native boolean getCameraImage(int width, int height,
+					 float [] viewMatrix, float [] projectionMatrix,
+					 float [] lightProjection, float [] lightColor,
+					 float lightDistance, int hasShadow,
+					 float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
+					 int renderer, CameraImageData cameraImage);
+
+    public native boolean getCameraImageInts(int width, int height,
+					     float [] viewMatrix, float [] projectionMatrix,
+					     float [] lightProjection, float [] lightColor,
+					     float lightDistance, int hasShadow,
+					     float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
+					     int renderer, int [] rgbColorData, float [] depthValues, int [] segmentationValues);
+
+    public native boolean getCameraImageBytes(int width, int height,
+					      float [] viewMatrix, float [] projectionMatrix,
+					      float [] lightProjection, float [] lightColor,
+					      float lightDistance, int hasShadow,
+					      float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
+					      int renderer, byte [] rgbColorData, float [] depthValues, int [] segmentationValues);
 
     public native boolean calculateInverseDynamics(int bodyUniqueId, double [] jointPositions, double [] jointVelocities,
 						   double [] jointAccelerations, double [] jointForcesOutput) ;
@@ -194,23 +223,26 @@ public class Bullet implements Serializable {
 				   jointDamping, jointAnglesOutput);
 	return jointAnglesOutput;
     }
-	
 
-    public native boolean getLinkState(int bodyUniqueId, int linkIndex, LinkState linkState);
+    public native boolean getDynamicsInfo(int bodyUniqueId, int jointIndex, DynamicsInfo dynamicsInfo);
 
-    public LinkState getLinkState(int bodyUniqueId, int linkIndex) {
-	LinkState linkState = new LinkState();
-	getLinkState(bodyUniqueId, linkIndex, linkState);
-	return linkState;
-    }
+    public native boolean changeDynamics(int bodyUniqueId, int linkIndex, double mass, double lateralFriction, double spinningFriction,
+					 double rollingFriction, double restitution, double linearDamping, double angularDamping,
+					 double contactStiffness, double contactDamping, int frictionAnchor);
+
+    public native void renderScence();
+
+    public native void debugDraw();
+
+    public native void setTimeOut(double t);
+
+    public native void syncBodies();
+
+    public native boolean canSubmitCommand();
 
     public native void configureDebugVisualizer(int flags, int enable);
 
     public native void resetDebugVisualizerCamera(double cameraDistance, double cameraPitch, double cameraYaw, Vector3 targetPos);
-
-    public native void startStateLogging(int loggingType, String fileName, int [] objectUniqueIds, int maxLogDof);
-
-    public native void stopStateLogging(int stateLoggerUniqueId);
 
     public native void getKeyboardEventsData(KeyboardEventsData keyboardEventsData);
 
@@ -222,13 +254,6 @@ public class Bullet implements Serializable {
 
     public native void submitProfileTiming(String jprofileName, int durationInMicroseconds);
 
-    public native boolean getCameraImage(CameraImageData cameraImage, int width, int height,
-					 float [] viewMatrix, float [] projectionMatrix,
-					 float [] lightProjection, float [] lightColor,
-					 float lightDistance, int hasShadow,
-					 float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
-					 int renderer);
-    
 
     public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
 

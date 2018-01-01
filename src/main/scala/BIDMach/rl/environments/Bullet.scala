@@ -26,12 +26,12 @@ class Bullet extends edu.berkeley.bid.Bullet {
 
 	val cameraImage = new CameraImageData();
 
-	getCameraImage(cameraImage, width, height,
+	getCameraImage(width, height,
 		       viewMatrix, projectionMatrix,
 		       lightProjection, lightColor,
 		       lightDistance, hasShadow,
 		       lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
-		       renderer);
+		       renderer, cameraImage);
 
 	cameraImage;
     }

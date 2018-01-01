@@ -418,6 +418,54 @@ static void nativeJointSensorStateToJava(JNIEnv *env, jobject jv, struct b3Joint
   env->ReleasePrimitiveArrayCritical(jJointForceTorque, jointForceTorque, 0);
 }
 
+static struct b3DynamicsInfo javaDynamicsInfoToNative(JNIEnv *env, jobject jv) {
+  int i;
+  struct b3DynamicsInfo dynamicsInfo;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/DynamicsInfo");
+  CHECKFIELD(massID, env->GetFieldID(clazz, "m_mass", "D"), "getDynamicsInfo: can't acccess m_mass\n", dynamicsInfo;);
+  CHECKFIELD(lateralFrictionCoeffID, env->GetFieldID(clazz, "m_lateralFrictionCoeff", "D"), "getDynamicsInfo: can't acccess m_lateralFrictionCoeff\n", dynamicsInfo;);
+  CHECKFIELD(localInertialPositionID, env->GetFieldID(clazz, "m_localInertialPosition", "[D"), "getDynamicsInfo: can't acccess m_localInertialPosition\n", dynamicsInfo;);
+
+  dynamicsInfo.m_mass = env->GetDoubleField(jv, massID);
+  dynamicsInfo.m_lateralFrictionCoeff = env->GetDoubleField(jv, lateralFrictionCoeffID);
+
+  jdoubleArray jlocalInertialPosition = (jdoubleArray)env->GetObjectField(jv, localInertialPositionID);
+  CHECKVALUE(jlocalInertialPosition, "getDynamicsInfo: m_localInertialPosition is null\n", dynamicsInfo);
+  CHECKDIMS(jlocalInertialPosition, 3, "getDynamicsInfo: m_localInertialPosition dimension must be 3\n", dynamicsInfo);
+  
+  double *localInertialPosition = (jdouble *)env->GetPrimitiveArrayCritical(jlocalInertialPosition, JNI_FALSE);
+
+  for (i = 0; i < 3; i++) {
+    dynamicsInfo.m_localInertialPosition[i] = localInertialPosition[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jlocalInertialPosition, localInertialPosition, 0);
+  return dynamicsInfo;
+}
+
+static void nativeDynamicsInfoToJava(JNIEnv *env, jobject jv, b3DynamicsInfo &dynamicsInfo) {
+  int i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/DynamicsInfo");
+  CHECKFIELD(massID, env->GetFieldID(clazz, "m_mass", "D"), "getDynamicsInfo: can't acccess m_mass\n",);
+  CHECKFIELD(lateralFrictionCoeffID, env->GetFieldID(clazz, "m_lateralFrictionCoeff", "D"), "getDynamicsInfo: can't acccess m_lateralFrictionCoeff\n",);
+  CHECKFIELD(localInertialPositionID, env->GetFieldID(clazz, "m_localInertialPosition", "[D"), "getDynamicsInfo: can't acccess m_localInertialPosition\n",);
+
+  env->SetDoubleField(jv, massID, dynamicsInfo.m_mass);
+  env->SetDoubleField(jv, lateralFrictionCoeffID, dynamicsInfo.m_lateralFrictionCoeff);
+
+  jdoubleArray jlocalInertialPosition = (jdoubleArray)env->GetObjectField(jv, localInertialPositionID);
+  CHECKVALUE(jlocalInertialPosition, "getDynamicsInfo: m_localInertialPosition is null\n",);
+  CHECKDIMS(jlocalInertialPosition, 3, "getDynamicsInfo: m_localInertialPosition dimension must be 3\n",);
+  
+  double *localInertialPosition = (jdouble *)env->GetPrimitiveArrayCritical(jlocalInertialPosition, JNI_FALSE);
+
+  for (i = 0; i < 3; i++) {
+    localInertialPosition[i] = dynamicsInfo.m_localInertialPosition[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jlocalInertialPosition, localInertialPosition, 0);
+}
+
 static b3JointStates2 javaJointStates2ToNative(JNIEnv *env, jobject jv, int numJoints) {
   int i;
   b3JointStates2 jointStates2;
@@ -1147,6 +1195,30 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetBaseVelocity
   return status;
 }
 
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumBodies
+(JNIEnv *env, jobject jRoboSimAPI)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  int nbodies = jrsa -> getNumBodies();
+  return nbodies;
+}
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getBodyUniqueId
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyId)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  int uid = jrsa -> getBodyUniqueId(bodyId);
+  return uid;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_removeBody
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  bool status = jrsa -> removeBody(bodyUniqueId);
+  return status;
+}
+
 JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumJoints
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId)
 {
@@ -1463,6 +1535,31 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyJacobian
   return status;
 }
 
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getDynamicsInfo
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject jDynamicsInfo)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  b3DynamicsInfo dynamicsInfo;
+  bool status = jrsa -> getDynamicsInfo(bodyUniqueId, jointIndex, &dynamicsInfo);
+  nativeDynamicsInfoToJava(env, jDynamicsInfo, dynamicsInfo);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_changeDynamics
+(JNIEnv *env, jobject jRoboSimAPI,
+ jint bodyUniqueId, jint linkIndex, jdouble mass, jdouble lateralFriction, jdouble spinningFriction,
+ jdouble rollingFriction, jdouble restitution, jdouble linearDamping, jdouble angularDamping,
+ jdouble contactStiffness, jdouble contactDamping, jint frictionAnchor)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+
+  bool status = jrsa -> changeDynamics(bodyUniqueId, linkIndex, mass, lateralFriction, spinningFriction,
+				       rollingFriction, restitution, linearDamping, angularDamping,
+				       contactStiffness, contactDamping, frictionAnchor);
+
+  return status;
+}
+
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getLinkState
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, jobject jlinkState)
 {
@@ -1536,16 +1633,15 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
   env->ReleaseStringUTFChars(jprofileName, profileName);
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
-(JNIEnv *env, jobject jRoboSimAPI, jobject jcameraImage, jint width, jint height,
+jboolean getCameraImageBasic
+(JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
  jfloatArray jlightProjection, jfloatArray jlightColor,
  jfloat lightDistance, jint hasShadow,
  jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
- jint renderer)
+ jint renderer, struct b3CameraImageData &cameraImage)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3CameraImageData data;
   float *viewMatrix = NULL;
   float *projectionMatrix = NULL;
   float *lightProjection = NULL;
@@ -1555,19 +1651,128 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
   if (jlightProjection != NULL) lightProjection = (float *)env->GetPrimitiveArrayCritical(jlightProjection, JNI_FALSE);
   if (jlightColor != NULL) lightColor = (float *)env->GetPrimitiveArrayCritical(jlightColor, JNI_FALSE);
 
-  jboolean status = jrsa -> getCameraImage(data, width, height,
+  jboolean status = jrsa -> getCameraImage(cameraImage, width, height,
 					   viewMatrix, projectionMatrix,
 					   lightProjection, lightColor,
 					   lightDistance, hasShadow,
 					   lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
 					   renderer);
 
-  nativeCameraImageDataToJava(env, jcameraImage, data);
-
   if (lightColor != NULL) env->ReleasePrimitiveArrayCritical(jlightColor, lightColor, 0);
   if (lightProjection != NULL) env->ReleasePrimitiveArrayCritical(jlightProjection, lightProjection, 0);
   if (projectionMatrix != NULL) env->ReleasePrimitiveArrayCritical(jprojectionMatrix, projectionMatrix, 0);
   if (viewMatrix != NULL) env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
+(JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
+ jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
+ jfloatArray jlightProjection, jfloatArray jlightColor,
+ jfloat lightDistance, jint hasShadow,
+ jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
+ jint renderer, jobject jcameraImage)
+{
+  struct b3CameraImageData cameraImage;
+  jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
+					jviewMatrix, jprojectionMatrix,
+					jlightProjection, jlightColor,
+					lightDistance, hasShadow,
+					lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
+					renderer, cameraImage);
+  nativeCameraImageDataToJava(env, jcameraImage, cameraImage);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
+(JNIEnv *env, jobject jRoboSimAPI, jobject jcameraImage, jint width, jint height,
+ jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
+ jfloatArray jlightProjection, jfloatArray jlightColor,
+ jfloat lightDistance, jint hasShadow,
+ jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
+ jint renderer, jintArray jrgbColorData, jfloatArray jdepthValues, jintArray jsegmentationMaskValues)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3CameraImageData cameraImage;
+  int *rgbColorData = NULL;
+  float *depthValues = NULL;
+  int *segmentationMaskValues = NULL;
+
+  jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
+					jviewMatrix, jprojectionMatrix,
+					jlightProjection, jlightColor,
+					lightDistance, hasShadow,
+					lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
+					renderer, cameraImage);
+
+  int length = width * height;
+  CHECKVALUE(jrgbColorData, "getCameraImageInts: rgb output array is null", false);
+  CHECKDIMS(jrgbColorData, length, "getCameraImageInts: rgb output array dimension doesnt match image size", false);
+
+  rgbColorData = (int *)env->GetPrimitiveArrayCritical(jrgbColorData, JNI_FALSE);
+  memcpy(rgbColorData, cameraImage.m_rgbColorData, length*sizeof(int));
+  env->ReleasePrimitiveArrayCritical(jrgbColorData, rgbColorData, 0);
+
+  if (jdepthValues != NULL) {
+    CHECKDIMS(jdepthValues, length, "getCameraImageInts: depth output array dimension doesnt match image size", false);
+    depthValues = (float *)env->GetPrimitiveArrayCritical(jdepthValues, JNI_FALSE);
+    memcpy(depthValues, cameraImage.m_depthValues, length*sizeof(float));
+    env->ReleasePrimitiveArrayCritical(jdepthValues, depthValues, 0);
+  }
+
+  if (jsegmentationMaskValues != NULL) {
+    CHECKDIMS(jsegmentationMaskValues, length, "getCameraImageInts: segmentation output array dimension doesnt match image size", false);
+    segmentationMaskValues = (int *)env->GetPrimitiveArrayCritical(jsegmentationMaskValues, JNI_FALSE);
+    memcpy(segmentationMaskValues, cameraImage.m_segmentationMaskValues, length*sizeof(int));
+    env->ReleasePrimitiveArrayCritical(jsegmentationMaskValues, segmentationMaskValues, 0);
+  }
+
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
+(JNIEnv *env, jobject jRoboSimAPI, jobject jcameraImage, jint width, jint height,
+ jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
+ jfloatArray jlightProjection, jfloatArray jlightColor,
+ jfloat lightDistance, jint hasShadow,
+ jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
+ jint renderer, jbyteArray jrgbColorData, jfloatArray jdepthValues, jintArray jsegmentationMaskValues)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3CameraImageData cameraImage;
+  char *rgbColorData = NULL;
+  float *depthValues = NULL;
+  int *segmentationMaskValues = NULL;
+
+  jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
+					jviewMatrix, jprojectionMatrix,
+					jlightProjection, jlightColor,
+					lightDistance, hasShadow,
+					lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
+					renderer, cameraImage);
+
+  int length = width * height;
+  CHECKVALUE(jrgbColorData, "getCameraImageInts: rgb output array is null", false);
+  CHECKDIMS(jrgbColorData, length, "getCameraImageInts: rgb output array dimension doesnt match image size", false);
+
+  rgbColorData = (char *)env->GetPrimitiveArrayCritical(jrgbColorData, JNI_FALSE);
+  memcpy(rgbColorData, cameraImage.m_rgbColorData, length*4*sizeof(char));
+  env->ReleasePrimitiveArrayCritical(jrgbColorData, rgbColorData, 0);
+
+  if (jdepthValues != NULL) {
+    CHECKDIMS(jdepthValues, length, "getCameraImageInts: depth output array dimension doesnt match image size", false);
+    depthValues = (float *)env->GetPrimitiveArrayCritical(jdepthValues, JNI_FALSE);
+    memcpy(depthValues, cameraImage.m_depthValues, length*sizeof(float));
+    env->ReleasePrimitiveArrayCritical(jdepthValues, depthValues, 0);
+  }
+
+  if (jsegmentationMaskValues != NULL) {
+    CHECKDIMS(jsegmentationMaskValues, length, "getCameraImageInts: segmentation output array dimension doesnt match image size", false);
+    segmentationMaskValues = (int *)env->GetPrimitiveArrayCritical(jsegmentationMaskValues, JNI_FALSE);
+    memcpy(segmentationMaskValues, cameraImage.m_segmentationMaskValues, length*sizeof(int));
+    env->ReleasePrimitiveArrayCritical(jsegmentationMaskValues, segmentationMaskValues, 0);
+  }
+
   return status;
 }
 

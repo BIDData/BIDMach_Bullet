@@ -117,3 +117,132 @@ bool b3RobotSimulatorClientAPI::calculateInverseDynamics(int bodyUniqueId, doubl
   }
   return false;
 }
+
+int b3RobotSimulatorClientAPI::getNumBodies() const
+{
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return false;
+  }
+  return b3GetNumBodies(m_data->m_physicsClientHandle);
+}
+
+int b3RobotSimulatorClientAPI::getBodyUniqueId(int bodyId) const
+{
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return false;
+  }
+  return b3GetBodyUniqueId(m_data->m_physicsClientHandle, bodyId);
+}
+
+bool b3RobotSimulatorClientAPI::removeBody(int bodyUniqueId) 
+{
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return false;
+  }
+  
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+  if (b3CanSubmitCommand(m_data->m_physicsClientHandle)) {
+    statusHandle = b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, b3InitRemoveBodyCommand(m_data->m_physicsClientHandle, bodyUniqueId));
+    statusType = b3GetStatusType(statusHandle);
+    if (statusType == CMD_REMOVE_BODY_COMPLETED) {
+      return true;
+    } else {
+      b3Warning("getDynamicsInfo did not complete");
+      return false;
+    }
+  }
+  b3Warning("removeBody could not submit command");
+  return false;
+}
+
+bool b3RobotSimulatorClientAPI::getDynamicsInfo(int bodyUniqueId, int linkIndex, b3DynamicsInfo *dynamicsInfo) {
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return false;
+  }
+  int status_type = 0;
+  b3SharedMemoryCommandHandle cmd_handle;
+  b3SharedMemoryStatusHandle status_handle;
+  struct b3DynamicsInfo info;
+
+  if (bodyUniqueId < 0) {
+    b3Warning("getDynamicsInfo failed; invalid bodyUniqueId");
+    return false;
+  }
+  if (linkIndex < -1) {
+    b3Warning("getDynamicsInfo failed; invalid linkIndex");
+    return false;
+  }
+  
+  if (b3CanSubmitCommand(m_data->m_physicsClientHandle)) {
+    cmd_handle = b3GetDynamicsInfoCommandInit(m_data->m_physicsClientHandle, bodyUniqueId, linkIndex);
+    status_handle = b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, cmd_handle);
+    status_type = b3GetStatusType(status_handle);
+    if (status_type == CMD_GET_DYNAMICS_INFO_COMPLETED) {
+      return true;
+    } else {
+      b3Warning("getDynamicsInfo did not complete");
+      return false;
+    }
+  } 
+  b3Warning("getDynamicsInfo could not submit command");
+  return false;
+}
+
+bool b3RobotSimulatorClientAPI::changeDynamics(int bodyUniqueId, int linkIndex,	double mass, double lateralFriction, double spinningFriction,
+					       double rollingFriction, double restitution, double linearDamping, double angularDamping,
+					       double contactStiffness, double contactDamping, int frictionAnchor)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected to physics server.");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command = b3InitChangeDynamicsInfo(sm);
+  b3SharedMemoryStatusHandle statusHandle;
+		
+  if (mass >= 0) {
+    b3ChangeDynamicsInfoSetMass(command, bodyUniqueId, linkIndex, mass);
+  }
+
+  if (lateralFriction >= 0) {
+    b3ChangeDynamicsInfoSetLateralFriction(command, bodyUniqueId, linkIndex, lateralFriction);
+  }
+  
+  if (spinningFriction>=0) {
+    b3ChangeDynamicsInfoSetSpinningFriction(command, bodyUniqueId, linkIndex,spinningFriction);
+  }
+
+  if (rollingFriction>=0) {
+    b3ChangeDynamicsInfoSetRollingFriction(command, bodyUniqueId, linkIndex,rollingFriction);
+  }
+
+  if (linearDamping>=0)	{
+    b3ChangeDynamicsInfoSetLinearDamping(command,bodyUniqueId, linearDamping);
+  }
+
+  if (angularDamping>=0) {
+    b3ChangeDynamicsInfoSetAngularDamping(command,bodyUniqueId,angularDamping);
+  }
+
+  if (restitution>=0) {
+    b3ChangeDynamicsInfoSetRestitution(command, bodyUniqueId, linkIndex, restitution);
+  }
+
+  if (contactStiffness>=0 && contactDamping >=0) {
+    b3ChangeDynamicsInfoSetContactStiffnessAndDamping(command,bodyUniqueId,linkIndex,contactStiffness, contactDamping);
+  }
+
+  if (frictionAnchor>=0) {
+    b3ChangeDynamicsInfoSetFrictionAnchor(command,bodyUniqueId,linkIndex, frictionAnchor);
+  }
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  return true;
+}
+
+
+

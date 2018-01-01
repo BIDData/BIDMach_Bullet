@@ -24,6 +24,9 @@ else
     LOG_OPTS=""
 fi
 export JAVA_OPTS="${MEMSIZE} -Xms128M -Dfile.encoding=UTF-8 ${LOG_OPTS} ${JAVA_OPTS}"
+if [ `uname` = "Darwin" ]; then
+    export JAVA_OPTS="-XstartOnFirstThread ${JAVA_OPTS}"
+fi
 
 BIDMACHBULLET_VERSION=`echo lib/BIDMachBullet-*-cpu-*.jar | sed 's/.*BIDMachBullet-//' | sed 's/-cpu.*\.jar//'`
 
