@@ -32,12 +32,12 @@ def multiplyJacobian(jacobian:DMat, vector:DMat) = {
 };
 
 
-val time_step = 0.001;
+val time_step = 0.001f;
 val gravity_constant = -9.81f;
 sim.resetSimulation();
 sim.setTimeStep(time_step);
 sim.setGravity(0, 0, gravity_constant);
-sim.loadURDF("plane.urdf",row(0,0,-0.3));
+sim.loadURDF("plane.urdf",row(0,0,-0.3f));
 
 
 val kukaId = sim.loadURDF("kuka_iiwa/model.urdf");
@@ -48,14 +48,13 @@ val numJoints = sim.getNumJoints(kukaId);
 setJointPosition(kukaId, 0.1*dones(1,numJoints));
 sim.stepSimulation();
 // Get the joint and link state directly from Bullet.
-val (pos, vel, torq) = getJointStates(kukaId);
+val jointStates = getJointStates(kukaId);
 val result = sim.getLinkState(kukaId, kukaEndEffectorIndex, computeLinkVelocity=1, computeForwardKinematics=1);
-// link_trn, link_rot, com_trn, com_rot, frame_pos, frame_rot, link_vt, link_vr = result;
 // Get the Jacobians for the CoM of the end-effector link.
 // Note that in this example com_rot = identity, and we would need to use com_rot.T * com_trn.
 // The localPosition is always defined in terms of the link frame coordinates.
 val zero_vec = dzeros(1, numJoints);
-val (jac_t, jac_r) = sim.calculateJacobian(kukaId, kukaEndEffectorIndex, result.m_localInertialPosition, pos, zero_vec, zero_vec);
+val (jac_t, jac_r) = sim.calculateJacobian(kukaId, kukaEndEffectorIndex, result.m_localInertialPosition, jointStates.m_actualStateQ, zero_vec, zero_vec);
 
 print ("Link linear velocity of CoM from getLinkState:")
 print (link_vt)
