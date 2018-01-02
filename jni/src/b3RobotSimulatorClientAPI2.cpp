@@ -244,5 +244,67 @@ bool b3RobotSimulatorClientAPI::changeDynamics(int bodyUniqueId, int linkIndex,	
   return true;
 }
 
+int b3RobotSimulatorClientAPI::addUserDebugParameter(char * paramName, double rangeMin, double rangeMax, double startValue) {
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected to physics server.");
+    return -1;
+  }
+  b3SharedMemoryCommandHandle commandHandle;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+  
+  commandHandle = b3InitUserDebugAddParameter(sm, paramName, rangeMin, rangeMax, startValue);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
+  statusType = b3GetStatusType(statusHandle);
+
+  if (statusType == CMD_USER_DEBUG_DRAW_COMPLETED) {
+    int debugItemUniqueId = b3GetDebugItemUniqueId(statusHandle);
+    return  debugItemUniqueId;
+  }
+  b3Warning("addUserDebugParameter failed.");
+  return -1;
+}
+
+double b3RobotSimulatorClientAPI::readUserDebugParameter(int itemUniqueId) {
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected to physics server.");
+    return 0;
+  }
+  b3SharedMemoryCommandHandle commandHandle;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+
+  commandHandle = b3InitUserDebugReadParameter(sm, itemUniqueId);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
+  statusType = b3GetStatusType(statusHandle);
+
+  if (statusType == CMD_USER_DEBUG_DRAW_PARAMETER_COMPLETED) {
+    double paramValue = 0.f;
+    int ok = b3GetStatusDebugParameterValue(statusHandle, &paramValue);
+    if (ok) {
+      return paramValue;
+    } 
+  }
+  b3Warning("readUserDebugParameter failed.");
+  return 0;
+}
+
+bool b3RobotSimulatorClientAPI::removeUserDebugItem(int itemUniqueId) {
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected to physics server.");
+    return false;
+  }
+  b3SharedMemoryCommandHandle commandHandle;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+
+  commandHandle = b3InitUserDebugDrawRemove(sm, itemUniqueId);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
+  statusType = b3GetStatusType(statusHandle);
+  return true;
+}
 
 

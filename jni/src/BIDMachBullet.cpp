@@ -110,12 +110,16 @@ static b3Quaternion javaQuaternionToNative(JNIEnv *env, jobject jq) {
   jclass jqclass = NULL;
   jfieldID jxfield = NULL, jyfield = NULL, jzfield = NULL, jwfield = NULL;
   float x, y, z, w;
-  getQuaternionFields(env, jqclass, jxfield, jyfield, jzfield, jwfield);
-  x = env->GetFloatField(jq, jxfield);
-  y = env->GetFloatField(jq, jyfield);
-  z = env->GetFloatField(jq, jzfield);
-  w = env->GetFloatField(jq, jwfield);
-  return b3Quaternion(x, y, z, w);
+  if (jq != NULL) {
+    getQuaternionFields(env, jqclass, jxfield, jyfield, jzfield, jwfield);
+    x = env->GetFloatField(jq, jxfield);
+    y = env->GetFloatField(jq, jyfield);
+    z = env->GetFloatField(jq, jzfield);
+    w = env->GetFloatField(jq, jwfield);
+    return b3Quaternion(x, y, z, w);
+  } else {
+    return b3Quaternion(0, 0, 0, 1);
+  }
 }
 
 static void nativeQuaternionToJava(JNIEnv *env, jobject jq, b3Quaternion &q) {
@@ -156,11 +160,15 @@ static b3Vector3 javaVector3ToNative(JNIEnv *env, jobject jv) {
   jclass jvclass = NULL;
   jfieldID jxfield = NULL, jyfield = NULL, jzfield = NULL;
   float x, y, z;
-  getVector3Fields(env, jvclass, jxfield, jyfield, jzfield);
-  x = env->GetFloatField(jv, jxfield);
-  y = env->GetFloatField(jv, jyfield);
-  z = env->GetFloatField(jv, jzfield);
-  return b3MakeVector3(x, y, z);
+  if (jv != NULL) {
+    getVector3Fields(env, jvclass, jxfield, jyfield, jzfield);
+    x = env->GetFloatField(jv, jxfield);
+    y = env->GetFloatField(jv, jyfield);
+    z = env->GetFloatField(jv, jzfield);
+    return b3MakeVector3(x, y, z);
+  } else {
+    return b3MakeVector3(0, 0, 0);
+  }
 }
 
 static void nativeVector3ToJava(JNIEnv *env, jobject jv, b3Vector3 &v) {
@@ -1297,16 +1305,16 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetJointState
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex,
- int controlMode,  double targetPosition, double kp,  double targetVelocity,
- double kd, double maxTorqueValue)
+ int controlMode,  double targetPosition, double targetVelocity, double force,
+ double kp, double kd)
 {
   struct b3RobotSimulatorJointMotorArgs motorArgs(0);
   motorArgs.m_controlMode = controlMode;
   motorArgs.m_targetPosition = targetPosition;
-  motorArgs.m_kp = kp;
   motorArgs.m_targetVelocity = targetVelocity;
+  motorArgs.m_kp = kp;
   motorArgs.m_kd = kd;
-  motorArgs.m_maxTorqueValue = maxTorqueValue;
+  motorArgs.m_maxTorqueValue = force;
 
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setJointMotorControl(bodyUniqueId, jointIndex, motorArgs);
@@ -1486,9 +1494,9 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseDynamics
   CHECKVALUE(jjointForcesOutput, "calculateInverseDynamics: jointForcesOutput is null", false);
 
   CHECKDIMS(jjointPositions, numJoints, "calculateInverseKinematics: jointPositions dimension must be numJoints", false);
-  CHECKDIMS(jjointPositions, numJoints, "calculateInverseKinematics: jointPositions dimension must be numJoints", false);
-  CHECKDIMS(jjointPositions, numJoints, "calculateInverseKinematics: jointPositions dimension must be numJoints", false);
-  CHECKDIMS(jjointPositions, numJoints, "calculateInverseKinematics: jointPositions dimension must be numJoints", false);
+  CHECKDIMS(jjointVelocities, numJoints, "calculateInverseKinematics: jointVelocities dimension must be numJoints", false);
+  CHECKDIMS(jjointAccelerations, numJoints, "calculateInverseKinematics: jointAccelerations dimension must be numJoints", false);
+  CHECKDIMS(jjointForcesOutput, numJoints, "calculateInverseKinematics: jointForcesOutput dimension must be numJoints", false);
 
   double *jointPositions = (jdouble *)env->GetPrimitiveArrayCritical(jjointPositions, JNI_FALSE);
   double *jointVelocities = (jdouble *)env->GetPrimitiveArrayCritical(jjointVelocities, JNI_FALSE);
@@ -1511,12 +1519,21 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyJacobian
 {
   int n, i;
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  int numJoints = jrsa->getNumJoints(bodyUniqueId);
+  
   CHECKVALUE(jlocalPosition, "getBodyJacobian: localPosition is null", false);
   CHECKVALUE(jjointPositions, "getBodyJacobian: jointPositions is null", false);
   CHECKVALUE(jjointVelocities, "getBodyJacobian: jointVelocities is null", false);
   CHECKVALUE(jjointAccelerations, "getBodyJacobian: jointAccelerations is null", false);
   CHECKVALUE(jlinearJacobian, "getBodyJacobian: linearJacobian is null", false);
   CHECKVALUE(jangularJacobian, "getBodyJacobian: angularJacobian is null", false);
+
+  CHECKDIMS(jlocalPosition, numJoints, "getBodyJacobian: localPosition dimension must be numJoints", false);
+  CHECKDIMS(jjointPositions, numJoints, "getBodyJacobian: jointPositions dimension must be numJoints", false);
+  CHECKDIMS(jjointVelocities, numJoints, "getBodyJacobian: jointVelocities dimension must be numJoints", false);
+  CHECKDIMS(jjointAccelerations, numJoints, "getBodyJacobian: jointAccelerations dimension must be numJoints", false);
+  CHECKDIMS(jlinearJacobian, 3*numJoints, "getBodyJacobian: linearJacobian dimension must be 3 x numJoints", false);
+  CHECKDIMS(jangularJacobian, 3*numJoints, "getBodyJacobian: angularJacobian dimension must be 3 x numJoints", false);
 
   double *localPosition = (jdouble *)env->GetPrimitiveArrayCritical(jlocalPosition, JNI_FALSE);
   double *jointPositions = (jdouble *)env->GetPrimitiveArrayCritical(jjointPositions, JNI_FALSE);
@@ -1663,6 +1680,27 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrixFromPositions
   env->ReleasePrimitiveArrayCritical(jcameraUp, cameraUp, 0);
   env->ReleasePrimitiveArrayCritical(jcameraTargetPosition, cameraTargetPosition, 0);
   env->ReleasePrimitiveArrayCritical(jcameraPosition, cameraPosition, 0);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrixFromYawPitchRoll
+(JNIEnv *env, jobject obj, jfloatArray jcameraTargetPosition, jfloat distance,
+ jfloat yaw, jfloat pitch, jfloat roll, jint upAxisIndex, jfloatArray jviewMatrix)
+{
+  
+  float *cameraTargetPosition = NULL;
+  float *viewMatrix = NULL;
+  CHECKVALUE(jcameraTargetPosition, "computeProjectionMatrix: cameraTargetPosition is null",);
+  CHECKDIMS(jcameraTargetPosition, 3, "computeProjectionMatrix: cameraTargetPosition must have dimension 3",);
+  CHECKVALUE(jviewMatrix, "computeProjectionMatrix: viewMatrix is null",);
+  CHECKDIMS(jviewMatrix, 16, "computeProjectionMatrix: viewMatrix must have dimension 16",);
+
+  viewMatrix = (float *)env->GetPrimitiveArrayCritical(jviewMatrix, JNI_FALSE);
+  cameraTargetPosition = (float *)env->GetPrimitiveArrayCritical(jcameraTargetPosition, JNI_FALSE);
+
+  b3ComputeViewMatrixFromYawPitchRoll(cameraTargetPosition, distance, yaw, pitch, roll, upAxisIndex, viewMatrix);
+
+  env->ReleasePrimitiveArrayCritical(jcameraTargetPosition, cameraTargetPosition, 0);
+  env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeProjectionMatrix
@@ -1858,6 +1896,40 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
 
   return status;
 }
+
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugParameter
+(JNIEnv *env, jobject jRoboSimAPI, jstring jparamName, jdouble rangeMin, jdouble rangeMax, jdouble startValue)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  char *paramName = (char *)(env->GetStringUTFChars(jparamName, 0));
+  
+  int iparam = jrsa -> addUserDebugParameter(paramName, rangeMin, rangeMax, startValue);
+
+  env->ReleaseStringUTFChars(jparamName, paramName);
+  return iparam;
+}
+
+JNIEXPORT jdouble Java_edu_berkeley_bid_Bullet_readUserDebugParameter
+(JNIEnv *env, jobject jRoboSimAPI, jint itemUniqueId)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  
+  double dvalue = jrsa -> readUserDebugParameter(itemUniqueId);
+
+  return dvalue;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_removeUserDebugItem
+(JNIEnv *env, jobject jRoboSimAPI, jint itemUniqueId)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  
+  bool status = jrsa -> removeUserDebugItem(itemUniqueId);
+
+  return status;
+}
+
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)

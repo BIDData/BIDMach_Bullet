@@ -106,8 +106,8 @@ public class Bullet implements Serializable {
     }
 
     public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
-					    int controlMode,  double targetPosition, double kp,  double targetVelocity,
-					    double kd, double maxTorqueValue);
+					    int controlMode,  double targetPosition, double targetVelocity,
+					    double force, double kp, double kd);
 
     public native boolean getJointState(int bodyUniqueId, int jointIndex, JointSensorState state);
 
@@ -170,6 +170,9 @@ public class Bullet implements Serializable {
     public static native void computeViewMatrixFromPositions(float [] jcameraPosition, float [] jcameraTargetPosition,
 							     float [] jcameraUp, float [] jviewMatrix);
 
+    public static native void computeViewMatrixFromYawPitchRoll(float [] cameraTargetPosition, float distance, float yaw, float pitch, float roll,
+								int upAxisIndex, float [] viewMatrix);
+    
     public static native void computeProjectionMatrix(float left, float right, float bottom, float top,
 						      float nearVal, float farVal, float [] jprojectionMatrix);
 
@@ -238,7 +241,7 @@ public class Bullet implements Serializable {
 					 double rollingFriction, double restitution, double linearDamping, double angularDamping,
 					 double contactStiffness, double contactDamping, int frictionAnchor);
 
-    public native void renderScence();
+    public native void renderScene();
 
     public native void debugDraw();
 
@@ -260,8 +263,14 @@ public class Bullet implements Serializable {
 	return keyboardEventsData;
     }
 
-    public native void submitProfileTiming(String jprofileName, int durationInMicroseconds);
+    public native void submitProfileTiming(String profileName, int durationInMicroseconds);
 
+    public native int addUserDebugParameter(String paramName, double rangeMin, double rangeMax, double startValue);
+
+    public native double readUserDebugParameter(int itemUniqueId);
+
+    public native boolean removeUserDebugItem(int itemUniqueId);
+    
 
     public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
 

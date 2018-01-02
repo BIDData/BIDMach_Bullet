@@ -1,21 +1,22 @@
+import edu.berkeley.bid.bullet.{Vector3,Matrix3x3,Transform3,CameraImageData,JointInfo,JointStates2,LinkState,JointSensorState,BodyInfo,DynamicsInfo,KeyboardEventsData}
 import BIDMach.rl.environments.Bullet
-import edu.berkeley.bid.bullet._
+import BIDMach.rl.environments.Bullet._
 
 val sim = new Bullet;
 
-//sim.connect(Bullet.eCONNECT_GUI);
+sim.connect(eCONNECT_GUI);
 
-sim.connect(Bullet.eCONNECT_DIRECT);
+//sim.connect(eCONNECT_DIRECT);
 
-sim.configureDebugVisualizer(Bullet.COV_ENABLE_GUI, 0);
+sim.configureDebugVisualizer(COV_ENABLE_GUI, 0);
 
-sim.setGravity(new Vector3(0,0,-9.8f));
+sim.setGravity(row(0,0,-9.8f));
 
 val planeId = sim.loadURDF("/code/bullet3/data/plane.urdf")
 
-val cubeStartPos = new Vector3(0,0,0.6f);
+val cubeStartPos = row(0,0,0.6f);
 
-val cubeStartOrient = Bullet.getQuaternionFromEuler(new Vector3(0,0,0));
+val cubeStartOrient = getQuaternionFromEuler(row(0,0,0));
 
 val boxId = sim.loadURDF("/code/bullet3/data/r2d2.urdf", cubeStartPos, cubeStartOrient)
 
@@ -23,11 +24,9 @@ sim.stepSimulation()
 
 val imgsize = 512
 
-//val img = sim.getCameraImage(imgsize, imgsize)
+val view = computeViewMatrixFromPositions(row(1,1,1),row(0,0,0),row(0,0,1));
 
-val view = Bullet.computeViewMatrixFromPositions(row(1,1,1),row(0,0,0),row(0,0,1));
-
-val proj = Bullet.computeProjectionMatrixFOV(100, 1, 0.01f, 100);
+val proj = computeProjectionMatrixFOV(100, 1, 0.01f, 100);
 
 val img = sim.getCameraImageInts1(imgsize, imgsize, view, proj);
 
