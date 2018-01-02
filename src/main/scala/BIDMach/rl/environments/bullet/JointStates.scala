@@ -2,9 +2,9 @@ package BIDMach.rl.environments.bullet;
 import BIDMat.{FMat,DMat};
 
 @SerialVersionUID(32134214321342L)
-class JointStates(jss:edu.berkeley.bid.bullet.JointStates2, numJoints:Int) extends Serializable {
+class JointStates(jjs:edu.berkeley.bid.bullet.JointStates2) extends Serializable {
 
-    val javaJointStates = jss;
+    val javaJointStates = jjs;
 
     def bodyUniqueId = javaJointStates.m_bodyUniqueId;
     def ndofQ = javaJointStates.m_numDegreeOfFreedomQ;

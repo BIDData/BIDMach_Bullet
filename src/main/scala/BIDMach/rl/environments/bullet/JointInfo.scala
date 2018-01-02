@@ -41,7 +41,7 @@ class JointInfo(jji:edu.berkeley.bid.bullet.JointInfo) extends Serializable {
 
 
     override def toString () = {
-	"[" +
+	"JointInfo[" +
 	    "jointIndex=" + jointIndex + ", " +
 	    "jointName=" + jointName + ", " +
 	    "jointType=" + jointType + ", " +

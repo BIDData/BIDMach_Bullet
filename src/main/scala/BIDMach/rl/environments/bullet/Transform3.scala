@@ -44,7 +44,9 @@ class Transform3(jtf3:edu.berkeley.bid.bullet.Transform3) extends Serializable {
 	javaTransform3.m_origin.x = origin(0);
 	javaTransform3.m_origin.y = origin(1);
 	javaTransform3.m_origin.z = origin(2);
-    }
+    };
+
+    def this() = this(new edu.berkeley.bid.bullet.Transform3);
 
     override def toString () = {
 	 "Transform3[basis=" + basis.toString() + ", origin=" + origin.toString()+"]";
