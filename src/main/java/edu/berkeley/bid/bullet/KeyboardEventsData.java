@@ -16,9 +16,11 @@ public class KeyboardEventsData implements Serializable {
 
     public KeyboardEventsData(int numKeyboardEvents) {
 	m_numKeyboardEvents = numKeyboardEvents;
-        m_keyboardEvents = new KeyboardEvent[numKeyboardEvents];
-	for (int i = 0; i < numKeyboardEvents; i++) {
-	    m_keyboardEvents[i] = new KeyboardEvent();
+	if (numKeyboardEvents > 0) {
+	    m_keyboardEvents = new KeyboardEvent[numKeyboardEvents];
+	    for (int i = 0; i < numKeyboardEvents; i++) {
+		m_keyboardEvents[i] = new KeyboardEvent();
+	    }
 	}
     }
 

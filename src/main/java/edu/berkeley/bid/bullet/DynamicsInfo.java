@@ -5,9 +5,9 @@ import java.io.Serializable;
 public class DynamicsInfo implements Serializable {
     private static final long serialVersionUID = 342183472184927723L;
 
-    double m_mass;
-    double [] m_localInertialPosition;
-    double m_lateralFrictionCoeff;
+    public double m_mass;
+    public double [] m_localInertialPosition;
+    public double m_lateralFrictionCoeff;
 
     public DynamicsInfo() {
 	m_localInertialPosition = new double[3];

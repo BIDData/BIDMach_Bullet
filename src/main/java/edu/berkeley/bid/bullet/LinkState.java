@@ -5,20 +5,20 @@ import java.io.Serializable;
 public class LinkState implements Serializable {
     private static final long serialVersionUID = 4783245849535423L;
 
-    double [] m_worldPosition;
-    double [] m_worldOrientation;
+    public double [] m_worldPosition;
+    public double [] m_worldOrientation;
 
-    double [] m_localInertialPosition;
-    double [] m_localInertialOrientation;
+    public double [] m_localInertialPosition;
+    public double [] m_localInertialOrientation;
 
-    double [] m_worldLinkFramePosition;
-    double [] m_worldLinkFrameOrientation;
+    public double [] m_worldLinkFramePosition;
+    public double [] m_worldLinkFrameOrientation;
 
-    double [] m_worldLinearVelocity; 
-    double [] m_worldAngularVelocity;
+    public double [] m_worldLinearVelocity; 
+    public double [] m_worldAngularVelocity;
 
-    double [] m_worldAABBMin;
-    double [] m_worldAABBMax;
+    public double [] m_worldAABBMin;
+    public double [] m_worldAABBMax;
 
     public LinkState() {
 	m_worldPosition = new double[3];
