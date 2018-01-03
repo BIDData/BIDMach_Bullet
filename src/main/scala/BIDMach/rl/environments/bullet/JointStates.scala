@@ -20,6 +20,8 @@ class JointStates(jjs:edu.berkeley.bid.bullet.JointStates2) extends Serializable
 
     val rootLocalInertialFrame = new Transform3(javaJointStates.m_rootLocalInertialFrame);
 
+    def this() = this(new edu.berkeley.bid.bullet.JointStates2);
+
     def unpack = {
 	(jointPositions, jointVelocities, jointReactionForces)
     }

@@ -1,5 +1,6 @@
 package BIDMach.rl.environments;
-import edu.berkeley.bid.bullet.{Vector3,Matrix3x3,Transform3,CameraImageData,JointInfo,JointStates2,LinkState,JointSensorState,BodyInfo,DynamicsInfo,KeyboardEventsData}
+import BIDMach.rl.environments.bullet._;
+import edu.berkeley.bid.bullet.{Vector3,Matrix3x3}
 import BIDMat.{BMat,DMat,FMat,IMat,Quaternion};
 import BIDMat.MatFunctions;
 
@@ -74,13 +75,19 @@ class Bullet {
 
     def setRealTimeSimulation(enable:Boolean) = {
 	javaBullet.setRealTimeSimulation(enable);
-    }
+    };
 
-	def getBasePositionAndOrientation(bodyUniqueId:Int):(FMat, Quaternion) = {
+    def getBasePositionAndOrientation(bodyUniqueId:Int):(FMat, Quaternion) = {
 	val basePosition = new Vector3();
 	val baseOrientation = new edu.berkeley.bid.bullet.Quaternion();
 	javaBullet.getBasePositionAndOrientation(bodyUniqueId, basePosition, baseOrientation);
 	(fromVector3ToFMat(basePosition), JavaQtoBIDMatQ(baseOrientation));
+    };
+
+    def resetBasePositionAndOrientation(bodyUniqueId:Int, position:FMat, orientation:Quaternion) = {
+	val basePosition = fromFMatToVector3(position);
+	val baseOrientation = BIDMatQtoJavaQ(orientation);
+	javaBullet.resetBasePositionAndOrientation(bodyUniqueId, basePosition, baseOrientation);
     };
 
     def getNumJoints(bodyUniqueId:Int):Int = {
@@ -89,15 +96,27 @@ class Bullet {
 
     def getJointInfo(bodyUniqueId:Int, jointIndex:Int):JointInfo = {
 	val jointInfo = new JointInfo();
-	javaBullet.getJointInfo(bodyUniqueId, jointIndex, jointInfo);
+	javaBullet.getJointInfo(bodyUniqueId, jointIndex, jointInfo.javaJointInfo);
 	jointInfo;
     };
 
-    def getJointStates(bodyUniqueId:Int):JointStates2 = {
-	val jointStates = new JointStates2();
-	javaBullet.getJointStates(bodyUniqueId, jointStates);
-	jointStates;
-    };
+    def getJointStates(bodyUniqueId:Int):JointStates = {
+	val javaJointStates = new edu.berkeley.bid.bullet.JointStates2();
+	javaBullet.getJointStates(bodyUniqueId, javaJointStates);
+	new JointStates(javaJointStates);
+    };    
+
+    def getJointStates4(bodyUniqueId:Int, jointIndices:IMat):(DMat, DMat, DMat, DMat) = {
+	val numJoints = jointIndices.length;
+	val jointPositions = DMat.zeros(1, numJoints);
+	val jointVelocities = DMat.zeros(1, numJoints);
+	val jointForceTorques = DMat.zeros(6, numJoints);
+	val jointMotorTorques = DMat.zeros(1, numJoints);
+	javaBullet.getJointStates(bodyUniqueId, jointIndices.data,
+				  jointPositions.data, jointVelocities.data,
+				  jointForceTorques.data, jointMotorTorques.data);
+	(jointPositions, jointVelocities, jointForceTorques, jointMotorTorques);
+    };    
 
     def setJointMotorControl(bodyUniqueId:Int, jointIndex:Int, controlMode:Int,
 			     targetPosition:Double = 0, targetVelocity:Double = 0,
@@ -115,7 +134,7 @@ class Bullet {
 
     def getJointState(bodyUniqueId:Int, jointIndex:Int):JointSensorState = {
 	val jointState = new JointSensorState();
-	javaBullet.getJointState(bodyUniqueId, jointIndex, jointState);
+	javaBullet.getJointState(bodyUniqueId, jointIndex, jointState.javaSensorState);
 	jointState;
     };
 
@@ -125,7 +144,7 @@ class Bullet {
 
     def getLinkState(bodyUniqueId:Int, linkIndex:Int, computeLinkVelocity:Int = 0, computeForwardKinematics:Int = 0):LinkState = {
 	val linkState = new LinkState();
-	javaBullet.getLinkState(bodyUniqueId, linkIndex, computeLinkVelocity, computeForwardKinematics, linkState);
+	javaBullet.getLinkState(bodyUniqueId, linkIndex, computeLinkVelocity, computeForwardKinematics, linkState.javaLinkState);
 	linkState;
     };
 
@@ -156,7 +175,7 @@ class Bullet {
 
     def getBodyInfo(bodyUniqueId:Int):BodyInfo = {
 	val bodyInfo = new BodyInfo();
-	javaBullet.getBodyInfo(bodyUniqueId, bodyInfo);
+	javaBullet.getBodyInfo(bodyUniqueId, bodyInfo.javaBodyInfo);
 	bodyInfo;
     };
 
@@ -170,7 +189,7 @@ class Bullet {
 
     def createConstraint(parentBodyIndex:Int, parentJointIndex:Int, childBodyIndex:Int, childJointIndex:Int, jointInfo:JointInfo):Int = {
 
-	javaBullet.createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, jointInfo);
+	javaBullet.createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, jointInfo.javaJointInfo);
 	
     };
 
@@ -184,7 +203,7 @@ class Bullet {
     };
 
     def changeConstraint(constraintId:Int, jointInfo:JointInfo):Int = {
-	javaBullet.changeConstraint(constraintId, jointInfo);
+	javaBullet.changeConstraint(constraintId, jointInfo.javaJointInfo);
     };
 
     def removeConstraint(constraintId:Int):Unit = {
@@ -230,28 +249,28 @@ class Bullet {
 	} else {
 	    mat.data;
 	}
-    }
+    };
 
-	def getCameraImage(width:Int, height:Int,
-			   viewMatrix:FMat=null, projectionMatrix:FMat=null,
-			   lightProjection:FMat=null, lightColor:FMat=null,
-			   lightDistance:Float= -1f, hasShadow:Int = -1,
-			   lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
-			   renderer:Int = -1):CameraImageData = {
+    def getCameraImage(width:Int, height:Int,
+		       viewMatrix:FMat=null, projectionMatrix:FMat=null,
+		       lightProjection:FMat=null, lightColor:FMat=null,
+		       lightDistance:Float= -1f, hasShadow:Int = -1,
+		       lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
+		       renderer:Int = -1):CameraImageData = {
 
-	val cameraImage = new CameraImageData();
+	val cameraImage = new CameraImageData(width, height);
 
 	javaBullet.getCameraImage(width, height,
 				  fromFMatToFloatArray(viewMatrix), fromFMatToFloatArray(projectionMatrix),
 				  fromFMatToFloatArray(lightProjection), fromFMatToFloatArray(lightColor),
 				  lightDistance, hasShadow,
 				  lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
-				  renderer, cameraImage);
+				  renderer, cameraImage.javaCameraImageData);
 
 	cameraImage;
-    }
+    };
 
-	def getCameraImageInts1(width:Int, height:Int,
+    def getCameraImageInts1(width:Int, height:Int,
 				viewMatrix:FMat=null, projectionMatrix:FMat=null,
 				lightProjection:FMat=null, lightColor:FMat=null,
 				lightDistance:Float= -1f, hasShadow:Int = -1,
@@ -363,7 +382,7 @@ class Bullet {
 
     def getDynamicsInfo(bodyUniqueId:Int, jointIndex:Int):DynamicsInfo = {
 	val dynamicsInfo = new DynamicsInfo();
-	javaBullet.getDynamicsInfo(bodyUniqueId, jointIndex, dynamicsInfo);
+	javaBullet.getDynamicsInfo(bodyUniqueId, jointIndex, dynamicsInfo.javaDynamicsInfo);
 	dynamicsInfo;
     };
 

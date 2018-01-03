@@ -1603,7 +1603,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyJacobian
   CHECKVALUE(jlinearJacobian, "getBodyJacobian: linearJacobian is null", false);
   CHECKVALUE(jangularJacobian, "getBodyJacobian: angularJacobian is null", false);
 
-  CHECKDIMS(jlocalPosition, numJoints, "getBodyJacobian: localPosition dimension must be numJoints", false);
+  CHECKDIMS(jlocalPosition, 3, "getBodyJacobian: localPosition dimension must be 3", false);
   CHECKDIMS(jjointPositions, numJoints, "getBodyJacobian: jointPositions dimension must be numJoints", false);
   CHECKDIMS(jjointVelocities, numJoints, "getBodyJacobian: jointVelocities dimension must be numJoints", false);
   CHECKDIMS(jjointAccelerations, numJoints, "getBodyJacobian: jointAccelerations dimension must be numJoints", false);

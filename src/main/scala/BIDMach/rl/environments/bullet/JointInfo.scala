@@ -33,9 +33,9 @@ class JointInfo(jji:edu.berkeley.bid.bullet.JointInfo) extends Serializable {
     def jointMaxForce_=(v:Double) = {javaJointInfo.m_jointMaxForce = v;};
     def jointMaxVelocity_=(v:Double) = {javaJointInfo.m_jointMaxVelocity = v;};
 
-    val parentFrame = new DMat(1,7, javaJointInfo.m_parentFrame);
-    val childFrame = new DMat(1,7, javaJointInfo.m_childFrame);
-    val jointAxis = new DMat(1,7, javaJointInfo.m_jointAxis);
+    val parentFrame = new DMat(1, 7, javaJointInfo.m_parentFrame);
+    val childFrame = new DMat(1, 7, javaJointInfo.m_childFrame);
+    val jointAxis = new DMat(1, 3, javaJointInfo.m_jointAxis);
 
     def this() = this(new edu.berkeley.bid.bullet.JointInfo);
 

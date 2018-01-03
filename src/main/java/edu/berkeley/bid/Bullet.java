@@ -115,6 +115,25 @@ public class Bullet implements Serializable {
 	return jointStates;
     }
 
+    public void getJointStates(int bodyUniqueId, int [] jointIndices,
+			       double [] jointPositions, double [] jointVelocities,
+			       double [] jointForceTorque, double [] jointMotorTorque) {
+	int numjoints = jointIndices.length;
+	int forceTorqueSize = 6; 
+	for (int i = 0; i < numjoints; i++) {
+	    JointSensorState jointState = getJointState(bodyUniqueId, i);
+	    jointPositions[i] = jointState.m_jointPosition;
+	    jointVelocities[i] = jointState.m_jointVelocity;
+	    jointMotorTorque[i] = jointState.m_jointMotorTorque;
+	    jointForceTorque[forceTorqueSize * i] = jointState.m_jointForceTorque[0];
+	    jointForceTorque[forceTorqueSize * i + 1] = jointState.m_jointForceTorque[1];
+	    jointForceTorque[forceTorqueSize * i + 2] = jointState.m_jointForceTorque[2];
+	    jointForceTorque[forceTorqueSize * i + 2] = jointState.m_jointForceTorque[3];
+	    jointForceTorque[forceTorqueSize * i + 4] = jointState.m_jointForceTorque[4];
+	    jointForceTorque[forceTorqueSize * i + 5] = jointState.m_jointForceTorque[5];
+	}
+    }
+
     public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
 					    int controlMode,  double targetPosition, double targetVelocity,
 					    double force, double kp, double kd);

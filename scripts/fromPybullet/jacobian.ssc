@@ -1,11 +1,12 @@
 import BIDMach.rl.environments.bullet._
-import BIDMach.rl.environments.{Bullet,Bullet._}
+import BIDMach.rl.environments.Bullet
+import BIDMach.rl.environments.Bullet._
 
 val sim = new Bullet;
 sim.connect(eCONNECT_GUI);
 
 def getJointStates(robot:Int) = {
-    sim.getJointStates(robot, irow(0->sim.getNumJoints(robot))).unpack;
+    sim.getJointStates(robot).unpack
 };
 
 def setJointPosition(robot:Int, position:DMat, kp:Double=1.0, kv:Double=0.3) = {
@@ -17,9 +18,7 @@ def setJointPosition(robot:Int, position:DMat, kp:Double=1.0, kv:Double=0.3) = {
 				      targetPositions=position, targetVelocities=zero_vec,
 				      positionGains=kp * one_vec, velocityGains=kv * one_vec);
     } else {
-	print("Not setting torque. " +
-	      "Expected torque vector of " +
-	      "length %d, got %d" format(num_joints, len(torque)));
+	println("Positions length doesnt match numJoints");
     }
 };
 
@@ -33,18 +32,19 @@ val gravity_constant = -9.81f;
 sim.resetSimulation();
 sim.setTimeStep(time_step);
 sim.setGravity(0, 0, gravity_constant);
+sim.setPathPrefix("/code/bullet3/data/");
 sim.loadURDF("plane.urdf",row(0,0,-0.3f));
 
 
 val kukaId = sim.loadURDF("kuka_iiwa/model.urdf");
-sim.resetBasePositionAndOrientation(kukaId,row(0,0,0),Quaternion.idt);
+sim.resetBasePositionAndOrientation(kukaId,row(0,0,0),Quaternion.identity());
 val kukaEndEffectorIndex = 6;
 val numJoints = sim.getNumJoints(kukaId);
 // Set a joint target for the position control and step the sim.
 setJointPosition(kukaId, 0.1*dones(1,numJoints));
 sim.stepSimulation();
 // Get the joint and link state directly from Bullet.
-val (positions, velocities, reactionForces) = getJointStates(kukaId);
+val (positions, velocities, reactionForces, _) = sim.getJointStates4(kukaId, irow(0->numJoints));
 val result = sim.getLinkState(kukaId, kukaEndEffectorIndex, computeLinkVelocity=1, computeForwardKinematics=1);
 // Get the Jacobians for the CoM of the end-effector link.
 // Note that in this example com_rot = identity, and we would need to use com_rot.T * com_trn.
@@ -53,10 +53,11 @@ val zero_vec = dzeros(1, numJoints);
 val (jac_t, jac_r) = sim.calculateJacobian(kukaId, kukaEndEffectorIndex, result.localInertialPosition, positions, zero_vec, zero_vec);
 
 print ("Link linear velocity of CoM from getLinkState:")
-print (link_vt)
+println (result.worldLinearVelocity)
 print ("Link linear velocity of CoM from linearJacobian * q_dot:")
-print (multiplyJacobian(jac_t, vel))
+println (multiplyJacobian(jac_t, velocities))
 print ("Link angular velocity of CoM from getLinkState:")
-print (link_vr)
+println (result.worldAngularVelocity)
 print ("Link angular velocity of CoM from angularJacobian * q_dot:")
-print (multiplyJacobian(jac_r, vel))
+println (multiplyJacobian(jac_r, velocities))
+

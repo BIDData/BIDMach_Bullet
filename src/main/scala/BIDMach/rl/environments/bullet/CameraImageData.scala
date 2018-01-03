@@ -12,6 +12,8 @@ class CameraImageData(jcid:edu.berkeley.bid.bullet.CameraImageData) extends Seri
     val depth = new FMat(width, height, javaCameraImageData.m_depthValues);
     val segmentation = new IMat(width, height, javaCameraImageData.m_segmentationMaskValues);
 
+    def this(width:Int, height:Int) = this(new edu.berkeley.bid.bullet.CameraImageData(width, height));
+
     def unpack() = {
 	(rgb, depth, segmentation)
     }

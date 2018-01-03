@@ -1,4 +1,4 @@
-import edu.berkeley.bid.bullet.{Vector3,Matrix3x3,Transform3,CameraImageData,JointInfo,JointStates2,LinkState,JointSensorState,BodyInfo,DynamicsInfo,KeyboardEventsData}
+import BIDMach.rl.environments.bullet._
 import BIDMach.rl.environments.Bullet
 import BIDMach.rl.environments.Bullet._
 
@@ -21,7 +21,7 @@ sim.loadSDF("stadium.sdf");
 val car = sim.loadURDF("racecar/racecar.urdf");
 
 for (i <- 0 until sim.getNumJoints(car)) {
-    print(sim.getJointInfo(car, i));
+    println(sim.getJointInfo(car, i));
 }
 
 val inactive_wheels = Array(3,5,7);
