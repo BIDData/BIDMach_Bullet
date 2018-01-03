@@ -63,7 +63,7 @@ class Bullet {
 	MatFunctions.irow(ints);
     }
 
-    def loadBullet(fname:String):IMat = {
+	def loadBullet(fname:String):IMat = {
 	val ints:Array[Int] = javaBullet.loadBullet(appendPathPrefix(fname));
 	MatFunctions.irow(ints);
     };
@@ -76,7 +76,7 @@ class Bullet {
 	javaBullet.setRealTimeSimulation(enable);
     }
 
-    def getBasePositionAndOrientation(bodyUniqueId:Int):(FMat, Quaternion) = {
+	def getBasePositionAndOrientation(bodyUniqueId:Int):(FMat, Quaternion) = {
 	val basePosition = new Vector3();
 	val baseOrientation = new edu.berkeley.bid.bullet.Quaternion();
 	javaBullet.getBasePositionAndOrientation(bodyUniqueId, basePosition, baseOrientation);
@@ -160,6 +160,14 @@ class Bullet {
 	bodyInfo;
     };
 
+    def applyExternalForce(objectUniqueId:Int, linkIndex:Int, force:DMat, position:DMat, flags:Int) = {
+	javaBullet.applyExternalForce(objectUniqueId, linkIndex, force.data, position.data, flags);
+    };
+	
+    def applyExternalTorque(objectUniqueId:Int, linkIndex:Int, torque:DMat, flags:Int) = {
+	javaBullet.applyExternalTorque(objectUniqueId, linkIndex, torque.data, flags);
+    };
+
     def createConstraint(parentBodyIndex:Int, parentJointIndex:Int, childBodyIndex:Int, childJointIndex:Int, jointInfo:JointInfo):Int = {
 
 	javaBullet.createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, jointInfo);
@@ -174,8 +182,6 @@ class Bullet {
 				    jointType, jointAxis.data, parentFramePosition.data, childFramePosition.data,
 				    getData(parentFrameOrientation), getData(childFramOrientation));
     };
-
-
 
     def changeConstraint(constraintId:Int, jointInfo:JointInfo):Int = {
 	javaBullet.changeConstraint(constraintId, jointInfo);
@@ -205,7 +211,7 @@ class Bullet {
 	javaBullet.setContactBreakingThreshold(threshold);
     }
 
-    def resetSimulation():Unit = {
+	def resetSimulation():Unit = {
 	javaBullet.resetSimulation();
     };
 
@@ -226,12 +232,12 @@ class Bullet {
 	}
     }
 
-    def getCameraImage(width:Int, height:Int,
-		       viewMatrix:FMat=null, projectionMatrix:FMat=null,
-		       lightProjection:FMat=null, lightColor:FMat=null,
-		       lightDistance:Float= -1f, hasShadow:Int = -1,
-		       lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
-		       renderer:Int = -1):CameraImageData = {
+	def getCameraImage(width:Int, height:Int,
+			   viewMatrix:FMat=null, projectionMatrix:FMat=null,
+			   lightProjection:FMat=null, lightColor:FMat=null,
+			   lightDistance:Float= -1f, hasShadow:Int = -1,
+			   lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
+			   renderer:Int = -1):CameraImageData = {
 
 	val cameraImage = new CameraImageData();
 
@@ -245,12 +251,12 @@ class Bullet {
 	cameraImage;
     }
 
-    def getCameraImageInts1(width:Int, height:Int,
-			    viewMatrix:FMat=null, projectionMatrix:FMat=null,
-			    lightProjection:FMat=null, lightColor:FMat=null,
-			    lightDistance:Float= -1f, hasShadow:Int = -1,
-			    lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
-			    renderer:Int = -1):IMat = {
+	def getCameraImageInts1(width:Int, height:Int,
+				viewMatrix:FMat=null, projectionMatrix:FMat=null,
+				lightProjection:FMat=null, lightColor:FMat=null,
+				lightDistance:Float= -1f, hasShadow:Int = -1,
+				lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
+				renderer:Int = -1):IMat = {
 
 	val cameraImage = IMat.izeros(width, height);
 	
@@ -365,9 +371,9 @@ class Bullet {
 		       rollingFriction:Double= -1, restitution:Double= -1, linearDamping:Double= -1, angularDamping:Double= -1,
 		       contactStiffness:Double= -1, contactDamping:Double= -1, frictionAnchor:Int= -1):Boolean = {
 	
-	 javaBullet.changeDynamics(bodyUniqueId, linkIndex, mass, lateralFriction, spinningFriction,
-				   rollingFriction, restitution, linearDamping, angularDamping,
-				   contactStiffness, contactDamping, frictionAnchor);
+	javaBullet.changeDynamics(bodyUniqueId, linkIndex, mass, lateralFriction, spinningFriction,
+				  rollingFriction, restitution, linearDamping, angularDamping,
+				  contactStiffness, contactDamping, frictionAnchor);
     };
 
     def renderScene():Unit = {
@@ -420,7 +426,19 @@ class Bullet {
     def removeUserDebugItem(itemUniqueId:Int):Boolean = {
 	javaBullet.removeUserDebugItem(itemUniqueId);
     };
+
+    def setPhysicsEngineParameter(fixedTimeStep:Double= -1, numSolverIterations:Int= -1, useSplitImpulse:Int= -1,
+				  splitImpulsePenetrationThreshold:Double= -1, numSubSteps:Int= -1,
+				  collisionFilterMode:Int= -1, contactBreakingThreshold:Double= -1,
+				  maxNumCmdPer1ms:Int= -1, enableFileCaching:Int= -1, restitutionVelocityThreshold:Double= -1,
+				  erp:Double= -1, contactERP:Double= -1, frictionERP:Double= -1) = {
 	
+	javaBullet.setPhysicsEngineParameter(fixedTimeStep, numSolverIterations, useSplitImpulse,
+					     splitImpulsePenetrationThreshold, numSubSteps,
+					     collisionFilterMode, contactBreakingThreshold,
+					     maxNumCmdPer1ms, enableFileCaching, restitutionVelocityThreshold,
+					     erp, contactERP, frictionERP);
+    };	
 }
 
 object Bullet {

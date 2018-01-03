@@ -479,6 +479,39 @@ bool b3RobotSimulatorClientAPI::setPhysicsEngineParameter(struct b3RobotSimulato
   return true;
 }
 
+bool b3RobotSimulatorClientAPI::applyExternalForce(int objectUniqueId, int linkIndex, double *force, double *position, int flags) 
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+
+  command = b3ApplyExternalForceCommandInit(sm);
+  b3ApplyExternalForce(command, objectUniqueId, linkIndex, force, position, flags);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  return true;
+}
+
+bool b3RobotSimulatorClientAPI::applyExternalTorque(int objectUniqueId, int linkIndex, double *torque, int flags) 
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command = b3InitPhysicsParamCommand(sm);
+  b3SharedMemoryStatusHandle statusHandle;
+
+  command = b3ApplyExternalForceCommandInit(sm);
+  b3ApplyExternalTorque(command, objectUniqueId, linkIndex, torque, flags);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  return true;
+}
+
+
 
 
 

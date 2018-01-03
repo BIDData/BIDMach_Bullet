@@ -2005,6 +2005,71 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_removeUserDebugItem
   return status;
 }
 
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_setPhysicsEngineParameter
+(JNIEnv *env, jobject jRoboSimAPI,
+ jdouble fixedTimeStep, jint numSolverIterations, jint useSplitImpulse, jdouble splitImpulsePenetrationThreshold,
+ jint numSubSteps, jint collisionFilterMode, jdouble contactBreakingThreshold,  jint maxNumCmdPer1ms,
+ jint enableFileCaching, jdouble restitutionVelocityThreshold, jdouble erp, jdouble contactERP, jdouble frictionERP)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3RobotSimulatorSetPhysicsEngineParameters params;
+
+  params.m_fixedTimeStep = fixedTimeStep;
+  params.m_numSolverIterations = numSolverIterations;
+  params.m_useSplitImpulse = useSplitImpulse;
+  params.m_splitImpulsePenetrationThreshold = splitImpulsePenetrationThreshold;
+  params.m_numSubSteps = numSubSteps;
+  params.m_collisionFilterMode = collisionFilterMode;
+  params.m_contactBreakingThreshold = contactBreakingThreshold;
+  params.m_maxNumCmdPer1ms = maxNumCmdPer1ms;
+  params.m_enableFileCaching = enableFileCaching;
+  params.m_restitutionVelocityThreshold = restitutionVelocityThreshold;
+  params.m_erp = erp;
+  params.m_contactERP = contactERP;
+  params.m_frictionERP = frictionERP;
+    
+  bool status = jrsa -> setPhysicsEngineParameter(params);
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_applyExternalForce
+(JNIEnv *env, jobject jRoboSimAPI,
+ jint objectUniqueId, jint linkIndex, jdoubleArray jforce, jdoubleArray jposition, jint flags)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  CHECKVALUE(jforce, "applyExternalForce: force array is null", false);
+  CHECKDIMS(jforce, 3, "applyExternalForce: force array must have dimension 3", false);
+
+  CHECKVALUE(jposition, "applyExternalForce: position array is null", false);
+  CHECKDIMS(jposition, 3, "applyExternalForce: position array must have dimension 3", false);
+
+  double *force = (double *)env->GetPrimitiveArrayCritical(jforce, JNI_FALSE);
+  double *position = (double *)env->GetPrimitiveArrayCritical(jposition, JNI_FALSE);
+
+  bool status = jrsa -> applyExternalForce(objectUniqueId, linkIndex, force, position, flags);
+
+  env->ReleasePrimitiveArrayCritical(jposition, position, 0);
+  env->ReleasePrimitiveArrayCritical(jforce, force, 0);
+
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_applyExternalTorque
+(JNIEnv *env, jobject jRoboSimAPI,
+ jint objectUniqueId, jint linkIndex, jdoubleArray jtorque, jint flags)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  CHECKVALUE(jtorque, "applyExternalTorque: torque array is null", false);
+  CHECKDIMS(jtorque, 3, "applyExternalTorque: torque array must have dimension 3", false);
+
+  double *torque = (double *)env->GetPrimitiveArrayCritical(jtorque, JNI_FALSE);
+
+  bool status = jrsa -> applyExternalTorque(objectUniqueId, linkIndex, torque, flags);
+
+  env->ReleasePrimitiveArrayCritical(jtorque, torque, 0);
+
+  return status;
+}
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)

@@ -148,6 +148,10 @@ public class Bullet implements Serializable {
 	return bodyInfo;
     }
 
+    public native boolean applyExternalForce(int objectUniqueId, int linkIndex, double [] force, double [] position, int flags);
+
+    public native boolean applyExternalTorque(int objectUniqueId, int linkIndex, double [] torque, int flags);
+
     public native int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex, JointInfo jointInfo);
 
     public int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex,
@@ -306,7 +310,13 @@ public class Bullet implements Serializable {
     public native double readUserDebugParameter(int itemUniqueId);
 
     public native boolean removeUserDebugItem(int itemUniqueId);
-    
+
+    public native boolean setPhysicsEngineParameter(double fixedTimeStep, int numSolverIterations, int useSplitImpulse,
+						    double splitImpulsePenetrationThreshold, int numSubSteps,
+						    int collisionFilterMode, double contactBreakingThreshold,
+						    int maxNumCmdPer1ms, int enableFileCaching, double restitutionVelocityThreshold,
+						    double erp, double contactERP, double frictionERP);
+
 
     public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
 
