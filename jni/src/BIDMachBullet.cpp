@@ -1308,8 +1308,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
  int controlMode,  double targetPosition, double targetVelocity, double force,
  double kp, double kd)
 {
-  struct b3RobotSimulatorJointMotorArgs motorArgs(0);
-  motorArgs.m_controlMode = controlMode;
+  struct b3RobotSimulatorJointMotorArgs motorArgs(controlMode);
   motorArgs.m_targetPosition = targetPosition;
   motorArgs.m_targetVelocity = targetVelocity;
   motorArgs.m_kp = kp;
@@ -1319,6 +1318,83 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setJointMotorControl(bodyUniqueId, jointIndex, motorArgs);
 }
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_setJointMotorControlArray
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId,  jintArray jjointIndices, int controlMode,
+ jdoubleArray jtargetPositions, jdoubleArray jtargetVelocities, jdoubleArray jforces,
+ jdoubleArray jkps, jdoubleArray jkds)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+
+  int *jointIndices = NULL;
+  double *targetPositions = NULL;
+  double *targetVelocities = NULL;
+  double *forces = NULL;
+  double *kps = NULL;
+  double *kds = NULL;
+
+  CHECKVALUE(jjointIndices, "setJointMotorControlArray: jointIndices array is null", false);
+  int numControlledDofs = env->GetArrayLength(jjointIndices);
+  jointIndices = (int *)env->GetPrimitiveArrayCritical(jjointIndices, JNI_FALSE);
+
+  if (jtargetPositions != NULL) {
+    CHECKDIMS(jtargetPositions, numControlledDofs, "setJointMotorControlArray: targetPositions array dimension doesnt match number of jointIndices", false);
+    targetPositions = (double *)env->GetPrimitiveArrayCritical(jtargetPositions, JNI_FALSE);
+  }
+
+  if (jtargetVelocities != NULL) {
+    CHECKDIMS(jtargetVelocities, numControlledDofs, "setJointMotorControlArray: targetVelocities array dimension doesnt match number of jointIndices", false);
+    targetVelocities = (double *)env->GetPrimitiveArrayCritical(jtargetVelocities, JNI_FALSE);
+  }
+
+  if (jforces != NULL) {
+    CHECKDIMS(jforces, numControlledDofs, "setJointMotorControlArray: forces array dimension doesnt match number of jointIndices", false);
+    forces = (double *)env->GetPrimitiveArrayCritical(jforces, JNI_FALSE);
+  }
+
+  if (jkps != NULL) {
+    CHECKDIMS(jkps, numControlledDofs, "setJointMotorControlArray: kps array dimension doesnt match number of jointIndices", false);
+    kps = (double *)env->GetPrimitiveArrayCritical(jkps, JNI_FALSE);
+  }
+
+  if (jkds != NULL) {
+    CHECKDIMS(jkds, numControlledDofs, "setJointMotorControlArray: kds array dimension doesnt match number of jointIndices", false);
+    kds = (double *)env->GetPrimitiveArrayCritical(jkds, JNI_FALSE);
+  }
+
+  struct b3RobotSimulatorJointMotorArrayArgs motorArgs(controlMode, numControlledDofs);
+  motorArgs.m_jointIndices = jointIndices;
+  motorArgs.m_targetPositions = targetPositions;
+  motorArgs.m_targetVelocities = targetVelocities;
+  motorArgs.m_forces = forces;
+  motorArgs.m_kps = kps;
+  motorArgs.m_kds = kds;
+
+  bool status = jrsa -> setJointMotorControlArray(bodyUniqueId, motorArgs);
+
+  if (kds != NULL) {
+    env->ReleasePrimitiveArrayCritical(jkds, kds, 0);
+  }
+
+  if (kps != NULL) {
+    env->ReleasePrimitiveArrayCritical(jkps, kps, 0);
+  }
+
+  if (forces != NULL) {
+    env->ReleasePrimitiveArrayCritical(jforces, forces, 0);
+  }
+
+  if (targetVelocities != NULL) {
+    env->ReleasePrimitiveArrayCritical(jtargetVelocities, targetVelocities, 0);
+  }
+
+  if (targetPositions != NULL) {
+    env->ReleasePrimitiveArrayCritical(jtargetPositions, targetPositions, 0);
+  }
+  return status;
+}
+
+
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_stepSimulation
 (JNIEnv *env, jobject jRoboSimAPI)

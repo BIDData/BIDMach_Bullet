@@ -307,4 +307,85 @@ bool b3RobotSimulatorClientAPI::removeUserDebugItem(int itemUniqueId) {
   return true;
 }
 
+bool b3RobotSimulatorClientAPI::setJointMotorControlArray(int bodyUniqueId, struct b3RobotSimulatorJointMotorArrayArgs &args)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected to physics server.");
+    return false;
+  }
+  int numJoints = b3GetNumJoints(sm, bodyUniqueId);
+
+  b3SharedMemoryCommandHandle commandHandle;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+  struct b3JointInfo info;
+
+  commandHandle = b3JointControlCommandInit2(sm, bodyUniqueId, args.m_controlMode);
+  
+  for (int i=0;i<args.m_numControlledDofs;i++) {
+    double targetVelocity = 0.0;
+    double targetPosition = 0.0;
+    double force = 100000.0;
+    double kp = 0.1;
+    double kd = 1.0;
+    int jointIndex;
+
+    if (args.m_jointIndices) {
+      jointIndex = args.m_jointIndices[i];
+    } else {
+      jointIndex = i;
+    }
+
+    if (args.m_targetVelocities) {
+      targetVelocity = args.m_targetVelocities[i];
+    }
+
+    if (args.m_targetPositions) {
+      targetPosition = args.m_targetPositions[i];
+    }
+
+    if (args.m_forces) {
+      force = args.m_forces[i];
+    }
+			
+    if (args.m_kps) {
+      kp = args.m_kps[i];
+    }
+			
+    if (args.m_kds) {
+      kd = args.m_kds[i];
+    }
+
+    b3GetJointInfo(sm, bodyUniqueId, jointIndex, &info);
+			
+    switch (args.m_controlMode) {
+    case CONTROL_MODE_VELOCITY: {
+      b3JointControlSetDesiredVelocity(commandHandle, info.m_uIndex, targetVelocity);
+      b3JointControlSetKd(commandHandle, info.m_uIndex, kd);
+      b3JointControlSetMaximumForce(commandHandle, info.m_uIndex, force);
+      break;
+    }
+
+    case CONTROL_MODE_TORQUE: {
+      b3JointControlSetDesiredForceTorque(commandHandle, info.m_uIndex, force);
+      break;
+    }
+
+    case CONTROL_MODE_POSITION_VELOCITY_PD: {
+      b3JointControlSetDesiredPosition(commandHandle, info.m_qIndex, targetPosition);
+      b3JointControlSetKp(commandHandle, info.m_uIndex, kp);
+      b3JointControlSetDesiredVelocity(commandHandle, info.m_uIndex, targetVelocity);
+      b3JointControlSetKd(commandHandle, info.m_uIndex, kd);
+      b3JointControlSetMaximumForce(commandHandle, info.m_uIndex, force);
+      break;
+    }
+
+    default: {}
+    };
+  }
+  return true;
+}
+
+
 
