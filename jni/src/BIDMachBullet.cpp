@@ -1305,7 +1305,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetJointState
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex,
- int controlMode,  double targetPosition, double targetVelocity, double force,
+ int controlMode,  double targetPosition, double targetVelocity, double maxTorqueValue,
  double kp, double kd)
 {
   struct b3RobotSimulatorJointMotorArgs motorArgs(controlMode);
@@ -1313,7 +1313,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
   motorArgs.m_targetVelocity = targetVelocity;
   motorArgs.m_kp = kp;
   motorArgs.m_kd = kd;
-  motorArgs.m_maxTorqueValue = force;
+  motorArgs.m_maxTorqueValue = maxTorqueValue;
 
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setJointMotorControl(bodyUniqueId, jointIndex, motorArgs);

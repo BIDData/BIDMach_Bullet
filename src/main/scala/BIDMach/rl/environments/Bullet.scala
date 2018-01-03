@@ -110,25 +110,25 @@ class Bullet {
 	val numJoints = jointIndices.length;
 	val jointPositions = DMat.zeros(1, numJoints);
 	val jointVelocities = DMat.zeros(1, numJoints);
-	val jointForceTorques = DMat.zeros(6, numJoints);
+	val jointForceTorques = DMat.zeros(numJoints, 6);
 	val jointMotorTorques = DMat.zeros(1, numJoints);
 	javaBullet.getJointStates(bodyUniqueId, jointIndices.data,
 				  jointPositions.data, jointVelocities.data,
 				  jointForceTorques.data, jointMotorTorques.data);
-	(jointPositions, jointVelocities, jointForceTorques, jointMotorTorques);
+	(jointPositions, jointVelocities, jointForceTorques.t, jointMotorTorques);
     };    
 
     def setJointMotorControl(bodyUniqueId:Int, jointIndex:Int, controlMode:Int,
 			     targetPosition:Double = 0, targetVelocity:Double = 0,
-			     force:Double = 100000, positionGain:Double = 0.1, velocityGain:Double = 1.0):Unit = {
-	javaBullet.setJointMotorControl(bodyUniqueId, jointIndex, controlMode, targetPosition, targetVelocity, force, positionGain, velocityGain);
+			     maxTorque:Double = 100000, positionGain:Double = 0.1, velocityGain:Double = 1.0):Unit = {
+	javaBullet.setJointMotorControl(bodyUniqueId, jointIndex, controlMode, targetPosition, targetVelocity, maxTorque, positionGain, velocityGain);
     };
 
     def setJointMotorControlArray(bodyUniqueId:Int, jointIndices:IMat, controlMode:Int,
-				  targetPositions:DMat = null, targetVelocities:DMat = null, forces:DMat = null,
+				  targetPositions:DMat = null, targetVelocities:DMat = null, maxTorques:DMat = null,
 				  positionGains:DMat = null, velocityGains:DMat = null):Boolean = {
 	javaBullet.setJointMotorControlArray(bodyUniqueId, jointIndices.data, controlMode,
-					     getData(targetPositions), getData(targetVelocities), getData(forces),
+					     getData(targetPositions), getData(targetVelocities), getData(maxTorques),
 					     getData(positionGains), getData(velocityGains));
     };
 
@@ -360,11 +360,11 @@ class Bullet {
 
     def calculateJacobian(bodyUniqueId:Int, linkIndex:Int, localPosition:DMat, jointPositions:DMat, jointVelocities:DMat, jointAccelerations:DMat):(DMat, DMat) = {
 	val numJoints = getNumJoints(bodyUniqueId);
-	val linearJacobian = DMat(3, numJoints);
-	val angularJacobian = DMat(3, numJoints);
+	val linearJacobian = DMat(numJoints, 3);
+	val angularJacobian = DMat(numJoints, 3);
 	javaBullet.getBodyJacobian(bodyUniqueId, linkIndex, localPosition.data, jointPositions.data, jointVelocities.data, jointAccelerations.data,
 				   linearJacobian.data, angularJacobian.data);
-	(linearJacobian, angularJacobian);
+	(linearJacobian.t, angularJacobian.t);
     };
 
     def calculateInverseKinematics(bodyUniqueId:Int, endEffectorLinkIndex:Int,

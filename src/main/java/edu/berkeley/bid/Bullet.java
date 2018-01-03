@@ -136,10 +136,10 @@ public class Bullet implements Serializable {
 
     public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
 					    int controlMode,  double targetPosition, double targetVelocity,
-					    double force, double kp, double kd);
+					    double maxTorque, double kp, double kd);
 
     public native boolean setJointMotorControlArray(int bodyUniqueId, int [] jointIndices, int controlMode,
-						    double [] targetPositions, double [] targetVelocities, double [] forces, double [] kps, double [] kds);
+						    double [] targetPositions, double [] targetVelocities, double [] maxTorques, double [] kps, double [] kds);
     
     public native boolean getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeForwardKinematics, LinkState linkState);
 

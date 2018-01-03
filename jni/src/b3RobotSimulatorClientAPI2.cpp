@@ -384,6 +384,7 @@ bool b3RobotSimulatorClientAPI::setJointMotorControlArray(int bodyUniqueId, stru
     default: {}
     };
   }
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
   return true;
 }
 
