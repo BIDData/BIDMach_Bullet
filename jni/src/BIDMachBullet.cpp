@@ -1321,8 +1321,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
 
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_setJointMotorControlArray
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId,  jintArray jjointIndices, int controlMode,
- jdoubleArray jtargetPositions, jdoubleArray jtargetVelocities, jdoubleArray jforces,
- jdoubleArray jkps, jdoubleArray jkds)
+ jdoubleArray jtargetPositions, jdoubleArray jtargetVelocities, jdoubleArray jforces, jdoubleArray jkps, jdoubleArray jkds)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
 
@@ -1655,11 +1654,11 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_changeDynamics
 }
 
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getLinkState
-(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, jobject jlinkState)
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, int computeLinkVelocity, int computeForwardKinematics, jobject jlinkState)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   b3LinkState linkState;
-  bool status = jrsa -> getLinkState(bodyUniqueId, linkIndex, &linkState);
+  bool status = jrsa -> getLinkState(bodyUniqueId, linkIndex, computeLinkVelocity, computeForwardKinematics, &linkState);
   nativeLinkStateToJava(env, jlinkState, linkState);
   return status; 
 }

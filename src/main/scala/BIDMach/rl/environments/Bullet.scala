@@ -105,6 +105,14 @@ class Bullet {
 	javaBullet.setJointMotorControl(bodyUniqueId, jointIndex, controlMode, targetPosition, targetVelocity, force, positionGain, velocityGain);
     };
 
+    def setJointMotorControlArray(bodyUniqueId:Int, jointIndices:IMat, controlMode:Int,
+				  targetPositions:DMat = null, targetVelocities:DMat = null, forces:DMat = null,
+				  positionGains:DMat = null, velocityGains:DMat = null):Boolean = {
+	javaBullet.setJointMotorControlArray(bodyUniqueId, jointIndices.data, controlMode,
+					     getData(targetPositions), getData(targetVelocities), getData(forces),
+					     getData(positionGains), getData(velocityGains));
+    };
+
     def getJointState(bodyUniqueId:Int, jointIndex:Int):JointSensorState = {
 	val jointState = new JointSensorState();
 	javaBullet.getJointState(bodyUniqueId, jointIndex, jointState);
@@ -115,9 +123,9 @@ class Bullet {
 	javaBullet.resetJointState(bodyUniqueId, jointIndex, targetValue);
     };
 
-    def getLinkState(bodyUniqueId:Int, linkIndex:Int):LinkState = {
+    def getLinkState(bodyUniqueId:Int, linkIndex:Int, computeLinkVelocity:Int = 0, computeForwardKinematics:Int = 0):LinkState = {
 	val linkState = new LinkState();
-	javaBullet.getLinkState(bodyUniqueId, linkIndex, linkState);
+	javaBullet.getLinkState(bodyUniqueId, linkIndex, computeLinkVelocity, computeForwardKinematics, linkState);
 	linkState;
     };
 
@@ -153,8 +161,21 @@ class Bullet {
     };
 
     def createConstraint(parentBodyIndex:Int, parentJointIndex:Int, childBodyIndex:Int, childJointIndex:Int, jointInfo:JointInfo):Int = {
+
 	javaBullet.createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, jointInfo);
+	
     };
+
+    def createConstraint(parentBodyIndex:Int, parentJointIndex:Int, childBodyIndex:Int, childJointIndex:Int,
+			 jointType:Int, jointAxis:DMat, parentFramePosition:DMat, childFramePosition:DMat,
+			 parentFrameOrientation:DMat = null, childFramOrientation:DMat = null):Int = {
+	
+	javaBullet.createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex,
+				    jointType, jointAxis.data, parentFramePosition.data, childFramePosition.data,
+				    getData(parentFrameOrientation), getData(childFramOrientation));
+    };
+
+
 
     def changeConstraint(constraintId:Int, jointInfo:JointInfo):Int = {
 	javaBullet.changeConstraint(constraintId, jointInfo);

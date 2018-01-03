@@ -1,15 +1,11 @@
-import edu.berkeley.bid.bullet.{Vector3,Matrix3x3,Transform3,CameraImageData,JointInfo,JointStates2,LinkState,JointSensorState,BodyInfo,DynamicsInfo,KeyboardEventsData}
+import BIDMach.rl.environments.bullet._
 import BIDMach.rl.environments.{Bullet,Bullet._}
 
 val sim = new Bullet;
 sim.connect(eCONNECT_GUI);
 
 def getJointStates(robot:Int) = {
-    val joint_states = sim.getJointStates(robot, irow(0>sim.getNumJoints(robot)));
-    val joint_positions = joint_states.map(_.m_jointPosition);
-    val joint_velocities = joint_states.map(_.m_jointVelocity);
-    val joint_torques = joint_states.map(_.m_jointMotorTorque);
-    (joint_positions, joint_velocities, joint_torques);
+    sim.getJointStates(robot, irow(0->sim.getNumJoints(robot))).unpack;
 };
 
 def setJointPosition(robot:Int, position:DMat, kp:Double=1.0, kv:Double=0.3) = {
@@ -17,7 +13,7 @@ def setJointPosition(robot:Int, position:DMat, kp:Double=1.0, kv:Double=0.3) = {
     val zero_vec = dzeros(1, num_joints);
     val one_vec = dones(1, num_joints);
     if (position.length == num_joints) {
-	sim.setJointMotorControlArray(robot, range(num_joints), POSITION_CONTROL,
+	sim.setJointMotorControlArray(robot, irow(0->num_joints), POSITION_CONTROL,
 				      targetPositions=position, targetVelocities=zero_vec,
 				      positionGains=kp * one_vec, velocityGains=kv * one_vec);
     } else {
@@ -48,13 +44,13 @@ val numJoints = sim.getNumJoints(kukaId);
 setJointPosition(kukaId, 0.1*dones(1,numJoints));
 sim.stepSimulation();
 // Get the joint and link state directly from Bullet.
-val jointStates = getJointStates(kukaId);
+val (positions, velocities, reactionForces) = getJointStates(kukaId);
 val result = sim.getLinkState(kukaId, kukaEndEffectorIndex, computeLinkVelocity=1, computeForwardKinematics=1);
 // Get the Jacobians for the CoM of the end-effector link.
 // Note that in this example com_rot = identity, and we would need to use com_rot.T * com_trn.
 // The localPosition is always defined in terms of the link frame coordinates.
 val zero_vec = dzeros(1, numJoints);
-val (jac_t, jac_r) = sim.calculateJacobian(kukaId, kukaEndEffectorIndex, result.m_localInertialPosition, jointStates.m_actualStateQ, zero_vec, zero_vec);
+val (jac_t, jac_r) = sim.calculateJacobian(kukaId, kukaEndEffectorIndex, result.localInertialPosition, positions, zero_vec, zero_vec);
 
 print ("Link linear velocity of CoM from getLinkState:")
 print (link_vt)

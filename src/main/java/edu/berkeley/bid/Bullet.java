@@ -97,6 +97,16 @@ public class Bullet implements Serializable {
 	return jointInfo;
     }
 
+    public native boolean getJointState(int bodyUniqueId, int jointIndex, JointSensorState state);
+
+    public JointSensorState getJointState(int bodyUniqueId, int jointIndex) {
+	JointSensorState jointState = new JointSensorState();
+	getJointState(bodyUniqueId, jointIndex, jointState);
+	return jointState;
+    }
+
+    public native boolean resetJointState(int bodyUniqueId, int jointIndex, double targetValue);
+
     public native boolean getJointStates(int bodyUniqueId, JointStates2 state);
 
     public JointStates2 getJointStates(int bodyUniqueId) {
@@ -109,21 +119,14 @@ public class Bullet implements Serializable {
 					    int controlMode,  double targetPosition, double targetVelocity,
 					    double force, double kp, double kd);
 
-    public native boolean getJointState(int bodyUniqueId, int jointIndex, JointSensorState state);
+    public native boolean setJointMotorControlArray(int bodyUniqueId, int [] jointIndices, int controlMode,
+						    double [] targetPositions, double [] targetVelocities, double [] forces, double [] kps, double [] kds);
+    
+    public native boolean getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeForwardKinematics, LinkState linkState);
 
-    public JointSensorState getJointState(int bodyUniqueId, int jointIndex) {
-	JointSensorState jointState = new JointSensorState();
-	getJointState(bodyUniqueId, jointIndex, jointState);
-	return jointState;
-    }
-
-    public native boolean resetJointState(int bodyUniqueId, int jointIndex, double targetValue);
-
-    public native boolean getLinkState(int bodyUniqueId, int linkIndex, LinkState linkState);
-
-    public LinkState getLinkState(int bodyUniqueId, int linkIndex) {
+    public LinkState getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeForwardKinematics) {
 	LinkState linkState = new LinkState();
-	getLinkState(bodyUniqueId, linkIndex, linkState);
+	getLinkState(bodyUniqueId, linkIndex, computeLinkVelocity, computeForwardKinematics, linkState);
 	return linkState;
     }
 
@@ -146,6 +149,39 @@ public class Bullet implements Serializable {
     }
 
     public native int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex, JointInfo jointInfo);
+
+    public int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex,
+				int jointType, double [] jointAxis, double [] parentFramePosition, double [] childFramePosition,
+				double [] parentFrameOrientation, double [] childFrameOrientation) {
+
+	JointInfo jointInfo = new JointInfo("","");
+	jointInfo.m_jointType = jointType;
+
+	jointInfo.m_parentFrame[0] = parentFramePosition[0];
+	jointInfo.m_parentFrame[1] = parentFramePosition[1];
+	jointInfo.m_parentFrame[2] = parentFramePosition[2];
+	
+	jointInfo.m_parentFrame[3] = parentFrameOrientation[0];
+	jointInfo.m_parentFrame[4] = parentFrameOrientation[1];
+	jointInfo.m_parentFrame[5] = parentFrameOrientation[2];
+	jointInfo.m_parentFrame[6] = parentFrameOrientation[3];
+
+	jointInfo.m_childFrame[0] = childFramePosition[0];
+	jointInfo.m_childFrame[1] = childFramePosition[1];
+	jointInfo.m_childFrame[2] = childFramePosition[2];
+	
+	jointInfo.m_childFrame[3] = childFrameOrientation[0];
+	jointInfo.m_childFrame[4] = childFrameOrientation[1];
+	jointInfo.m_childFrame[5] = childFrameOrientation[2];
+	jointInfo.m_childFrame[6] = childFrameOrientation[3];
+
+	jointInfo.m_jointAxis[0] = jointAxis[0];
+	jointInfo.m_jointAxis[1] = jointAxis[1];
+	jointInfo.m_jointAxis[2] = jointAxis[2];
+
+	return createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, jointInfo);
+    }
+
 
     public native int changeConstraint(int constraintId, JointInfo jointInfo);
 

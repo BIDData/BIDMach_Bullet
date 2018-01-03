@@ -387,5 +387,101 @@ bool b3RobotSimulatorClientAPI::setJointMotorControlArray(int bodyUniqueId, stru
   return true;
 }
 
+bool b3RobotSimulatorClientAPI::getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeForwardKinematics, b3LinkState* linkState)
+{
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command = b3RequestActualStateCommandInit(m_data->m_physicsClientHandle, bodyUniqueId);
+
+  if (computeLinkVelocity) {
+    b3RequestActualStateCommandComputeLinkVelocity(command, computeLinkVelocity);
+  }
+
+  if (computeForwardKinematics) {
+    b3RequestActualStateCommandComputeForwardKinematics(command, computeForwardKinematics);
+  }
+
+  b3SharedMemoryStatusHandle statusHandle = b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, command);
+  
+
+  if (b3GetStatusType(statusHandle) == CMD_ACTUAL_STATE_UPDATE_COMPLETED) {
+    b3GetLinkState(m_data->m_physicsClientHandle, statusHandle, linkIndex, linkState);
+    return true;
+  }
+  return false;
+}
+
+bool b3RobotSimulatorClientAPI::setPhysicsEngineParameter(struct b3RobotSimulatorSetPhysicsEngineParameters &args)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command = b3InitPhysicsParamCommand(sm);
+  b3SharedMemoryStatusHandle statusHandle;
+
+  if (args.m_numSolverIterations >= 0) {
+      b3PhysicsParamSetNumSolverIterations(command, args.m_numSolverIterations);
+  }
+
+  if (args.m_collisionFilterMode >= 0) {
+    b3PhysicsParamSetCollisionFilterMode(command, args.m_collisionFilterMode);
+  }
+
+  if (args.m_numSubSteps >= 0)	{
+    b3PhysicsParamSetNumSubSteps(command, args.m_numSubSteps);
+  }
+
+  if (args.m_fixedTimeStep >= 0) {
+    b3PhysicsParamSetTimeStep(command, args.m_fixedTimeStep);
+  }
+
+  if (args.m_useSplitImpulse >= 0) {
+    b3PhysicsParamSetUseSplitImpulse(command, args.m_useSplitImpulse);
+  }
+  
+  if (args.m_splitImpulsePenetrationThreshold >= 0) {
+    b3PhysicsParamSetSplitImpulsePenetrationThreshold(command, args.m_splitImpulsePenetrationThreshold);
+  }
+  
+  if (args.m_contactBreakingThreshold >= 0) {
+    b3PhysicsParamSetContactBreakingThreshold(command, args.m_contactBreakingThreshold);
+  }
+
+  if (args.m_maxNumCmdPer1ms >= -1) {
+    b3PhysicsParamSetMaxNumCommandsPer1ms(command, args.m_maxNumCmdPer1ms);
+  }
+
+  if (args.m_restitutionVelocityThreshold>=0) {
+    b3PhysicsParamSetRestitutionVelocityThreshold(command, args.m_restitutionVelocityThreshold);
+  }
+
+  if (args.m_enableFileCaching>=0) {
+    b3PhysicsParamSetEnableFileCaching(command, args.m_enableFileCaching);
+  }
+  
+  if (args.m_erp>=0) {
+    b3PhysicsParamSetDefaultNonContactERP(command,args.m_erp);
+  }
+
+  if (args.m_contactERP>=0) {
+    b3PhysicsParamSetDefaultContactERP(command,args.m_contactERP);
+  }
+  
+  if (args.m_frictionERP >=0) {
+    b3PhysicsParamSetDefaultFrictionERP(command,args.m_frictionERP);
+  }
+
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  return true;
+}
+
+
+
+
+
 
 
