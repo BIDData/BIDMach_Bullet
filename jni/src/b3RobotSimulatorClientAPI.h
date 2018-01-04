@@ -317,6 +317,12 @@ public:
 
 	bool removeUserDebugItem(int itemUniqueId);
 
+	int addUserDebugText3D(char *text, double *posXYZ, double *orientation, double *colorRGB,
+			       double textSize, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
+
+	int addUserDebugLine(double *fromXYZ, double *toXYZ, double *colorRGB,
+			     double lineWidth, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
+
 	bool setJointMotorControlArray(int bodyUniqueId, struct b3RobotSimulatorJointMotorArrayArgs &args);
 
 	bool setPhysicsEngineParameter(struct b3RobotSimulatorSetPhysicsEngineParameters &args);
