@@ -33,60 +33,65 @@ for (i <- 0 until numJoints) {
 }
 
 p.setGravity(0,0,0);
+
+val useNullSpace = false;
+val useOrientation = true;
+// If we set useSimulation=false, it sets the arm pose to be the IK result directly without using dynamic control.
+// This can be used to test the IK result accuracy.
+val useSimulation = false;
+val useRealTimeSimulation = false;
+
+val useSimulation = true;
+val useRealTimeSimulation = true;
+// trialDuration is duration (in seconds) after debug lines will be removed automatically
+// use 0 for no-removal
+val trialDuration = 15;
+
+p.setRealTimeSimulation(useRealTimeSimulation);
+
 var t=0.0;
 var prevPose=drow(0,0,0);
 var prevPose1=drow(0,0,0);
-var hasPrevPose = 0;
-val useNullSpace = 0;
-
-val useOrientation = 1;
-// If we set useSimulation=0, it sets the arm pose to be the IK result directly without using dynamic control.
-// This can be used to test the IK result accuracy.
-val useSimulation = 1;
-val useRealTimeSimulation = 1;
-p.setRealTimeSimulation(useRealTimeSimulation>0);
-// trailDuration is duration (in seconds) after debug lines will be removed automatically
-// use 0 for no-removal
-val trailDuration = 15;
+var hasPrevPose = false;
 var jointPoses:DMat = null;
 var pos:DMat = null;
 var ls:LinkState = null;
 	
 while (true) {
 //for (ii <- 0 until 100) {
-    if (useRealTimeSimulation > 0) {
+    if (useRealTimeSimulation) {
 	val dt = System.currentTimeMillis / 1000.0
-	t = (dt/6.0)*2*math.Pi;
+	t = (dt/60.0)*2*math.Pi;
     } else {
 	t=t+0.001;
     }
 
-    if (useSimulation > 0 && useRealTimeSimulation==0) {
+    if (useSimulation && !useRealTimeSimulation) {
 	p.stepSimulation();
     }
-
+ 
     for (i <- 0 until 1) {
 	pos = drow(-0.4,0.2*math.cos(t),0+0.2*math.sin(t));
 	// end effector points down, not up (in case useOrientation==1);
-        val orn = DMat(getQuaternionFromEuler(row(0,-math.Pi.toFloat,0)));
+        val orn = getQuaternionFromEuler(0,-math.Pi.toFloat,0);
 	
-	if (useNullSpace==1) {
-	    if (useOrientation==1) {
+	if (useNullSpace) {
+	    if (useOrientation) {
 		jointPoses = p.calculateInverseKinematics(kukaId, kukaEndEffectorIndex, pos, orn, ll, ul, jr, rp);
 	    } else {
 		jointPoses = p.calculateInverseKinematics(kukaId, kukaEndEffectorIndex, pos, lowerLimits=ll, upperLimits=ul, jointRanges=jr, restPoses=rp);
 	    }
 	} else {
-	    if (useOrientation==1) {
+	    if (useOrientation) {
 		jointPoses = p.calculateInverseKinematics(kukaId, kukaEndEffectorIndex, pos, orn, jointDamping=jd);
 	    } else {
 		jointPoses = p.calculateInverseKinematics(kukaId, kukaEndEffectorIndex, pos);
 	    }
 	}
 	
-	if (useSimulation > 0) {
+	if (useSimulation) {
 	    for (i <- 0 until numJoints) {
-		p.setJointMotorControl(kukaId,jointIndex=i,controlMode=POSITION_CONTROL,targetPosition=jointPoses(i),targetVelocity=0,maxTorque=500,positionGain=0.03,velocityGain=1);
+		p.setJointMotorControl(kukaId,jointIndex=i,controlMode=POSITION_CONTROL,targetPosition=jointPoses(i),targetVelocity=0,force=500,positionGain=0.03,velocityGain=1);
 	    }
 	} else {
 	    // reset the joint state (ignoring all dynamics, not recommended to use during simulation)
@@ -97,13 +102,13 @@ while (true) {
     }
 
     ls = p.getLinkState(kukaId,kukaEndEffectorIndex);
-    if (hasPrevPose > 0) {
-	println("pos "+prevPose+","+pos);
-	println("pos1 "+prevPose1+","+ls.worldLinkFramePosition);
-	    //	p.addUserDebugLine(prevPose,pos,[0,0,0.3],1,trailDuration);
-	    //	p.addUserDebugLine(prevPose1,ls[4],[1,0,0],1,trailDuration);
+    if (hasPrevPose) {
+	println("pos "+prevPose+", "+pos);
+	println("pos1 "+prevPose1+", "+ls.worldLinkFramePosition);
+	p.addUserDebugLine(prevPose, pos, drow(0,0,0.3), 1, trialDuration);
+	p.addUserDebugLine(prevPose1,ls.worldLinkFramePosition, drow(1,0,0), 1, trialDuration);
     }
     prevPose=pos;
     prevPose1=ls.worldLinkFramePosition;
-    hasPrevPose = 1;
+    hasPrevPose = true;
 }

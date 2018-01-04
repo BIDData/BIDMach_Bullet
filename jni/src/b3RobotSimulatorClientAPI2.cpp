@@ -266,6 +266,68 @@ int b3RobotSimulatorClientAPI::addUserDebugParameter(char * paramName, double ra
   return -1;
 }
 
+int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, double *orientation, double *colorRGB,
+						  double textSize, double lifeTime, int parentObjectUniqueId, int parentLinkIndex)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected to physics server.");
+    return -1;
+  }
+  b3SharedMemoryCommandHandle commandHandle;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+  
+  commandHandle = b3InitUserDebugDrawAddText3D(sm, text, posXYZ, colorRGB, textSize, lifeTime);
+
+  if (parentObjectUniqueId>=0) {
+    b3UserDebugItemSetParentObject(commandHandle, parentObjectUniqueId, parentLinkIndex);
+  }
+
+  if (orientation != NULL) {
+    b3UserDebugTextSetOrientation(commandHandle,orientation);
+  }
+
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
+  statusType = b3GetStatusType(statusHandle);
+
+  if (statusType == CMD_USER_DEBUG_DRAW_COMPLETED) {
+    int debugItemUniqueId = b3GetDebugItemUniqueId(statusHandle);
+    return  debugItemUniqueId;
+  }
+  b3Warning("addUserDebugText3D failed.");
+  return -1;
+}
+
+int b3RobotSimulatorClientAPI::addUserDebugLine(double *fromXYZ, double *toXYZ, double *colorRGB,
+						double lineWidth, double lifeTime , int parentObjectUniqueId, int parentLinkIndex)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected to physics server.");
+    return -1;
+  }
+  b3SharedMemoryCommandHandle commandHandle;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+
+  commandHandle = b3InitUserDebugDrawAddLine3D(sm, fromXYZ, toXYZ, colorRGB, lineWidth, lifeTime);
+
+  if (parentObjectUniqueId>=0) {
+    b3UserDebugItemSetParentObject(commandHandle, parentObjectUniqueId, parentLinkIndex);
+  }
+
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
+  statusType = b3GetStatusType(statusHandle);
+
+  if (statusType == CMD_USER_DEBUG_DRAW_COMPLETED) {
+    int debugItemUniqueId = b3GetDebugItemUniqueId(statusHandle);
+    return  debugItemUniqueId;
+  }
+  b3Warning("addUserDebugLine failed.");
+  return -1;
+}
+
 double b3RobotSimulatorClientAPI::readUserDebugParameter(int itemUniqueId) {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
   if (sm == 0) {

@@ -15,7 +15,7 @@ public class Quaternion implements Serializable {
 	}
 
 	public Quaternion () {
-		idt();
+		identity();
 	}
 
 	public Quaternion (Quaternion quaternion) {
@@ -38,12 +38,8 @@ public class Quaternion implements Serializable {
 		return new Quaternion(this);
 	}
 
-	public final static float len (final float x, final float y, final float z, final float w) {
-		return (float)Math.sqrt(x * x + y * y + z * z + w * w);
-	}
-
-	public float len () {
-		return (float)Math.sqrt(x * x + y * y + z * z + w * w);
+        public float len () {
+	    return (float)Math.sqrt(x * x + y * y + z * z + w * w);
 	}
 
 	@Override
@@ -51,7 +47,7 @@ public class Quaternion implements Serializable {
 		return "[" + x + "|" + y + "|" + z + "|" + w + "]";
 	}
 
-    	public Quaternion idt () {
+    	public Quaternion identity () {
 		return this.set(0, 0, 0, 1);
 	}
 

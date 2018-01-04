@@ -62,9 +62,9 @@ class Bullet {
     def loadMJCF(fname:String):IMat = {
 	val ints:Array[Int] = javaBullet.loadMJCF(appendPathPrefix(fname));
 	MatFunctions.irow(ints);
-    }
+    };
 
-	def loadBullet(fname:String):IMat = {
+    def loadBullet(fname:String):IMat = {
 	val ints:Array[Int] = javaBullet.loadBullet(appendPathPrefix(fname));
 	MatFunctions.irow(ints);
     };
@@ -120,15 +120,15 @@ class Bullet {
 
     def setJointMotorControl(bodyUniqueId:Int, jointIndex:Int, controlMode:Int,
 			     targetPosition:Double = 0, targetVelocity:Double = 0,
-			     maxTorque:Double = 100000, positionGain:Double = 0.1, velocityGain:Double = 1.0):Unit = {
-	javaBullet.setJointMotorControl(bodyUniqueId, jointIndex, controlMode, targetPosition, targetVelocity, maxTorque, positionGain, velocityGain);
+			     force:Double = 100000, positionGain:Double = 0.1, velocityGain:Double = 1.0):Unit = {
+	javaBullet.setJointMotorControl(bodyUniqueId, jointIndex, controlMode, targetPosition, targetVelocity, force, positionGain, velocityGain);
     };
 
     def setJointMotorControlArray(bodyUniqueId:Int, jointIndices:IMat, controlMode:Int,
-				  targetPositions:DMat = null, targetVelocities:DMat = null, maxTorques:DMat = null,
+				  targetPositions:DMat = null, targetVelocities:DMat = null, forces:DMat = null,
 				  positionGains:DMat = null, velocityGains:DMat = null):Boolean = {
 	javaBullet.setJointMotorControlArray(bodyUniqueId, jointIndices.data, controlMode,
-					     getData(targetPositions), getData(targetVelocities), getData(maxTorques),
+					     getData(targetPositions), getData(targetVelocities), getData(forces),
 					     getData(positionGains), getData(velocityGains));
     };
 
@@ -434,6 +434,16 @@ class Bullet {
 	javaBullet.submitProfileTiming(profileName, durationInMicroseconds);
     };
 
+    def addUserDebugLine(fromXYZ:DMat, toXYZ:DMat, colorRGB:DMat= MatFunctions.drow(1,1,1), lineWidth:Double=1, lifeTime:Double= 0,
+			 parentObjectUniqueId:Int= -1, parentLinkIndex:Int= -1) = {
+	javaBullet.addUserDebugLine(fromXYZ.data, toXYZ.data, colorRGB.data, lineWidth, lifeTime, parentObjectUniqueId, parentLinkIndex);
+    };
+
+    def addUserDebugText3D(text:String, position:DMat, orientation:DMat, colorRGB:DMat= MatFunctions.drow(1,1,1), size:Double= 1, lifeTime:Double= 0,
+			   parentObjectUniqueId:Int= -1, parentLinkIndex:Int= -1) = {
+	javaBullet.addUserDebugText3D(text, position.data, getData(orientation), colorRGB.data, size, lifeTime, parentObjectUniqueId, parentLinkIndex);
+    };
+
     def addUserDebugParameter(paramName:String, rangeMin:Double, rangeMax:Double, startValue:Double):Int = {
 	javaBullet.addUserDebugParameter(paramName, rangeMin, rangeMax, startValue);
     };
@@ -486,6 +496,14 @@ object Bullet {
 	}
     }
 
+    def fromVector3ToDMat(v:Vector3):DMat = {
+	if (v.asInstanceOf[AnyRef] != null) {
+	    MatFunctions.drow(v.x, v.y, v.z);
+	} else {
+	    null;
+	}
+    }
+
     def fromFMatToVector3(v:FMat):Vector3 = {
 	if (v.asInstanceOf[AnyRef] != null) {
 	    new Vector3(v.data(0), v.data(1), v.data(2));
@@ -494,8 +512,23 @@ object Bullet {
 	}
     }
 
+    def fromDMatToVector3(v:DMat):Vector3 = {
+	if (v.asInstanceOf[AnyRef] != null) {
+	    new Vector3(v.data(0).toFloat, v.data(1).toFloat, v.data(2).toFloat);
+	} else {
+	    null;
+	}
+    }
+
     def getQuaternionFromEuler(euler:FMat):BIDMat.Quaternion = {
 	val euler0 = fromFMatToVector3(euler);
+	val q = new edu.berkeley.bid.bullet.Quaternion();
+	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
+	JavaQtoBIDMatQ(q);
+    };
+
+    def getQuaternionFromEuler(yawZ:Double, pitchY:Double, rollX:Double):BIDMat.Quaternion = {
+	val euler0 = fromFMatToVector3(MatFunctions.row(yawZ, pitchY, rollX));
 	val q = new edu.berkeley.bid.bullet.Quaternion();
 	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
 	JavaQtoBIDMatQ(q);

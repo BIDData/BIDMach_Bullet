@@ -127,8 +127,8 @@ if [ "$OS" = "apple" ] ; then
     GCC="g++"
     OBJ="o"
     OUTFLG="-o "
-    CPPFLAGS="-fPIC -c -O2 -g -DNDEBUG -I$JAVA_HOME/include  -I$JAVA_HOME/include/darwin -I$BIDBULLET_ROOT/jni/include -I$BULLET_HOME/src"
-    CFLAGS="-openmp -fPIC -c -O2 -g -DNDEBUG -I$JAVA_HOME/include  -I$JAVA_HOME/include/darwin"
+    CPPFLAGS="-DBT_USE_DOUBLE_PRECISION -fPIC -c -O2 -g -DNDEBUG -I$JAVA_HOME/include  -I$JAVA_HOME/include/darwin -I$BIDBULLET_ROOT/jni/include -I$BULLET_HOME/src"
+    CFLAGS="-DBT_USE_DOUBLE_PRECISION -openmp -fPIC -c -O2 -g -DNDEBUG -I$JAVA_HOME/include  -I$JAVA_HOME/include/darwin"
     OPENGL_LIBS="-framework Cocoa -framework OpenGL  -framework AppKit -framework CoreFoundation -framework CoreGraphics"
     LB="ar rc"    
     LD="gcc -dynamiclib"
@@ -158,8 +158,8 @@ elif [ "$OS" = "linux" ] ; then
 	GCC="g++"
 	OBJ="o"
 	OUTFLG="-o "
-	CPPFLAGS="-fPIC -std=c++11 -marm -mfloat-abi=hard -march=${ARMARCH} -c -O2 -DNDEBUG -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$BIDBULLET_ROOT/jni/include -I$BULLET_HOME/src"
-	CFLAGS="-fPIC -fopenmp -marm -mfloat-abi=hard -march=${ARMARCH} -c -O2 -DNDEBUG -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$BIDBULLET_ROOT/jni/include"
+	CPPFLAGS="-DBT_USE_DOUBLE_PRECISION -fPIC -std=c++11 -marm -mfloat-abi=hard -march=${ARMARCH} -c -O2 -DNDEBUG -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$BIDBULLET_ROOT/jni/include -I$BULLET_HOME/src"
+	CFLAGS="-DBT_USE_DOUBLE_PRECISION -fPIC -fopenmp -marm -mfloat-abi=hard -march=${ARMARCH} -c -O2 -DNDEBUG -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$BIDBULLET_ROOT/jni/include"
         OPENGL_LIBS="-lGL -lGLU -lglut"
 	LB="ar rc"   
 	GLD="g++ -shared"
@@ -183,8 +183,8 @@ else
 	GCC="g++"
 	OBJ="o"
 	OUTFLG="-o "
-	CPPFLAGS="-fPIC -c -O2 -DNDEBUG  -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$BIDBULLET_ROOT/jni/include -I$BULLET_HOME/src" 
-	CFLAGS="-openmp -fPIC -c -O2 -DNDEBUG -I$JAVA_HOME/include -I$JAVA_HOME/include/linux"
+	CPPFLAGS="-DBT_USE_DOUBLE_PRECISION -fPIC -c -O2 -DNDEBUG  -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$BIDBULLET_ROOT/jni/include -I$BULLET_HOME/src" 
+	CFLAGS="-DBT_USE_DOUBLE_PRECISION -openmp -fPIC -c -O2 -DNDEBUG -I$JAVA_HOME/include -I$JAVA_HOME/include/linux"
         OPENGL_LIBS="-lGL -lGLU -lglut"
 	LB="ar rc" 
 	GLD="g++ -shared"
@@ -210,8 +210,8 @@ elif [ "$OS" = "windows" ] ; then
     NVCC="nvcc"
     OBJ="obj"
     OUTFLG="/OUT:"
-    CFLAGS="/openmp /c /MT /DNDEBUG /O2 /EHsc $CFLAGS"    # static linking
-    CPPFLAGS="/c /MT /DNDEBUG /O2 /EHsc $CFLAGS"    # static linking
+    CFLAGS="/DBT_USE_DOUBLE_PRECISION /openmp /c /MT /DNDEBUG /O2 /EHsc $CFLAGS"    # static linking
+    CPPFLAGS="/DBT_USE_DOUBLE_PRECISION /c /MT /DNDEBUG /O2 /EHsc $CFLAGS"    # static linking
     LB="lib" 
     LD="link"
     GLD="link"

@@ -2,56 +2,56 @@ import BIDMach.rl.environments.bullet._
 import BIDMach.rl.environments.Bullet
 import BIDMach.rl.environments.Bullet._
 
-val sim = new Bullet;
+val p = new Bullet;
 
-sim.connect(eCONNECT_GUI);
+p.connect(eCONNECT_GUI);
 
-sim.resetSimulation()
+p.resetSimulation()
 
-sim.setGravity(0,0,-9.8f);
+p.setGravity(0,0,-9.8f);
 
-sim.setPathPrefix("/code/bullet3/data/");
+p.setPathPrefix("/code/bullet3/data/");
 
 var useRealTimeSim = true;
 
-sim.setRealTimeSimulation(useRealTimeSim);
+p.setRealTimeSimulation(useRealTimeSim);
 
-sim.loadSDF("stadium.sdf");
+p.loadSDF("stadium.sdf");
 
-val car = sim.loadURDF("racecar/racecar.urdf");
+val car = p.loadURDF("racecar/racecar.urdf");
 
-for (i <- 0 until sim.getNumJoints(car)) {
-    println(sim.getJointInfo(car, i));
+for (i <- 0 until p.getNumJoints(car)) {
+    println(p.getJointInfo(car, i));
 }
 
 val inactive_wheels = Array(3,5,7);
 val wheels = Array(2);
 
 for (wheel <- inactive_wheels) {
-    sim.setJointMotorControl(car,wheel,VELOCITY_CONTROL,targetVelocity=0, force=0);
+    p.setJointMotorControl(car,wheel,VELOCITY_CONTROL,targetVelocity=0, force=0);
 }
 	
 val steering = Array(4,6);
 
-val targetVelocitySlider = sim.addUserDebugParameter("wheelVelocity",-10,10,0)
-val maxForceSlider = sim.addUserDebugParameter("maxForce",0,10,10)
-val steeringSlider = sim.addUserDebugParameter("steering",-0.5,0.5,0)
+val targetVelocitySlider = p.addUserDebugParameter("wheelVelocity",-10,10,0)
+val maxForceSlider = p.addUserDebugParameter("maxForce",0,10,10)
+val steeringSlider = p.addUserDebugParameter("steering",-0.5,0.5,0)
 while (true) {
-    val maxForce = sim.readUserDebugParameter(maxForceSlider);
-    val targetVelocity = sim.readUserDebugParameter(targetVelocitySlider);
-    val steeringAngle = sim.readUserDebugParameter(steeringSlider);
+    val maxForce = p.readUserDebugParameter(maxForceSlider);
+    val targetVelocity = p.readUserDebugParameter(targetVelocitySlider);
+    val steeringAngle = p.readUserDebugParameter(steeringSlider);
     //    print(targetVelocity);
 	
     for (wheel <- wheels) {
-	sim.setJointMotorControl(car,wheel,VELOCITY_CONTROL,targetVelocity=targetVelocity,force=maxForce);
+	p.setJointMotorControl(car,wheel,VELOCITY_CONTROL,targetVelocity=targetVelocity,force=maxForce);
     }
     
     for (steer <- steering) {
-	sim.setJointMotorControl(car,steer,POSITION_CONTROL,targetPosition=steeringAngle);
+	p.setJointMotorControl(car,steer,POSITION_CONTROL,targetPosition=steeringAngle);
     }
 
     if (! useRealTimeSim) {
-	sim.stepSimulation();
+	p.stepSimulation();
     }
     Thread.sleep(10);
 }

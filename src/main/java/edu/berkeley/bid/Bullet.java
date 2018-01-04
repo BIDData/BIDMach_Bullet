@@ -136,7 +136,7 @@ public class Bullet implements Serializable {
 
     public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
 					    int controlMode,  double targetPosition, double targetVelocity,
-					    double maxTorque, double kp, double kd);
+					    double force, double kp, double kd);
 
     public native boolean setJointMotorControlArray(int bodyUniqueId, int [] jointIndices, int controlMode,
 						    double [] targetPositions, double [] targetVelocities, double [] maxTorques, double [] kps, double [] kds);
@@ -323,6 +323,12 @@ public class Bullet implements Serializable {
     }
 
     public native void submitProfileTiming(String profileName, int durationInMicroseconds);
+
+    public native int addUserDebugLine(double [] fromXYZ, double [] toXYZ, double [] colorRGB,
+				       double lineWidth, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
+
+    public native int addUserDebugText3D(String text, double [] position, double [] orientation, double [] colorRGB,
+					 double size, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
 
     public native int addUserDebugParameter(String paramName, double rangeMin, double rangeMax, double startValue);
 

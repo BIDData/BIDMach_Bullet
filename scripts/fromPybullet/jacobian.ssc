@@ -5,6 +5,7 @@ import BIDMach.rl.environments.Bullet._
 
 val p = new Bullet;
 var clid = p.connect(eCONNECT_SHARED_MEMORY);
+//var clid = p.connect(eCONNECT_GUI);
 if (!clid) p.connect(eCONNECT_DIRECT);
 
 def getJointStates(robot:Int) = {
@@ -36,10 +37,10 @@ p.resetSimulation();
 p.setTimeStep(time_step);
 p.setGravity(0, 0, gravity_constant);
 p.setPathPrefix("/code/bullet3/data/");
-p.loadURDF("plane.urdf",row(0,0,-0.3f));
+p.loadURDF("plane.urdf", row(0,0,-0.3f));
 
 val kukaId = p.loadURDF("kuka_iiwa/model.urdf");
-p.resetBasePositionAndOrientation(kukaId,row(0,0,0),Quaternion.identity());
+p.resetBasePositionAndOrientation(kukaId, row(0,0,0), Quaternion.identity());
 val kukaEndEffectorIndex = 6;
 val numJoints = p.getNumJoints(kukaId);
 // Set a joint target for the position control and step the sim

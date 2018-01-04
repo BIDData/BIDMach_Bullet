@@ -1305,7 +1305,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetJointState
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex,
- int controlMode,  double targetPosition, double targetVelocity, double maxTorqueValue,
+ int controlMode,  double targetPosition, double targetVelocity, double force,
  double kp, double kd)
 {
   struct b3RobotSimulatorJointMotorArgs motorArgs(controlMode);
@@ -1313,7 +1313,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
   motorArgs.m_targetVelocity = targetVelocity;
   motorArgs.m_kp = kp;
   motorArgs.m_kd = kd;
-  motorArgs.m_maxTorqueValue = maxTorqueValue;
+  motorArgs.m_maxTorqueValue = force;
 
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setJointMotorControl(bodyUniqueId, jointIndex, motorArgs);
@@ -1973,6 +1973,65 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
   return status;
 }
 
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText3D
+(JNIEnv *env, jobject jRoboSimAPI, jstring jtext, jdoubleArray jpositionXYZ, jdoubleArray jorientation, jdoubleArray jcolorRGB,
+ jdouble size, jdouble lifeTime, jint parentObjectUniqueId, jint parentLinkIndex)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+
+  CHECKVALUE(jtext, "addUserDebugText3D: text string is null", -1);
+  CHECKVALUE(jpositionXYZ, "addUserDebugText3D: positionXYZ array is null", -1);
+  CHECKDIMS(jpositionXYZ, 3, "addUserDebugText3D: position array dimension must be 3", -1);
+  if (jorientation != NULL) {
+    CHECKDIMS(jorientation, 4, "addUserDebugText3D: orientation array dimension must be 4", -1);
+  }
+  CHECKVALUE(jcolorRGB, "addUserDebugText3D: colorRGB array is null", -1);
+  CHECKDIMS(jcolorRGB, 3, "addUserDebugText3D: colorRGB array dimension must be 3", -1);
+ 
+  char *text = (char *)(env->GetStringUTFChars(jtext, 0));
+  double *positionXYZ = (double *)env->GetPrimitiveArrayCritical(jpositionXYZ, JNI_FALSE);
+  double *orientation = NULL;
+  if (jorientation != NULL) orientation = (double *)env->GetPrimitiveArrayCritical(jorientation, JNI_FALSE);
+  double *colorRGB = (double *)env->GetPrimitiveArrayCritical(jcolorRGB, JNI_FALSE);
+
+  int iparam = jrsa -> addUserDebugText3D(text, positionXYZ, orientation, colorRGB,
+					  size, lifeTime, parentObjectUniqueId, parentLinkIndex);
+
+  env->ReleasePrimitiveArrayCritical(jcolorRGB, colorRGB, 0);
+  if (orientation != NULL) env->ReleasePrimitiveArrayCritical(jorientation, orientation, 0);
+  env->ReleasePrimitiveArrayCritical(jpositionXYZ, positionXYZ, 0);
+  env->ReleaseStringUTFChars(jtext, text);
+
+  return iparam;
+}
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugLine
+(JNIEnv *env, jobject jRoboSimAPI, jdoubleArray jfromXYZ, jdoubleArray jtoXYZ, jdoubleArray jcolorRGB,
+ jdouble lineWidth, jdouble lifeTime, jint parentObjectUniqueId, jint parentLinkIndex)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+
+  CHECKVALUE(jfromXYZ, "addUserDebugLine: fromXYZ array is null", -1);
+  CHECKDIMS(jfromXYZ, 3, "addUserDebugLine: from array dimension must be 3", -1);
+  CHECKVALUE(jtoXYZ, "addUserDebugLine: toXYZ array is null", -1);
+  CHECKDIMS(jtoXYZ, 3, "addUserDebugLine: toXYZ array dimension must be 3", -1);
+  CHECKVALUE(jcolorRGB, "addUserDebugLine: colorRGB array is null", -1);
+  CHECKDIMS(jcolorRGB, 3, "addUserDebugLine: colorRGB array dimension must be 3", -1);
+ 
+  double *fromXYZ = (double *)env->GetPrimitiveArrayCritical(jfromXYZ, JNI_FALSE);
+  double *toXYZ = (double *)env->GetPrimitiveArrayCritical(jtoXYZ, JNI_FALSE);
+  double *colorRGB = (double *)env->GetPrimitiveArrayCritical(jcolorRGB, JNI_FALSE);
+
+  int iparam = jrsa -> addUserDebugLine(fromXYZ, toXYZ, colorRGB, lineWidth, lifeTime,
+					parentObjectUniqueId, parentLinkIndex);
+
+  env->ReleasePrimitiveArrayCritical(jcolorRGB, colorRGB, 0);
+  env->ReleasePrimitiveArrayCritical(jtoXYZ, toXYZ, 0);
+  env->ReleasePrimitiveArrayCritical(jfromXYZ, fromXYZ, 0);
+
+  return iparam;
+}
 
 JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugParameter
 (JNIEnv *env, jobject jRoboSimAPI, jstring jparamName, jdouble rangeMin, jdouble rangeMax, jdouble startValue)
