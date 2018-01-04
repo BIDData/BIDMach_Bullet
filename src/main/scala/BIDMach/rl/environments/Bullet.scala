@@ -373,8 +373,8 @@ class Bullet {
 				   jointDamping:DMat=null):DMat = {
 	val numJoints = getNumJoints(bodyUniqueId);
 	val jointAnglesOutput = DMat(1, numJoints);
-	javaBullet.calculateInverseKinematics(bodyUniqueId, endEffectorLinkIndex, endEffectorTargetPosition.data,
-					      getData(endEffectorTargetOrientation), 
+	javaBullet.calculateInverseKinematics(bodyUniqueId, endEffectorLinkIndex,
+					      endEffectorTargetPosition.data, getData(endEffectorTargetOrientation), 
 					      getData(lowerLimits), getData(upperLimits), getData(jointRanges), getData(restPoses),
 					      getData(jointDamping), jointAnglesOutput.data);
 	jointAnglesOutput;

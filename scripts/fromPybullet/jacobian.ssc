@@ -3,21 +3,21 @@ import BIDMach.rl.environments.bullet._
 import BIDMach.rl.environments.Bullet
 import BIDMach.rl.environments.Bullet._
 
-val sim = new Bullet;
-var clid = sim.connect(eCONNECT_SHARED_MEMORY);
-if (!clid) sim.connect(eCONNECT_DIRECT);
+val p = new Bullet;
+var clid = p.connect(eCONNECT_SHARED_MEMORY);
+if (!clid) p.connect(eCONNECT_DIRECT);
 
 def getJointStates(robot:Int) = {
-    val (pos, vel, _, torq) = sim.getJointStates4(robot, irow(0->sim.getNumJoints(robot)));
+    val (pos, vel, _, torq) = p.getJointStates4(robot, irow(0->p.getNumJoints(robot)));
     (pos, vel, torq);
 };
 
 def setJointPosition(robot:Int, position:DMat, kp:Double=1.0, kv:Double=0.3) = {
-    val num_joints = sim.getNumJoints(robot);
+    val num_joints = p.getNumJoints(robot);
     val zero_vec = dzeros(1, num_joints);
     val one_vec = dones(1, num_joints);
     if (position.length == num_joints) {
-	sim.setJointMotorControlArray(robot, irow(0->num_joints), POSITION_CONTROL,
+	p.setJointMotorControlArray(robot, irow(0->num_joints), POSITION_CONTROL,
 				      targetPositions=position, targetVelocities=zero_vec,
 				      positionGains=kp * one_vec, velocityGains=kv * one_vec);
     } else {
@@ -32,30 +32,30 @@ def multiplyJacobian(jacobian:DMat, vector:DMat) = {
 
 val time_step = 0.001f;
 val gravity_constant = -9.81f;
-sim.resetSimulation();
-sim.setTimeStep(time_step);
-sim.setGravity(0, 0, gravity_constant);
-sim.setPathPrefix("/code/bullet3/data/");
-sim.loadURDF("plane.urdf",row(0,0,-0.3f));
+p.resetSimulation();
+p.setTimeStep(time_step);
+p.setGravity(0, 0, gravity_constant);
+p.setPathPrefix("/code/bullet3/data/");
+p.loadURDF("plane.urdf",row(0,0,-0.3f));
 
-val kukaId = sim.loadURDF("kuka_iiwa/model.urdf");
-sim.resetBasePositionAndOrientation(kukaId,row(0,0,0),Quaternion.identity());
+val kukaId = p.loadURDF("kuka_iiwa/model.urdf");
+p.resetBasePositionAndOrientation(kukaId,row(0,0,0),Quaternion.identity());
 val kukaEndEffectorIndex = 6;
-val numJoints = sim.getNumJoints(kukaId);
-// Set a joint target for the position control and step the sim.
+val numJoints = p.getNumJoints(kukaId);
+// Set a joint target for the position control and step the sim
 setJointPosition(kukaId, 0.1*dones(1,numJoints));
-//sim.setJointMotorControl(kukaId,0,POSITION_CONTROL,0.1,0,100000,1,0.3);
-sim.stepSimulation();
+//p.setJointMotorControl(kukaId,0,POSITION_CONTROL,0.1,0,100000,1,0.3);
+p.stepSimulation();
 // Get the joint and link state directly from Bullet.
 val (pos, vel, torq) = getJointStates(kukaId);
-val result = sim.getLinkState(kukaId, kukaEndEffectorIndex, computeLinkVelocity=1, computeForwardKinematics=1);
+val result = p.getLinkState(kukaId, kukaEndEffectorIndex, computeLinkVelocity=1, computeForwardKinematics=1);
 // Get the Jacobians for the CoM of the end-effector link.
 // Note that in this example com_rot = identity, and we would need to use com_rot.T * com_trn.
 // The localPosition is always defined in terms of the link frame coordinates.
 val com_trn = result.localInertialPosition;
     
 val zero_vec = dzeros(1, numJoints);
-val (jac_t, jac_r) = sim.calculateJacobian(kukaId, kukaEndEffectorIndex, com_trn, pos, zero_vec, zero_vec);
+val (jac_t, jac_r) = p.calculateJacobian(kukaId, kukaEndEffectorIndex, com_trn, pos, zero_vec, zero_vec);
 
 println ("Link linear velocity of CoM from getLinkState:")
 println (result.worldLinearVelocity)

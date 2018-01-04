@@ -1480,6 +1480,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseKinematics
   args.m_flags = 0;
   args.m_bodyUniqueId = bodyUniqueId;
   args.m_endEffectorLinkIndex = endEffectorLinkIndex;
+  args.m_numDegreeOfFreedom = numJoints;
 
   // Process required args endEffectorTargetPosition
   CHECKVALUE(jendEffectorTargetPosition, "calculateInverseKinematics: m_endEffectorTargetPosition is null\n", false);
