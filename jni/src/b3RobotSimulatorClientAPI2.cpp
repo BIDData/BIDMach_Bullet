@@ -3,6 +3,7 @@
 #include <../examples/SharedMemory/PhysicsClientC_API.h>
 #include <string.h>
 
+// JFC: Added here because its in b3RobotSimulatorClient.cpp but not in any header. 
 struct b3RobotSimulatorClientAPI_InternalData
 {
 	b3PhysicsClientHandle m_physicsClientHandle;
@@ -15,13 +16,33 @@ struct b3RobotSimulatorClientAPI_InternalData
 	}
 };
 
+bool b3RobotSimulatorClientAPI::getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeForwardKinematics, b3LinkState* linkState)
+{
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command = b3RequestActualStateCommandInit(m_data->m_physicsClientHandle, bodyUniqueId);
 
-bool b3RobotSimulatorClientAPI::getCameraImage(struct b3CameraImageData &imageData, int width, int height,
-					       float *viewMatrix, float *projectionMatrix,
-					       float *lightDirection, float *lightColor,
-					       float lightDistance, int hasShadow,
-					       float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
-					       int renderer)
+  if (computeLinkVelocity) {
+    b3RequestActualStateCommandComputeLinkVelocity(command, computeLinkVelocity);
+  }
+
+  if (computeForwardKinematics) {
+    b3RequestActualStateCommandComputeForwardKinematics(command, computeForwardKinematics);
+  }
+
+  b3SharedMemoryStatusHandle statusHandle = b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, command);
+  
+
+  if (b3GetStatusType(statusHandle) == CMD_ACTUAL_STATE_UPDATE_COMPLETED) {
+    b3GetLinkState(m_data->m_physicsClientHandle, statusHandle, linkIndex, linkState);
+    return true;
+  }
+  return false;
+}
+
+bool b3RobotSimulatorClientAPI::getCameraImage(int width, int height, struct b3RobotSimulatorGetCameraImageArgs args, struct b3CameraImageData &imageData)
 {
   if (!isConnected()) {
     b3Warning("Not connected");
@@ -35,40 +56,40 @@ bool b3RobotSimulatorClientAPI::getCameraImage(struct b3CameraImageData &imageDa
   b3RequestCameraImageSetPixelResolution(command, width, height);
 
   // Check and apply optional arguments
-  if (viewMatrix && projectionMatrix) {
-    b3RequestCameraImageSetCameraMatrices(command, viewMatrix, projectionMatrix);
+  if (args.m_viewMatrix && args.m_projectionMatrix) {
+    b3RequestCameraImageSetCameraMatrices(command, args.m_viewMatrix, args.m_projectionMatrix);
   }
 
-  if (lightDirection)	{
-    b3RequestCameraImageSetLightDirection(command, lightDirection);
+  if (args.m_lightDirection != NULL)	{
+    b3RequestCameraImageSetLightDirection(command, args.m_lightDirection);
   }
 
-  if (lightColor) {
-    b3RequestCameraImageSetLightColor(command, lightColor);
+  if (args.m_lightColor != NULL) {
+    b3RequestCameraImageSetLightColor(command, args.m_lightColor);
   }
 
-  if (lightDistance>=0) {
-    b3RequestCameraImageSetLightDistance(command, lightDistance);
+  if (args.m_lightDistance>=0) {
+    b3RequestCameraImageSetLightDistance(command, args.m_lightDistance);
   }
 
-  if (hasShadow>=0) {
-    b3RequestCameraImageSetShadow(command, hasShadow);
+  if (args.m_hasShadow>=0) {
+    b3RequestCameraImageSetShadow(command, args.m_hasShadow);
   }
 
-  if (lightAmbientCoeff>=0) {
-    b3RequestCameraImageSetLightAmbientCoeff(command, lightAmbientCoeff);
+  if (args.m_lightAmbientCoeff>=0) {
+    b3RequestCameraImageSetLightAmbientCoeff(command, args.m_lightAmbientCoeff);
   }
 
-  if (lightDiffuseCoeff>=0) {
-    b3RequestCameraImageSetLightDiffuseCoeff(command, lightDiffuseCoeff);
+  if (args.m_lightDiffuseCoeff>=0) {
+    b3RequestCameraImageSetLightDiffuseCoeff(command, args.m_lightDiffuseCoeff);
   }
 
-  if (lightSpecularCoeff>=0) {
-    b3RequestCameraImageSetLightSpecularCoeff(command, lightSpecularCoeff);
+  if (args.m_lightSpecularCoeff>=0) {
+    b3RequestCameraImageSetLightSpecularCoeff(command, args.m_lightSpecularCoeff);
   }
 
-  if (renderer>=0) {
-    b3RequestCameraImageSelectRenderer(command, renderer);
+  if (args.m_renderer>=0) {
+    b3RequestCameraImageSelectRenderer(command, args.m_renderer);
   }
 
   // Actually retrieve the image
@@ -193,9 +214,7 @@ bool b3RobotSimulatorClientAPI::getDynamicsInfo(int bodyUniqueId, int linkIndex,
   return false;
 }
 
-bool b3RobotSimulatorClientAPI::changeDynamics(int bodyUniqueId, int linkIndex,	double mass, double lateralFriction, double spinningFriction,
-					       double rollingFriction, double restitution, double linearDamping, double angularDamping,
-					       double contactStiffness, double contactDamping, int frictionAnchor)
+bool b3RobotSimulatorClientAPI::changeDynamics(int bodyUniqueId, int linkIndex, struct b3RobotSimulatorChangeDynamicsArgs &args)
 {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
   if (sm == 0) {
@@ -205,40 +224,40 @@ bool b3RobotSimulatorClientAPI::changeDynamics(int bodyUniqueId, int linkIndex,	
   b3SharedMemoryCommandHandle command = b3InitChangeDynamicsInfo(sm);
   b3SharedMemoryStatusHandle statusHandle;
 		
-  if (mass >= 0) {
-    b3ChangeDynamicsInfoSetMass(command, bodyUniqueId, linkIndex, mass);
+  if (args.m_mass >= 0) {
+    b3ChangeDynamicsInfoSetMass(command, bodyUniqueId, linkIndex, args.m_mass);
   }
 
-  if (lateralFriction >= 0) {
-    b3ChangeDynamicsInfoSetLateralFriction(command, bodyUniqueId, linkIndex, lateralFriction);
+  if (args.m_lateralFriction >= 0) {
+    b3ChangeDynamicsInfoSetLateralFriction(command, bodyUniqueId, linkIndex, args.m_lateralFriction);
   }
   
-  if (spinningFriction>=0) {
-    b3ChangeDynamicsInfoSetSpinningFriction(command, bodyUniqueId, linkIndex,spinningFriction);
+  if (args.m_spinningFriction>=0) {
+    b3ChangeDynamicsInfoSetSpinningFriction(command, bodyUniqueId, linkIndex,args.m_spinningFriction);
   }
 
-  if (rollingFriction>=0) {
-    b3ChangeDynamicsInfoSetRollingFriction(command, bodyUniqueId, linkIndex,rollingFriction);
+  if (args.m_rollingFriction>=0) {
+    b3ChangeDynamicsInfoSetRollingFriction(command, bodyUniqueId, linkIndex,args.m_rollingFriction);
   }
 
-  if (linearDamping>=0)	{
-    b3ChangeDynamicsInfoSetLinearDamping(command,bodyUniqueId, linearDamping);
+  if (args.m_linearDamping>=0)	{
+    b3ChangeDynamicsInfoSetLinearDamping(command, bodyUniqueId, args.m_linearDamping);
   }
 
-  if (angularDamping>=0) {
-    b3ChangeDynamicsInfoSetAngularDamping(command,bodyUniqueId,angularDamping);
+  if (args.m_angularDamping>=0) {
+    b3ChangeDynamicsInfoSetAngularDamping(command, bodyUniqueId, args.m_angularDamping);
   }
 
-  if (restitution>=0) {
-    b3ChangeDynamicsInfoSetRestitution(command, bodyUniqueId, linkIndex, restitution);
+  if (args.m_restitution>=0) {
+    b3ChangeDynamicsInfoSetRestitution(command, bodyUniqueId, linkIndex, args.m_restitution);
   }
 
-  if (contactStiffness>=0 && contactDamping >=0) {
-    b3ChangeDynamicsInfoSetContactStiffnessAndDamping(command,bodyUniqueId,linkIndex,contactStiffness, contactDamping);
+  if (args.m_contactStiffness>=0 && args.m_contactDamping >=0) {
+    b3ChangeDynamicsInfoSetContactStiffnessAndDamping(command, bodyUniqueId, linkIndex, args.m_contactStiffness, args.m_contactDamping);
   }
 
-  if (frictionAnchor>=0) {
-    b3ChangeDynamicsInfoSetFrictionAnchor(command,bodyUniqueId,linkIndex, frictionAnchor);
+  if (args.m_frictionAnchor>=0) {
+    b3ChangeDynamicsInfoSetFrictionAnchor(command, bodyUniqueId,linkIndex, args.m_frictionAnchor);
   }
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
   return true;
@@ -266,8 +285,7 @@ int b3RobotSimulatorClientAPI::addUserDebugParameter(char * paramName, double ra
   return -1;
 }
 
-int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, double *orientation, double *colorRGB,
-						  double textSize, double lifeTime, int parentObjectUniqueId, int parentLinkIndex)
+int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, struct b3RobotSimulatorAddUserDebugText3DArgs & args)
 {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
   if (sm == 0) {
@@ -278,14 +296,14 @@ int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, do
   b3SharedMemoryStatusHandle statusHandle;
   int statusType;
   
-  commandHandle = b3InitUserDebugDrawAddText3D(sm, text, posXYZ, colorRGB, textSize, lifeTime);
+  commandHandle = b3InitUserDebugDrawAddText3D(sm, text, posXYZ, &args.m_colorRGB[0], args.m_size, args.m_lifeTime);
 
-  if (parentObjectUniqueId>=0) {
-    b3UserDebugItemSetParentObject(commandHandle, parentObjectUniqueId, parentLinkIndex);
+  if (args.m_parentObjectUniqueId>=0) {
+    b3UserDebugItemSetParentObject(commandHandle, args.m_parentObjectUniqueId, args.m_parentLinkIndex);
   }
 
-  if (orientation != NULL) {
-    b3UserDebugTextSetOrientation(commandHandle,orientation);
+  if (args.m_textOrientation != NULL) {
+    b3UserDebugTextSetOrientation(commandHandle, args.m_textOrientation);
   }
 
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
@@ -299,8 +317,7 @@ int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, do
   return -1;
 }
 
-int b3RobotSimulatorClientAPI::addUserDebugLine(double *fromXYZ, double *toXYZ, double *colorRGB,
-						double lineWidth, double lifeTime , int parentObjectUniqueId, int parentLinkIndex)
+int b3RobotSimulatorClientAPI::addUserDebugLine(double *fromXYZ, double *toXYZ, struct b3RobotSimulatorAddUserDebugLineArgs & args)
 {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
   if (sm == 0) {
@@ -311,10 +328,10 @@ int b3RobotSimulatorClientAPI::addUserDebugLine(double *fromXYZ, double *toXYZ, 
   b3SharedMemoryStatusHandle statusHandle;
   int statusType;
 
-  commandHandle = b3InitUserDebugDrawAddLine3D(sm, fromXYZ, toXYZ, colorRGB, lineWidth, lifeTime);
+  commandHandle = b3InitUserDebugDrawAddLine3D(sm, fromXYZ, toXYZ, &args.m_colorRGB[0], args.m_lineWidth, args.m_lifeTime);
 
-  if (parentObjectUniqueId>=0) {
-    b3UserDebugItemSetParentObject(commandHandle, parentObjectUniqueId, parentLinkIndex);
+  if (args.m_parentObjectUniqueId>=0) {
+    b3UserDebugItemSetParentObject(commandHandle, args.m_parentObjectUniqueId, args.m_parentLinkIndex);
   }
 
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
@@ -450,31 +467,6 @@ bool b3RobotSimulatorClientAPI::setJointMotorControlArray(int bodyUniqueId, stru
   return true;
 }
 
-bool b3RobotSimulatorClientAPI::getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeForwardKinematics, b3LinkState* linkState)
-{
-  if (!isConnected()) {
-    b3Warning("Not connected");
-    return false;
-  }
-  b3SharedMemoryCommandHandle command = b3RequestActualStateCommandInit(m_data->m_physicsClientHandle, bodyUniqueId);
-
-  if (computeLinkVelocity) {
-    b3RequestActualStateCommandComputeLinkVelocity(command, computeLinkVelocity);
-  }
-
-  if (computeForwardKinematics) {
-    b3RequestActualStateCommandComputeForwardKinematics(command, computeForwardKinematics);
-  }
-
-  b3SharedMemoryStatusHandle statusHandle = b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, command);
-  
-
-  if (b3GetStatusType(statusHandle) == CMD_ACTUAL_STATE_UPDATE_COMPLETED) {
-    b3GetLinkState(m_data->m_physicsClientHandle, statusHandle, linkIndex, linkState);
-    return true;
-  }
-  return false;
-}
 
 bool b3RobotSimulatorClientAPI::setPhysicsEngineParameter(struct b3RobotSimulatorSetPhysicsEngineParameters &args)
 {

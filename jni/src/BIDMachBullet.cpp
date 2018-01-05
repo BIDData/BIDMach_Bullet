@@ -1647,9 +1647,19 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_changeDynamics
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
 
-  bool status = jrsa -> changeDynamics(bodyUniqueId, linkIndex, mass, lateralFriction, spinningFriction,
-				       rollingFriction, restitution, linearDamping, angularDamping,
-				       contactStiffness, contactDamping, frictionAnchor);
+  b3RobotSimulatorChangeDynamicsArgs args;
+  args.m_mass = mass;
+  args.m_lateralFriction = lateralFriction;
+  args.m_spinningFriction = spinningFriction;
+  args.m_rollingFriction = rollingFriction;
+  args.m_restitution = restitution;
+  args.m_linearDamping = linearDamping;
+  args.m_angularDamping = angularDamping;
+  args.m_contactStiffness = contactStiffness;
+  args.m_contactDamping = contactDamping;
+  args.m_frictionAnchor = frictionAnchor;
+
+  bool status = jrsa -> changeDynamics(bodyUniqueId, linkIndex, args);
 
   return status;
 }
@@ -1811,7 +1821,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeProjectionMatrixFOV
 jboolean getCameraImageBasic
 (JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
- jfloatArray jlightProjection, jfloatArray jlightColor,
+ jfloatArray jlightDirection, jfloatArray jlightColor,
  jfloat lightDistance, jint hasShadow,
  jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
  jint renderer, struct b3CameraImageData &cameraImage)
@@ -1819,7 +1829,7 @@ jboolean getCameraImageBasic
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   float *viewMatrix = NULL;
   float *projectionMatrix = NULL;
-  float *lightProjection = NULL;
+  float *lightDirection = NULL;
   float *lightColor = NULL;
   
   if (jviewMatrix != NULL) {
@@ -1830,24 +1840,31 @@ jboolean getCameraImageBasic
     CHECKDIMS(jprojectionMatrix, 16, "getCameraImage: projectionMatrix must have dimension 16", false);
     projectionMatrix = (float *)env->GetPrimitiveArrayCritical(jprojectionMatrix, JNI_FALSE);
   }
-  if (jlightProjection != NULL) {
-    CHECKDIMS(jlightProjection, 3, "getCameraImage: lightProjection must have dimension 3", false);
-    lightProjection = (float *)env->GetPrimitiveArrayCritical(jlightProjection, JNI_FALSE);
+  if (jlightDirection != NULL) {
+    CHECKDIMS(jlightDirection, 3, "getCameraImage: lightDirection must have dimension 3", false);
+    lightDirection = (float *)env->GetPrimitiveArrayCritical(jlightDirection, JNI_FALSE);
   }
   if (jlightColor != NULL) {
     CHECKDIMS(jlightColor, 3, "getCameraImage: lightColor must have dimension 3", false);
     lightColor = (float *)env->GetPrimitiveArrayCritical(jlightColor, JNI_FALSE);
   }
 
-  jboolean status = jrsa -> getCameraImage(cameraImage, width, height,
-					   viewMatrix, projectionMatrix,
-					   lightProjection, lightColor,
-					   lightDistance, hasShadow,
-					   lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
-					   renderer);
+  struct b3RobotSimulatorGetCameraImageArgs args(width, height);
+  args.m_viewMatrix = viewMatrix;
+  args.m_projectionMatrix = projectionMatrix;
+  args.m_lightDirection = lightDirection;
+  args.m_lightColor = lightColor;
+  args.m_lightDistance = lightDistance;
+  args.m_hasShadow = hasShadow;
+  args.m_lightAmbientCoeff = lightAmbientCoeff;
+  args.m_lightDiffuseCoeff = lightDiffuseCoeff;
+  args.m_lightSpecularCoeff = lightSpecularCoeff;
+  args.m_renderer = renderer;
+  
+  jboolean status = jrsa -> getCameraImage(width, height, args, cameraImage);
 
   if (lightColor != NULL) env->ReleasePrimitiveArrayCritical(jlightColor, lightColor, 0);
-  if (lightProjection != NULL) env->ReleasePrimitiveArrayCritical(jlightProjection, lightProjection, 0);
+  if (lightDirection != NULL) env->ReleasePrimitiveArrayCritical(jlightDirection, lightDirection, 0);
   if (projectionMatrix != NULL) env->ReleasePrimitiveArrayCritical(jprojectionMatrix, projectionMatrix, 0);
   if (viewMatrix != NULL) env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
   return status;
@@ -1856,7 +1873,7 @@ jboolean getCameraImageBasic
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
 (JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
- jfloatArray jlightProjection, jfloatArray jlightColor,
+ jfloatArray jlightDirection, jfloatArray jlightColor,
  jfloat lightDistance, jint hasShadow,
  jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
  jint renderer, jobject jcameraImage)
@@ -1864,7 +1881,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
   struct b3CameraImageData cameraImage;
   jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
 					jviewMatrix, jprojectionMatrix,
-					jlightProjection, jlightColor,
+					jlightDirection, jlightColor,
 					lightDistance, hasShadow,
 					lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
 					renderer, cameraImage);
@@ -1875,7 +1892,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
 (JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
- jfloatArray jlightProjection, jfloatArray jlightColor,
+ jfloatArray jlightDirection, jfloatArray jlightColor,
  jfloat lightDistance, jint hasShadow,
  jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
  jint renderer, jintArray jrgbColorData, jfloatArray jdepthValues, jintArray jsegmentationMaskValues)
@@ -1889,7 +1906,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
 
   jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
 					jviewMatrix, jprojectionMatrix,
-					jlightProjection, jlightColor,
+					jlightDirection, jlightColor,
 					lightDistance, hasShadow,
 					lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
 					renderer, cameraImage);
@@ -1930,7 +1947,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
 (JNIEnv *env, jobject jRoboSimAPI, jobject jcameraImage, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
- jfloatArray jlightProjection, jfloatArray jlightColor,
+ jfloatArray jlightDirection, jfloatArray jlightColor,
  jfloat lightDistance, jint hasShadow,
  jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
  jint renderer, jbyteArray jrgbColorData, jfloatArray jdepthValues, jintArray jsegmentationMaskValues)
@@ -1943,7 +1960,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
 
   jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
 					jviewMatrix, jprojectionMatrix,
-					jlightProjection, jlightColor,
+					jlightDirection, jlightColor,
 					lightDistance, hasShadow,
 					lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
 					renderer, cameraImage);
@@ -1979,6 +1996,10 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText3D
  jdouble size, jdouble lifeTime, jint parentObjectUniqueId, jint parentLinkIndex)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  char *text = NULL; 
+  double *positionXYZ = NULL;
+  double *orientation = NULL;
+  double *colorRGB = NULL;
 
   CHECKVALUE(jtext, "addUserDebugText3D: text string is null", -1);
   CHECKVALUE(jpositionXYZ, "addUserDebugText3D: positionXYZ array is null", -1);
@@ -1986,19 +2007,33 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText3D
   if (jorientation != NULL) {
     CHECKDIMS(jorientation, 4, "addUserDebugText3D: orientation array dimension must be 4", -1);
   }
-  CHECKVALUE(jcolorRGB, "addUserDebugText3D: colorRGB array is null", -1);
-  CHECKDIMS(jcolorRGB, 3, "addUserDebugText3D: colorRGB array dimension must be 3", -1);
+  if (jcolorRGB != NULL) {
+    CHECKDIMS(jcolorRGB, 3, "addUserDebugText3D: colorRGB array dimension must be 3", -1);
+  }
  
-  char *text = (char *)(env->GetStringUTFChars(jtext, 0));
-  double *positionXYZ = (double *)env->GetPrimitiveArrayCritical(jpositionXYZ, JNI_FALSE);
-  double *orientation = NULL;
+  text = (char *)(env->GetStringUTFChars(jtext, 0));
+  positionXYZ = (double *)env->GetPrimitiveArrayCritical(jpositionXYZ, JNI_FALSE);
   if (jorientation != NULL) orientation = (double *)env->GetPrimitiveArrayCritical(jorientation, JNI_FALSE);
-  double *colorRGB = (double *)env->GetPrimitiveArrayCritical(jcolorRGB, JNI_FALSE);
+  if (jcolorRGB != NULL) colorRGB = (double *)env->GetPrimitiveArrayCritical(jcolorRGB, JNI_FALSE);
 
-  int iparam = jrsa -> addUserDebugText3D(text, positionXYZ, orientation, colorRGB,
-					  size, lifeTime, parentObjectUniqueId, parentLinkIndex);
+  struct b3RobotSimulatorAddUserDebugText3DArgs args;
 
-  env->ReleasePrimitiveArrayCritical(jcolorRGB, colorRGB, 0);
+  if (orientation != NULL) {
+    args.m_textOrientation[0] = orientation[0];
+    args.m_textOrientation[1] = orientation[1];
+    args.m_textOrientation[2] = orientation[2];
+    args.m_textOrientation[3] = orientation[3];
+  }
+
+  if (colorRGB != NULL) {
+    args.m_colorRGB[0] = colorRGB[0];
+    args.m_colorRGB[1] = colorRGB[1];
+    args.m_colorRGB[2] = colorRGB[2];
+  }
+
+  int iparam = jrsa -> addUserDebugText3D(text, positionXYZ, args);
+
+  if (colorRGB != NULL) env->ReleasePrimitiveArrayCritical(jcolorRGB, colorRGB, 0);
   if (orientation != NULL) env->ReleasePrimitiveArrayCritical(jorientation, orientation, 0);
   env->ReleasePrimitiveArrayCritical(jpositionXYZ, positionXYZ, 0);
   env->ReleaseStringUTFChars(jtext, text);
@@ -2011,20 +2046,29 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugLine
  jdouble lineWidth, jdouble lifeTime, jint parentObjectUniqueId, jint parentLinkIndex)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  double *fromXYZ = NULL;
+  double *toXYZ = NULL; 
+  double *colorRGB = NULL;
 
   CHECKVALUE(jfromXYZ, "addUserDebugLine: fromXYZ array is null", -1);
   CHECKDIMS(jfromXYZ, 3, "addUserDebugLine: from array dimension must be 3", -1);
   CHECKVALUE(jtoXYZ, "addUserDebugLine: toXYZ array is null", -1);
   CHECKDIMS(jtoXYZ, 3, "addUserDebugLine: toXYZ array dimension must be 3", -1);
-  CHECKVALUE(jcolorRGB, "addUserDebugLine: colorRGB array is null", -1);
-  CHECKDIMS(jcolorRGB, 3, "addUserDebugLine: colorRGB array dimension must be 3", -1);
+  if (jcolorRGB != NULL) CHECKDIMS(jcolorRGB, 3, "addUserDebugLine: colorRGB array dimension must be 3", -1);
  
-  double *fromXYZ = (double *)env->GetPrimitiveArrayCritical(jfromXYZ, JNI_FALSE);
-  double *toXYZ = (double *)env->GetPrimitiveArrayCritical(jtoXYZ, JNI_FALSE);
-  double *colorRGB = (double *)env->GetPrimitiveArrayCritical(jcolorRGB, JNI_FALSE);
+  fromXYZ = (double *)env->GetPrimitiveArrayCritical(jfromXYZ, JNI_FALSE);
+  toXYZ = (double *)env->GetPrimitiveArrayCritical(jtoXYZ, JNI_FALSE);
+  if (jcolorRGB != NULL) colorRGB = (double *)env->GetPrimitiveArrayCritical(jcolorRGB, JNI_FALSE);
 
-  int iparam = jrsa -> addUserDebugLine(fromXYZ, toXYZ, colorRGB, lineWidth, lifeTime,
-					parentObjectUniqueId, parentLinkIndex);
+  struct b3RobotSimulatorAddUserDebugLineArgs args;
+
+  if (colorRGB != NULL) {
+    args.m_colorRGB[0] = colorRGB[0];
+    args.m_colorRGB[1] = colorRGB[1];
+    args.m_colorRGB[2] = colorRGB[2];
+  }
+
+  int iparam = jrsa -> addUserDebugLine(fromXYZ, toXYZ, args);
 
   env->ReleasePrimitiveArrayCritical(jcolorRGB, colorRGB, 0);
   env->ReleasePrimitiveArrayCritical(jtoXYZ, toXYZ, 0);

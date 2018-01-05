@@ -157,6 +157,38 @@ struct b3RobotSimulatorJointMotorArrayArgs
 	}
 };
 
+struct b3RobotSimulatorGetCameraImageArgs
+{
+  int m_width;
+  int m_height;
+  float *m_viewMatrix;
+  float *m_projectionMatrix;
+  float *m_lightDirection;
+  float *m_lightColor;
+  float m_lightDistance;
+  int m_hasShadow;
+  float m_lightAmbientCoeff;
+  float m_lightDiffuseCoeff;
+  float m_lightSpecularCoeff;
+  int m_renderer;
+
+  b3RobotSimulatorGetCameraImageArgs(int width, int height)
+    : m_width(width),
+      m_height(height),
+      m_viewMatrix(NULL),
+      m_projectionMatrix(NULL),
+      m_lightDirection(NULL),
+      m_lightColor(NULL),
+      m_lightDistance(-1),
+      m_hasShadow(-1),
+      m_lightAmbientCoeff(-1),
+      m_lightDiffuseCoeff(-1),
+      m_lightSpecularCoeff(-1),
+      m_renderer(-1)
+  {
+  }
+};
+
 struct b3RobotSimulatorSetPhysicsEngineParameters 
 {
   double m_fixedTimeStep;
@@ -172,21 +204,98 @@ struct b3RobotSimulatorSetPhysicsEngineParameters
   double m_erp;
   double m_contactERP;
   double m_frictionERP;
-b3RobotSimulatorSetPhysicsEngineParameters() :
-  m_fixedTimeStep(-1),
-    m_numSolverIterations(-1),
-    m_useSplitImpulse(-1),
-    m_splitImpulsePenetrationThreshold(-1),
-    m_numSubSteps(-1),
-    m_collisionFilterMode(-1),
-    m_contactBreakingThreshold(-1),
-    m_maxNumCmdPer1ms(-1),
-    m_enableFileCaching(-1),
-    m_restitutionVelocityThreshold(-1),
-    m_erp(-1),
-    m_contactERP(-1),
-    m_frictionERP(-1)
+
+  b3RobotSimulatorSetPhysicsEngineParameters()
+    : m_fixedTimeStep(-1),
+      m_numSolverIterations(-1),
+      m_useSplitImpulse(-1),
+      m_splitImpulsePenetrationThreshold(-1),
+      m_numSubSteps(-1),
+      m_collisionFilterMode(-1),
+      m_contactBreakingThreshold(-1),
+      m_maxNumCmdPer1ms(-1),
+      m_enableFileCaching(-1),
+      m_restitutionVelocityThreshold(-1),
+      m_erp(-1),
+      m_contactERP(-1),
+      m_frictionERP(-1)
   {}
+};
+
+struct b3RobotSimulatorChangeDynamicsArgs
+{
+  double m_mass;
+  double m_lateralFriction;
+  double m_spinningFriction;
+  double m_rollingFriction;
+  double m_restitution;
+  double m_linearDamping;
+  double m_angularDamping;
+  double m_contactStiffness;
+  double m_contactDamping;
+  int m_frictionAnchor;
+
+  b3RobotSimulatorChangeDynamicsArgs()
+    : m_mass(-1),
+      m_lateralFriction(-1),
+      m_spinningFriction(-1),
+      m_rollingFriction(-1),
+      m_restitution(-1),
+      m_linearDamping(-1),
+      m_angularDamping(-1),
+      m_contactStiffness(-1),
+      m_contactDamping(-1),
+      m_frictionAnchor(-1)
+  {}
+};
+
+struct b3RobotSimulatorAddUserDebugLineArgs
+{
+  double m_colorRGB[3];
+  double m_lineWidth;
+  double m_lifeTime;
+  int m_parentObjectUniqueId;
+  int m_parentLinkIndex;
+
+  b3RobotSimulatorAddUserDebugLineArgs()
+    : 
+      m_lineWidth(1),
+      m_lifeTime(0),
+      m_parentObjectUniqueId(-1),
+      m_parentLinkIndex(-1)
+  {
+    m_colorRGB[0] = 1;
+    m_colorRGB[1] = 1;
+    m_colorRGB[2] = 1;
+  }
+};
+
+struct b3RobotSimulatorAddUserDebugText3DArgs
+{
+  double m_colorRGB[3];
+  double m_size;
+  double m_lifeTime;
+  double m_textOrientation[4];
+  int m_parentObjectUniqueId;
+  int m_parentLinkIndex;
+
+  b3RobotSimulatorAddUserDebugText3DArgs()
+    : 
+      m_size(1),
+      m_lifeTime(0),
+      m_parentObjectUniqueId(-1),
+      m_parentLinkIndex(-1)
+  {
+    m_colorRGB[0] = 1;
+    m_colorRGB[1] = 1;
+    m_colorRGB[2] = 1;
+
+    m_textOrientation[0] = 0;
+    m_textOrientation[1] = 0;
+    m_textOrientation[2] = 0;
+    m_textOrientation[3] = 1;
+
+  }
 };
 
 
@@ -286,16 +395,11 @@ public:
 
 	void submitProfileTiming(const std::string&  profileName, int durationInMicroSeconds=1);
 
-	// JFC: added these 15
+	// JFC: added these 17 methods
 
 	bool getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeInverseKinematics, b3LinkState* linkState);
 
-	bool getCameraImage(struct b3CameraImageData &imageData, int width, int height,
-			    float *viewMatrix=NULL, float *projectionMatrix=NULL,
-			    float *lightDirection=NULL, float *lightColor=NULL,
-			    float lightDistance = -1, int hasShadow = -1,
-			    float lightAmbientCoeff = -1, float lightDiffuseCoeff = -1, float lightSpecularCoeff = -1,
-			    int renderer = -1);
+        bool getCameraImage(int width, int height, struct b3RobotSimulatorGetCameraImageArgs args, b3CameraImageData &imageData);
 
 	bool calculateInverseDynamics(int bodyUniqueId, double *jointPositions, double *jointVelocities, double *jointAccelerations, double *jointForcesOutput);
 
@@ -307,9 +411,7 @@ public:
 
 	bool getDynamicsInfo(int bodyUniqueId, int linkIndex, b3DynamicsInfo *dynamicsInfo);
 
-	bool changeDynamics(int bodyUniqueId, int linkIndex, double mass = -1, double lateralFriction = -1, double spinningFriction= -1,
-			    double rollingFriction = -1, double restitution = -1, double linearDamping = -1, double angularDamping = -1,
-			    double contactStiffness = -1, double contactDamping = -1, int frictionAnchor = -1);
+        bool changeDynamics(int bodyUniqueId, int linkIndex, struct b3RobotSimulatorChangeDynamicsArgs &args);
 
 	int addUserDebugParameter(char * paramName, double rangeMin, double rangeMax, double startValue);
 
@@ -317,11 +419,9 @@ public:
 
 	bool removeUserDebugItem(int itemUniqueId);
 
-	int addUserDebugText3D(char *text, double *posXYZ, double *orientation, double *colorRGB,
-			       double textSize, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
+        int addUserDebugText3D(char *text, double *textPosition, struct b3RobotSimulatorAddUserDebugText3DArgs &args);
 
-	int addUserDebugLine(double *fromXYZ, double *toXYZ, double *colorRGB,
-			     double lineWidth, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
+        int addUserDebugLine(double *fromXYZ, double *toXYZ, struct b3RobotSimulatorAddUserDebugLineArgs &args);
 
 	bool setJointMotorControlArray(int bodyUniqueId, struct b3RobotSimulatorJointMotorArrayArgs &args);
 
