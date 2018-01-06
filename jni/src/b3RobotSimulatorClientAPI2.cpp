@@ -647,6 +647,40 @@ bool b3RobotSimulatorClientAPI::getContactPoints(struct b3RobotSimulatorGetConta
   return false;
 }
 
+bool b3RobotSimulatorClientAPI::getClosestPoints(struct b3RobotSimulatorGetContactPointsArgs &args, float distance, struct b3ContactInformation *contactInfo)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+
+  command = b3InitClosestDistanceQuery(sm);
+
+  b3SetClosestDistanceFilterBodyA(command, args.m_bodyUniqueIdA);
+  b3SetClosestDistanceFilterBodyB(command, args.m_bodyUniqueIdB);
+  b3SetClosestDistanceThreshold(command, distance);
+
+  if (args.m_linkIndexA>=-1) {
+    b3SetClosestDistanceFilterLinkA(command, args.m_linkIndexA);
+  }
+  if (args.m_linkIndexB >=-1) {
+    b3SetClosestDistanceFilterLinkB(command, args.m_linkIndexB);
+  }
+
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  statusType = b3GetStatusType(statusHandle);
+
+  if (statusType == CMD_CONTACT_POINT_INFORMATION_COMPLETED) {
+    b3GetContactPointInformation(sm, contactInfo);
+    return true;
+  }
+  return false;
+}
+
 
 
 

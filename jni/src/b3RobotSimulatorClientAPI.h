@@ -408,7 +408,7 @@ public:
 
 	void submitProfileTiming(const std::string&  profileName, int durationInMicroSeconds=1);
 
-	// JFC: added these 17 methods
+	// JFC: added these 21 methods
 
 	bool getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeInverseKinematics, b3LinkState* linkState);
 
@@ -449,6 +449,8 @@ public:
         bool getDebugVisualizerCamera(struct b3OpenGLVisualizerCameraInfo *cameraInfo);
 
         bool getContactPoints(struct b3RobotSimulatorGetContactPointsArgs &args, struct b3ContactInformation *contactInfo);
+
+	bool getClosestPoints(struct b3RobotSimulatorGetContactPointsArgs &args, float distance, struct b3ContactInformation *contactInfo);
 	  
 	//////////////// INTERNAL
 

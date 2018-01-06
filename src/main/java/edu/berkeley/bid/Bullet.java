@@ -367,6 +367,9 @@ public class Bullet implements Serializable {
 
     public static native void testDynamicsInfo(DynamicsInfo min, DynamicsInfo mout);
 
+    public static native void testDebugVisualizerCameraInfo(DebugVisualizerCameraInfo min, DebugVisualizerCameraInfo mout);
+
+    public static native void testContactPointData(ContactPointData min, ContactPointData mout);
 
     public static final int eCONNECT_GUI = 1;
     public static final int eCONNECT_DIRECT = 2;

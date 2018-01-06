@@ -11,10 +11,9 @@ public class ContactPointData implements Serializable {
     public int m_linkIndexA;
     public int m_linkIndexB;
     public double [] m_positionOnAInWS;//contact point location on object A, in world space coordinates
-    public double [] m_positionOnBInWS;//contact point location on object A, in world space coordinates
+    public double [] m_positionOnBInWS;//contact point location on object B, in world space coordinates
     public double [] m_contactNormalOnBInWS;//the separating contact normal, pointing from object B towards object A
     public double m_contactDistance;//negative number is penetration, positive is distance.
-    
     public double m_normalForce;
 
     public ContactPointData () {
@@ -33,12 +32,13 @@ public class ContactPointData implements Serializable {
 	    "contactFlags=" + m_contactFlags + "," +
 	    "bodyUniqueIdA=" + m_bodyUniqueIdA + "," +
 	    "bodyUniqueIdB=" + m_bodyUniqueIdB + "," +
-	    "linkIndexA=" + m_linkIndexA + "," +
+	    "linkindexa=" + m_linkIndexA + "," +
 	    "linkIndexB=" + m_linkIndexB +  "," +
 	    "positionOnAInWS=" + printVector(m_positionOnAInWS) + "," +
 	    "positionOnBInWS=" + printVector(m_positionOnBInWS) + "," +
 	    "contactNormalOnBInWS=" + printVector(m_contactNormalOnBInWS) + "," +
-	    "contactDistance=" + m_contactDistance + "]";
+	    "contactDistance=" + m_contactDistance + "," +
+	    "normalForce=" + m_normalForce + "]";
     }
 
 }

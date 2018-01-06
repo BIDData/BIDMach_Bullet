@@ -39,14 +39,29 @@ public class DebugVisualizerCameraInfo implements Serializable {
 	m_target = new float [3];
     }
 
+    private String printVector(float [] vector) {
+	return "[" + vector[0] + "," + vector[1] + "," + vector[2] + "]";
+    }
+
+    private String printVectorHead(float [] vector) {
+	return "[" + vector[0] + "," + vector[1] + "," + vector[2] + "...]";
+    }
+
     @Override
     public String toString () {
     	return "DebugVisualizerCameraInfo[" +
 	    "width=" + m_width + ", " +
 	    "height=" + m_height + ", " +
+	    "viewMatrix=" + printVectorHead(m_viewMatrix) + ", " +
+	    "projectionMatrix=" + printVectorHead(m_projectionMatrix) + ", " +
+	    "camUp=" + printVector(m_camUp) + ", " +
+	    "camForward=" + printVector(m_camForward) + ", " +
+	    "horizontal=" + printVector(m_horizontal) + ", " +
+	    "vertical=" + printVector(m_vertical) + ", " +
 	    "yaw=" + m_yaw + ", " +
-	    "pitch=" + m_pitch + 
-	    "distance=" + m_distance + "]";
+	    "pitch=" + m_pitch + ", " +
+	    "distance=" + m_distance + ", " +
+	    "target=" + printVector(m_target) + "]";
     }
 
 }

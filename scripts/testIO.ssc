@@ -94,3 +94,37 @@ val di2 = new DynamicsInfo();
 Bullet.testDynamicsInfo(di1,di2)
 di1
 di2
+
+val vci1 = new DebugVisualizerCameraInfo();
+vci1.m_width = 1;
+vci1.m_height = 2;
+vci1.m_viewMatrix = row(3->19).data
+vci1.m_projectionMatrix = row(19->35).data
+vci1.m_camUp = row(35->38).data
+vci1.m_camForward = row(38->41).data
+vci1.m_horizontal = row(41->44).data
+vci1.m_vertical = row(44->47).data
+vci1.m_yaw = 47;
+vci1.m_pitch = 48;
+vci1.m_distance = 49;
+vci1.m_target = row(50->53).data
+val vci2 = new DebugVisualizerCameraInfo();
+Bullet.testDebugVisualizerCameraInfo(vci1, vci2);
+vci1;
+vci2;
+
+val cpd1 = new ContactPointData;
+val cpd2 = new ContactPointData;
+cpd1.m_contactFlags=1;
+cpd1.m_bodyUniqueIdA=2;
+cpd1.m_bodyUniqueIdB=3;
+cpd1.m_linkIndexA=4;
+cpd1.m_linkIndexB=5;
+cpd1.m_positionOnAInWS = drow(6,7,8).data
+cpd1.m_positionOnBInWS = drow(9,10,11).data
+cpd1.m_contactNormalOnBInWS = drow(12,13,14).data
+cpd1.m_contactDistance = 15;
+cpd1.m_normalForce = 16;
+Bullet.testContactPointData(cpd1, cpd2);
+cpd1
+cpd2

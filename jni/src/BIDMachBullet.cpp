@@ -1098,7 +1098,7 @@ static void nativeDebugVisualizerCameraInfoToJava(JNIEnv *env, jobject jv, struc
     projectionMatrix[i] = cameraInfo.m_projectionMatrix[i];
   }
   for (i = 0; i < 3; i++) {
-    projectionMatrix[i] = cameraInfo.m_projectionMatrix[i];
+    camUp[i] = cameraInfo.m_camUp[i];
   }
   for (i = 0; i < 3; i++) {
     camForward[i] = cameraInfo.m_camForward[i];
@@ -2523,7 +2523,26 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getContactPoints
 
   return status;
 }
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getClosestPoints
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueIdA, jint bodyUniqueIdB, jfloat distance, jint linkIndexA, jint linkIndexB, jobject jcontactInfo)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3RobotSimulatorGetContactPointsArgs args;
+  struct b3ContactInformation contactInfo;
+
+  args.m_bodyUniqueIdA = bodyUniqueIdA;
+  args.m_bodyUniqueIdB = bodyUniqueIdB;
+  args.m_linkIndexA = linkIndexA;
+  args.m_linkIndexB = linkIndexB;
   
+  bool status = jrsa -> getClosestPoints(args, distance, &contactInfo);
+
+  nativeContactInformationToJava(env, jcontactInfo, contactInfo);
+
+  return status;
+}
+
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
