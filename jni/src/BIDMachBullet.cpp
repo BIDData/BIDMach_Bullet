@@ -948,6 +948,180 @@ static void nativeCameraImageDataToJava(JNIEnv *env, jobject jv, b3CameraImageDa
   }
 }
 
+static struct b3OpenGLVisualizerCameraInfo javaDebugVisualizerCameraInfoToNative(JNIEnv *env, jobject jv) {
+  int i;
+  struct  b3OpenGLVisualizerCameraInfo cameraInfo;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/DebugVisualizerCameraInfo");
+  
+  CHECKFIELD(m_widthID, env->GetFieldID(clazz, "m_width", "I"), "getDebugVisualizerCameraInfo: can't access m_width\n", cameraInfo);
+  CHECKFIELD(m_heightID, env->GetFieldID(clazz, "m_height", "I"), "getDebugVisualizerCameraInfo: can't access m_height\n", cameraInfo);
+  CHECKFIELD(m_viewMatrixID, env->GetFieldID(clazz, "m_viewMatrix", "[F"), "getDebugVisualizerCameraInfo: can't access m_viewMatrix\n", cameraInfo);
+  CHECKFIELD(m_projectionMatrixID, env->GetFieldID(clazz, "m_projectionMatrix", "[F"), "getDebugVisualizerCameraInfo: can't access m_projectionMatrix\n", cameraInfo);
+  CHECKFIELD(m_camUpID, env->GetFieldID(clazz, "m_camUp", "[F"), "getDebugVisualizerCameraInfo: can't access m_camUp\n", cameraInfo);
+  CHECKFIELD(m_camForwardID, env->GetFieldID(clazz, "m_camForward", "[F"), "getDebugVisualizerCameraInfo: can't access m_camForward\n", cameraInfo);
+  CHECKFIELD(m_horizontalID, env->GetFieldID(clazz, "m_horizontal", "[F"), "getDebugVisualizerCameraInfo: can't access m_horizontal\n", cameraInfo);
+  CHECKFIELD(m_verticalID, env->GetFieldID(clazz, "m_vertical", "[F"), "getDebugVisualizerCameraInfo: can't access m_vertical\n", cameraInfo);
+  CHECKFIELD(m_yawID, env->GetFieldID(clazz, "m_yaw", "F"), "getDebugVisualizerCameraInfo: can't access m_yaw\n", cameraInfo);
+  CHECKFIELD(m_pitchID, env->GetFieldID(clazz, "m_pitch", "F"), "getDebugVisualizerCameraInfo: can't access m_pitch\n", cameraInfo);
+  CHECKFIELD(m_distanceID, env->GetFieldID(clazz, "m_distance", "F"), "getDebugVisualizerCameraInfo: can't access m_distance\n", cameraInfo);
+  CHECKFIELD(m_targetID, env->GetFieldID(clazz, "m_target", "[F"), "getDebugVisualizerCameraInfo: can't access m_target\n", cameraInfo);
+
+  jfloatArray jviewMatrix = (jfloatArray)env->GetObjectField(jv, m_viewMatrixID);
+  jfloatArray jprojectionMatrix = (jfloatArray)env->GetObjectField(jv, m_projectionMatrixID);
+  jfloatArray jcamUp = (jfloatArray)env->GetObjectField(jv, m_camUpID);
+  jfloatArray jcamForward = (jfloatArray)env->GetObjectField(jv, m_camForwardID);
+  jfloatArray jhorizontal = (jfloatArray)env->GetObjectField(jv, m_horizontalID);
+  jfloatArray jvertical = (jfloatArray)env->GetObjectField(jv, m_verticalID);
+  jfloatArray jtarget = (jfloatArray)env->GetObjectField(jv, m_targetID);
+
+  CHECKVALUE(jviewMatrix, "getDebugVisualizerCameraInfo: m_viewMatrix is null\n", cameraInfo);
+  CHECKVALUE(jprojectionMatrix, "getDebugVisualizerCameraInfo: m_projectionMatrix is null\n", cameraInfo);
+  CHECKVALUE(jcamUp, "getDebugVisualizerCameraInfo: m_camUp is null\n", cameraInfo);
+  CHECKVALUE(jcamForward, "getDebugVisualizerCameraInfo: m_camForward is null\n", cameraInfo);
+  CHECKVALUE(jhorizontal, "getDebugVisualizerCameraInfo: m_horizontal is null\n", cameraInfo);
+  CHECKVALUE(jvertical, "getDebugVisualizerCameraInfo: m_vertical is null\n", cameraInfo);
+  CHECKVALUE(jtarget, "getDebugVisualizerCameraInfo: m_target is null\n", cameraInfo);
+
+  CHECKDIMS(jviewMatrix, 16, "getDebugVisualizerCameraInfo: m_viewMatrix must have dimension 16\n", cameraInfo);
+  CHECKDIMS(jprojectionMatrix, 16, "getDebugVisualizerCameraInfo: m_projectionMatrix must have dimension 16\n", cameraInfo);
+  CHECKDIMS(jcamUp, 3, "getDebugVisualizerCameraInfo: m_camUp must have dimension 3\n", cameraInfo);
+  CHECKDIMS(jcamForward, 3, "getDebugVisualizerCameraInfo: m_camForward must have dimension 3\n", cameraInfo);
+  CHECKDIMS(jhorizontal, 3, "getDebugVisualizerCameraInfo: m_horizontal must have dimension 3\n", cameraInfo);
+  CHECKDIMS(jvertical, 3, "getDebugVisualizerCameraInfo: m_vertical must have dimension 3\n", cameraInfo);
+  CHECKDIMS(jtarget, 3, "getDebugVisualizerCameraInfo: m_target must have dimension 3\n", cameraInfo);
+
+  cameraInfo.m_width = env->GetIntField(jv, m_widthID);
+  cameraInfo.m_height = env->GetIntField(jv, m_heightID);
+  cameraInfo.m_yaw = env->GetFloatField(jv, m_yawID);
+  cameraInfo.m_pitch = env->GetFloatField(jv, m_pitchID);
+  cameraInfo.m_dist = env->GetFloatField(jv, m_distanceID);
+  
+  float *viewMatrix = (float *)env->GetPrimitiveArrayCritical(jviewMatrix, JNI_FALSE);
+  float *projectionMatrix = (float *)env->GetPrimitiveArrayCritical(jprojectionMatrix, JNI_FALSE);
+  float *camUp = (float *)env->GetPrimitiveArrayCritical(jcamUp, JNI_FALSE);
+  float *camForward = (float *)env->GetPrimitiveArrayCritical(jcamForward, JNI_FALSE);
+  float *horizontal = (float *)env->GetPrimitiveArrayCritical(jhorizontal, JNI_FALSE);
+  float *vertical = (float *)env->GetPrimitiveArrayCritical(jvertical, JNI_FALSE);
+  float *target = (float *)env->GetPrimitiveArrayCritical(jtarget, JNI_FALSE);
+
+  for (i = 0; i < 16; i++) {
+    cameraInfo.m_viewMatrix[i] = viewMatrix[i];
+  }
+  for (i = 0; i < 16; i++) {
+    cameraInfo.m_projectionMatrix[i] = projectionMatrix[i];
+  }
+  for (i = 0; i < 3; i++) {
+    cameraInfo.m_camUp[i] = camUp[i];
+  }
+  for (i = 0; i < 3; i++) {
+    cameraInfo.m_camForward[i] = camForward[i];
+  }
+  for (i = 0; i < 3; i++) {
+    cameraInfo.m_horizontal[i] = horizontal[i];
+  }
+  for (i = 0; i < 3; i++) {
+    cameraInfo.m_vertical[i] = vertical[i];
+  }
+  for (i = 0; i < 3; i++) {
+    cameraInfo.m_target[i] = target[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jtarget, target, 0);
+  env->ReleasePrimitiveArrayCritical(jvertical, vertical, 0);
+  env->ReleasePrimitiveArrayCritical(jhorizontal, horizontal, 0);
+  env->ReleasePrimitiveArrayCritical(jcamForward, camForward, 0);
+  env->ReleasePrimitiveArrayCritical(jcamUp, camUp, 0);
+  env->ReleasePrimitiveArrayCritical(jprojectionMatrix, projectionMatrix, 0);
+  env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
+  return cameraInfo;
+}
+
+static void nativeDebugVisualizerCameraInfoToJava(JNIEnv *env, jobject jv, struct b3OpenGLVisualizerCameraInfo &cameraInfo) {
+  int i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/DebugVisualizerCameraInfo");
+  
+  CHECKFIELD(m_widthID, env->GetFieldID(clazz, "m_width", "I"), "getDebugVisualizerCameraInfo: can't access m_width\n",);
+  CHECKFIELD(m_heightID, env->GetFieldID(clazz, "m_height", "I"), "getDebugVisualizerCameraInfo: can't access m_height\n",);
+  CHECKFIELD(m_viewMatrixID, env->GetFieldID(clazz, "m_viewMatrix", "[F"), "getDebugVisualizerCameraInfo: can't access m_viewMatrix\n",);
+  CHECKFIELD(m_projectionMatrixID, env->GetFieldID(clazz, "m_projectionMatrix", "[F"), "getDebugVisualizerCameraInfo: can't access m_projectionMatrix\n",);
+  CHECKFIELD(m_camUpID, env->GetFieldID(clazz, "m_camUp", "[F"), "getDebugVisualizerCameraInfo: can't access m_camUp\n",);
+  CHECKFIELD(m_camForwardID, env->GetFieldID(clazz, "m_camForward", "[F"), "getDebugVisualizerCameraInfo: can't access m_camForward\n",);
+  CHECKFIELD(m_horizontalID, env->GetFieldID(clazz, "m_horizontal", "[F"), "getDebugVisualizerCameraInfo: can't access m_horizontal\n",);
+  CHECKFIELD(m_verticalID, env->GetFieldID(clazz, "m_vertical", "[F"), "getDebugVisualizerCameraInfo: can't access m_vertical\n",);
+  CHECKFIELD(m_yawID, env->GetFieldID(clazz, "m_yaw", "F"), "getDebugVisualizerCameraInfo: can't access m_yaw\n",);
+  CHECKFIELD(m_pitchID, env->GetFieldID(clazz, "m_pitch", "F"), "getDebugVisualizerCameraInfo: can't access m_pitch\n",);
+  CHECKFIELD(m_distanceID, env->GetFieldID(clazz, "m_distance", "F"), "getDebugVisualizerCameraInfo: can't access m_distance\n",);
+  CHECKFIELD(m_targetID, env->GetFieldID(clazz, "m_target", "[F"), "getDebugVisualizerCameraInfo: can't access m_target\n",);
+
+  jfloatArray jviewMatrix = (jfloatArray)env->GetObjectField(jv, m_viewMatrixID);
+  jfloatArray jprojectionMatrix = (jfloatArray)env->GetObjectField(jv, m_projectionMatrixID);
+  jfloatArray jcamUp = (jfloatArray)env->GetObjectField(jv, m_camUpID);
+  jfloatArray jcamForward = (jfloatArray)env->GetObjectField(jv, m_camForwardID);
+  jfloatArray jhorizontal = (jfloatArray)env->GetObjectField(jv, m_horizontalID);
+  jfloatArray jvertical = (jfloatArray)env->GetObjectField(jv, m_verticalID);
+  jfloatArray jtarget = (jfloatArray)env->GetObjectField(jv, m_targetID);
+
+  CHECKVALUE(jviewMatrix, "getDebugVisualizerCameraInfo: m_viewMatrix is null\n",);
+  CHECKVALUE(jprojectionMatrix, "getDebugVisualizerCameraInfo: m_projectionMatrix is null\n",);
+  CHECKVALUE(jcamUp, "getDebugVisualizerCameraInfo: m_camUp is null\n",);
+  CHECKVALUE(jcamForward, "getDebugVisualizerCameraInfo: m_camForward is null\n",);
+  CHECKVALUE(jhorizontal, "getDebugVisualizerCameraInfo: m_horizontal is null\n",);
+  CHECKVALUE(jvertical, "getDebugVisualizerCameraInfo: m_vertical is null\n",);
+  CHECKVALUE(jtarget, "getDebugVisualizerCameraInfo: m_target is null\n",);
+
+  CHECKDIMS(jviewMatrix, 16, "getDebugVisualizerCameraInfo: m_viewMatrix must have dimension 16\n",);
+  CHECKDIMS(jprojectionMatrix, 16, "getDebugVisualizerCameraInfo: m_projectionMatrix must have dimension 16\n",);
+  CHECKDIMS(jcamUp, 3, "getDebugVisualizerCameraInfo: m_camUp must have dimension 3\n",);
+  CHECKDIMS(jcamForward, 3, "getDebugVisualizerCameraInfo: m_camForward must have dimension 3\n",);
+  CHECKDIMS(jhorizontal, 3, "getDebugVisualizerCameraInfo: m_horizontal must have dimension 3\n",);
+  CHECKDIMS(jvertical, 3, "getDebugVisualizerCameraInfo: m_vertical must have dimension 3\n",);
+  CHECKDIMS(jtarget, 3, "getDebugVisualizerCameraInfo: m_target must have dimension 3\n",);
+
+  env->SetIntField(jv, m_widthID, cameraInfo.m_width);
+  env->SetIntField(jv, m_heightID, cameraInfo.m_height);
+  env->SetFloatField(jv, m_yawID, cameraInfo.m_yaw);
+  env->SetFloatField(jv, m_pitchID, cameraInfo.m_pitch);
+  env->SetFloatField(jv, m_distanceID, cameraInfo.m_dist);
+  
+  float *viewMatrix = (float *)env->GetPrimitiveArrayCritical(jviewMatrix, JNI_FALSE);
+  float *projectionMatrix = (float *)env->GetPrimitiveArrayCritical(jprojectionMatrix, JNI_FALSE);
+  float *camUp = (float *)env->GetPrimitiveArrayCritical(jcamUp, JNI_FALSE);
+  float *camForward = (float *)env->GetPrimitiveArrayCritical(jcamForward, JNI_FALSE);
+  float *horizontal = (float *)env->GetPrimitiveArrayCritical(jhorizontal, JNI_FALSE);
+  float *vertical = (float *)env->GetPrimitiveArrayCritical(jvertical, JNI_FALSE);
+  float *target = (float *)env->GetPrimitiveArrayCritical(jtarget, JNI_FALSE);
+
+  for (i = 0; i < 16; i++) {
+    viewMatrix[i] = cameraInfo.m_viewMatrix[i];
+  }
+  for (i = 0; i < 16; i++) {
+    projectionMatrix[i] = cameraInfo.m_projectionMatrix[i];
+  }
+  for (i = 0; i < 3; i++) {
+    projectionMatrix[i] = cameraInfo.m_projectionMatrix[i];
+  }
+  for (i = 0; i < 3; i++) {
+    camForward[i] = cameraInfo.m_camForward[i];
+  }
+  for (i = 0; i < 3; i++) {
+    horizontal[i] = cameraInfo.m_horizontal[i];
+  }
+  for (i = 0; i < 3; i++) {
+    vertical[i] = cameraInfo.m_vertical[i];
+  }
+  for (i = 0; i < 3; i++) {
+    target[i] = cameraInfo.m_target[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jtarget, target, 0);
+  env->ReleasePrimitiveArrayCritical(jvertical, vertical, 0);
+  env->ReleasePrimitiveArrayCritical(jhorizontal, horizontal, 0);
+  env->ReleasePrimitiveArrayCritical(jcamForward, camForward, 0);
+  env->ReleasePrimitiveArrayCritical(jcamUp, camUp, 0);
+  env->ReleasePrimitiveArrayCritical(jprojectionMatrix, projectionMatrix, 0);
+  env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
+}
+
 extern "C" {
 
 
