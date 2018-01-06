@@ -2655,6 +2655,53 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getAABB
   return status;
 }
 
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createCollisionShape
+(JNIEnv *env, jobject jRoboSimAPI, jint shapeType, jdouble radius, jdoubleArray jhalfExtents, jfloat height,
+ jstring jfileName, jdoubleArray jmeshScale, jdoubleArray jplaneNormal, jint flags)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3AABBOverlapData overlapData;
+
+  if (jhalfExtents != NULL) CHECKDIMS(jhalfExtents, 3, "createCollisionShape: jhalfExtents dimension must be 3", -1);
+  if (jmeshScale != NULL) CHECKDIMS(jmeshScale, 3, "createCollisionShape: jmeshScale dimension must be 3", -1);
+  if (jplaneNormal != NULL) CHECKDIMS(jplaneNormal, 3, "createCollisionShape: jplaneNormal dimension must be 3", -1);
+
+  struct b3RobotSimulatorCreateCollisionShapeArgs args;
+
+  args.m_shapeType = shapeType;
+  args.m_radius = radius;
+  args.m_height = height;
+  args.m_flags = flags;
+  args.m_fileName = NULL;
+
+  if (jfileName != NULL) {
+    args.m_fileName = (char *)(env->GetStringUTFChars(jfileName, 0));
+  }
+  
+  if (jhalfExtents != NULL) {
+    double *halfExtents = (double *)env->GetPrimitiveArrayCritical(jhalfExtents, JNI_FALSE);
+    memcpy(&args.m_halfExtents[0], halfExtents, 3*sizeof(double));
+    env->ReleasePrimitiveArrayCritical(jhalfExtents, halfExtents, 0);
+  }
+  if (jmeshScale != NULL) {
+    double *meshScale = (double *)env->GetPrimitiveArrayCritical(jmeshScale, JNI_FALSE);
+    memcpy(&args.m_meshScale[0], meshScale, 3*sizeof(double));
+    env->ReleasePrimitiveArrayCritical(jmeshScale, meshScale, 0);
+  }
+  if (jplaneNormal != NULL) {
+    double *planeNormal = (double *)env->GetPrimitiveArrayCritical(jplaneNormal, JNI_FALSE);
+    memcpy(&args.m_planeNormal[0], planeNormal, 3*sizeof(double));
+    env->ReleasePrimitiveArrayCritical(jplaneNormal, planeNormal, 0);
+  }
+
+  int objectId = jrsa -> createCollisionShape(shapeType, args);
+
+  if (jfileName != NULL) (env->ReleaseStringUTFChars(jfileName, args.m_fileName));
+
+  return objectId;
+}
+
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {

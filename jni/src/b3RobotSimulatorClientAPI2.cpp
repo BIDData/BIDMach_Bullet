@@ -841,3 +841,49 @@ void b3RobotSimulatorClientAPI::getMouseEvents(b3MouseEventsData* mouseEventsDat
   b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, command);
   b3GetMouseEventsData(m_data->m_physicsClientHandle, mouseEventsData);
 }
+
+int b3RobotSimulatorClientAPI::createCollisionShape(int shapeType, struct b3RobotSimulatorCreateCollisionShapeArgs &args)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+  int shapeIndex = -1;
+
+
+  if (shapeType==GEOM_SPHERE && args.m_radius>0) {
+    shapeIndex = b3CreateCollisionShapeAddSphere(command, args.m_radius);
+  }
+  if (shapeType==GEOM_BOX)  {
+    shapeIndex = b3CreateCollisionShapeAddBox(command, args.m_halfExtents);
+  }
+  if (shapeType==GEOM_CAPSULE && args.m_radius>0 && args.m_height>=0) {
+    shapeIndex = b3CreateCollisionShapeAddCapsule(command, args.m_radius, args.m_height);
+  }
+  if (shapeType==GEOM_CYLINDER && args.m_radius>0 && args.m_height>=0) {
+    shapeIndex = b3CreateCollisionShapeAddCylinder(command, args.m_radius, args.m_height);
+  }
+  if (shapeType==GEOM_MESH && args.m_fileName) {
+    shapeIndex = b3CreateCollisionShapeAddMesh(command, args.m_fileName, args.m_meshScale);
+  }
+  if (shapeType==GEOM_PLANE) {
+    double planeConstant=0;
+    shapeIndex = b3CreateCollisionShapeAddPlane(command, args.m_planeNormal, planeConstant);
+  }
+  if (shapeIndex>=0 && args.m_flags) {
+    b3CreateCollisionSetFlag(command, shapeIndex, args.m_flags);
+  }
+
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  statusType = b3GetStatusType(statusHandle);
+  if (statusType == CMD_CREATE_COLLISION_SHAPE_COMPLETED) {
+    int uid = b3GetStatusCollisionShapeUniqueId(statusHandle);
+    return uid;
+  }
+  return -1;
+}
+

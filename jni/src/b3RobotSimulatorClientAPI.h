@@ -313,6 +313,38 @@ struct b3RobotSimulatorGetContactPointsArgs
   {}
 };
 
+struct b3RobotSimulatorCreateCollisionShapeArgs
+{
+  int m_shapeType;
+  double m_radius;
+  double m_halfExtents[3];
+  double m_height;
+  char* m_fileName;
+  double m_meshScale[3];
+  double m_planeNormal[3];
+  int m_flags;
+  b3RobotSimulatorCreateCollisionShapeArgs()
+    : m_shapeType(-1),
+      m_radius(0.5),
+      m_height(1),
+      m_fileName(NULL),
+      m_flags(0)
+  {
+    m_halfExtents[0] = 1;
+    m_halfExtents[1] = 1;
+    m_halfExtents[2] = 1;
+
+    m_meshScale[0] = 1;
+    m_meshScale[1] = 1;
+    m_meshScale[2] = 1;
+
+    m_planeNormal[0] = 0;
+    m_planeNormal[1] = 0;
+    m_planeNormal[2] = 1;
+  }
+
+};
+
 ///The b3RobotSimulatorClientAPI is pretty much the C++ version of pybullet
 ///as documented in the pybullet Quickstart Guide
 ///https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA
@@ -470,8 +502,9 @@ public:
 
 	bool getAABB(int bodyUniqueId, int linkIndex, b3Vector3 &aabbMin, b3Vector3 &aabbMax);
 
-	  
-	//////////////// INTERNAL
+        int createCollisionShape(int shapeType, struct b3RobotSimulatorCreateCollisionShapeArgs &args);
+
+        //////////////// INTERNAL
 
 	void loadBunny(double scale, double mass, double collisionMargin);
 
