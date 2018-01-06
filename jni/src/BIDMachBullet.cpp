@@ -2175,6 +2175,17 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_applyExternalTorque
   return status;
 }
 
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_enableJointForceTorqueSensor
+(JNIEnv *env, jobject jRoboSimAPI,
+ jint objectUniqueId, jint linkIndex, jboolean enable)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+
+  bool status = jrsa -> enableJointForceTorqueSensor(objectUniqueId, linkIndex, enable);
+
+  return status;
+}
+
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {

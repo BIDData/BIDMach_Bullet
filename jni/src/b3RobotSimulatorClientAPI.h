@@ -385,7 +385,7 @@ public:
 	bool getLinkState(int bodyUniqueId, int linkIndex, b3LinkState* linkState);
 
 	void configureDebugVisualizer(enum b3ConfigureDebugVisualizerEnum flag, int enable);
-	void resetDebugVisualizerCamera(double cameraDistance, double cameraPitch, double cameraYaw, const b3Vector3& targetPos);
+  	void resetDebugVisualizerCamera(double cameraDistance, double cameraPitch, double cameraYaw, const b3Vector3& targetPos);
 
 	int startStateLogging(b3StateLoggingType loggingType, const std::string& fileName, const b3AlignedObjectArray<int>& objectUniqueIds=b3AlignedObjectArray<int>(), int maxLogDof = -1);
 	void stopStateLogging(int stateLoggerUniqueId);
@@ -430,6 +430,8 @@ public:
 	bool applyExternalForce(int objectUniqueId, int linkIndex, double *force, double *position, int flags);
 
 	bool applyExternalTorque(int objectUniqueId, int linkIndex, double *torque, int flags);
+
+        bool enableJointForceTorqueSensor(int bodyUniqueId, int linkIndex, bool enable);
 
 
 	//////////////// INTERNAL

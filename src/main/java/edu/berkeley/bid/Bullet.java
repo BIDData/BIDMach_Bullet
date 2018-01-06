@@ -134,6 +134,8 @@ public class Bullet implements Serializable {
 	}
     }
 
+    public native boolean enableJointForceTorqueSensor(int bodyUniqueId, int jointIndex, boolean enable);
+
     public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
 					    int controlMode,  double targetPosition, double targetVelocity,
 					    double force, double kp, double kd);

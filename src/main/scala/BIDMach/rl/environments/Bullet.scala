@@ -116,7 +116,11 @@ class Bullet {
 				  jointPositions.data, jointVelocities.data,
 				  jointForceTorques.data, jointMotorTorques.data);
 	(jointPositions, jointVelocities, jointForceTorques.t, jointMotorTorques);
-    };    
+    };
+
+    def enableJointForceTorqueSensor(bodyUniqueId:Int, jointIndex:Int, enable:Boolean) = {
+	javaBullet.enableJointForceTorqueSensor(bodyUniqueId, jointIndex, enable);
+    };
 
     def setJointMotorControl(bodyUniqueId:Int, jointIndex:Int, controlMode:Int,
 			     targetPosition:Double = 0, targetVelocity:Double = 0,

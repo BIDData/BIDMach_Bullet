@@ -3,7 +3,7 @@
 #include <../examples/SharedMemory/PhysicsClientC_API.h>
 #include <string.h>
 
-// JFC: Added here because its in b3RobotSimulatorClient.cpp but not in any header. 
+// JFC: This struct added here because its in b3RobotSimulatorClient.cpp but not in any header. 
 struct b3RobotSimulatorClientAPI_InternalData
 {
 	b3PhysicsClientHandle m_physicsClientHandle;
@@ -302,9 +302,7 @@ int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, st
     b3UserDebugItemSetParentObject(commandHandle, args.m_parentObjectUniqueId, args.m_parentLinkIndex);
   }
 
-  if (args.m_textOrientation != NULL) {
-    b3UserDebugTextSetOrientation(commandHandle, args.m_textOrientation);
-  }
+  b3UserDebugTextSetOrientation(commandHandle, &args.m_textOrientation[0]);
 
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
   statusType = b3GetStatusType(statusHandle);
@@ -557,13 +555,39 @@ bool b3RobotSimulatorClientAPI::applyExternalTorque(int objectUniqueId, int link
     b3Warning("Not connected");
     return false;
   }
-  b3SharedMemoryCommandHandle command = b3InitPhysicsParamCommand(sm);
+  b3SharedMemoryCommandHandle command;
   b3SharedMemoryStatusHandle statusHandle;
 
   command = b3ApplyExternalForceCommandInit(sm);
   b3ApplyExternalTorque(command, objectUniqueId, linkIndex, torque, flags);
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
   return true;
+}
+
+bool  b3RobotSimulatorClientAPI::enableJointForceTorqueSensor(int bodyUniqueId, int jointIndex, bool enable)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  int numJoints = b3GetNumJoints(sm, bodyUniqueId);
+  if ((jointIndex < 0) || (jointIndex >= numJoints)) {
+      b3Warning("Error: invalid jointIndex.");
+      return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+		
+  command = b3CreateSensorCommandInit(sm, bodyUniqueId);
+  b3CreateSensorEnable6DofJointForceTorqueSensor(command, jointIndex, enable);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  statusType = b3GetStatusType(statusHandle);
+  if (statusType == CMD_CLIENT_COMMAND_COMPLETED) {
+    return true;
+  }
+  return false;
 }
 
 
