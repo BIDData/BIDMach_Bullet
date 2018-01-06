@@ -1254,6 +1254,30 @@ static void nativeContactInformationToJava(JNIEnv *env, jobject jv, struct b3Con
   }
 }
 
+static void nativeAABBOverlapDataToJava(JNIEnv *env, jobject jv, struct b3AABBOverlapData &data) {
+  int nobjects, i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/AABBOverlapData");
+  CHECKFIELD(numOverlappingObjectsID, env->GetFieldID(clazz, "m_numOverlappingObjects", "I"), "AABBOverlapData: can't access m_numOverlappingObjects\n",);
+  CHECKFIELD(overlappingObjectsID, env->GetFieldID(clazz, "m_overlappingObjects", "[Ledu/berkeley/bid/bullet/OverlappingObject;"), "AABBOverlapData: can't access m_overlappingObjects\n",);
+  jclass oclass = (jclass) env->FindClass("edu/berkeley/bid/bullet/OverlappingObject");
+  jmethodID oconstructor = env->GetMethodID(oclass, "<init>", "()V");
+  if (oconstructor == 0) {fprintf(stderr, "OverlappingObject: can't access constructor\n"); return;}
+  CHECKFIELD(objectUniqueIdID, env->GetFieldID(oclass, "m_objectUniqueId", "I"), "OverlappingObject: can't access m_objectUniqueId\n",);
+  CHECKFIELD(linkIndexID, env->GetFieldID(oclass, "m_linkIndex", "I"), "OverlappingObject: can't access m_linkIndex\n",);
+  nobjects = data.m_numOverlappingObjects;
+  env->SetIntField(jv, numOverlappingObjectsID, nobjects);
+  if (nobjects > 0) {
+    jobjectArray joverlappingObjects = env->NewObjectArray(nobjects, oclass, NULL);
+    env->SetObjectField(jv, overlappingObjectsID, joverlappingObjects);
+    for (i = 0; i < nobjects; i++) {
+      jobject joverlappingObject = env->NewObject(oclass, oconstructor);
+      env->SetObjectArrayElement(joverlappingObjects, i, joverlappingObject);
+      env->SetIntField(joverlappingObject, objectUniqueIdID, data.m_overlappingObjects[i].m_objectUniqueId);
+      env->SetIntField(joverlappingObject, linkIndexID, data.m_overlappingObjects[i].m_linkIndex);
+    }
+  }
+}
+
 extern "C" {
 
 
@@ -2539,6 +2563,54 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getClosestPoints
   bool status = jrsa -> getClosestPoints(args, distance, &contactInfo);
 
   nativeContactInformationToJava(env, jcontactInfo, contactInfo);
+
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getOverlappingObjects
+(JNIEnv *env, jobject jRoboSimAPI, jdoubleArray jAABBMin, jdoubleArray jAABBMax, jobject joverlapData)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3AABBOverlapData overlapData;
+
+  CHECKVALUE(jAABBMin, "getOverlappingObjects: AABBMin is null", false);
+  CHECKVALUE(jAABBMax, "getOverlappingObjects: AABBMax is null", false);
+  CHECKVALUE(joverlapData, "getOverlappingObjects: overlapData is null", false);
+
+  CHECKDIMS(jAABBMin, 3, "getOverlappingObjects: AABBMin dimension must be 3", false);
+  CHECKDIMS(jAABBMax, 3, "getOverlappingObjects: AABBMax dimension must be 3", false);
+
+  double *AABBMin = (double *)env->GetPrimitiveArrayCritical(jAABBMin, JNI_FALSE);
+  double *AABBMax = (double *)env->GetPrimitiveArrayCritical(jAABBMax, JNI_FALSE);
+
+  bool status = jrsa -> getOverlappingObjects(AABBMin, AABBMax, &overlapData);
+
+  nativeAABBOverlapDataToJava(env, joverlapData, overlapData);
+
+  env->ReleasePrimitiveArrayCritical(jAABBMax, AABBMax, 0);
+  env->ReleasePrimitiveArrayCritical(jAABBMin, AABBMin, 0);
+
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getAABB
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, jdoubleArray jAABBMin, jdoubleArray jAABBMax)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+
+  CHECKVALUE(jAABBMin, "getAABB: AABBMin is null", false);
+  CHECKVALUE(jAABBMax, "getAABB: AABBMax is null", false);
+
+  CHECKDIMS(jAABBMin, 3, "getAABB: AABBMin dimension must be 3", false);
+  CHECKDIMS(jAABBMax, 3, "getAABB: AABBMax dimension must be 3", false);
+
+  double *AABBMin = (double *)env->GetPrimitiveArrayCritical(jAABBMin, JNI_FALSE);
+  double *AABBMax = (double *)env->GetPrimitiveArrayCritical(jAABBMax, JNI_FALSE);
+
+  bool status = jrsa -> getAABB(bodyUniqueId, linkIndex, AABBMin, AABBMax);
+
+  env->ReleasePrimitiveArrayCritical(jAABBMax, AABBMax, 0);
+  env->ReleasePrimitiveArrayCritical(jAABBMin, AABBMin, 0);
 
   return status;
 }

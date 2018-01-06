@@ -681,6 +681,63 @@ bool b3RobotSimulatorClientAPI::getClosestPoints(struct b3RobotSimulatorGetConta
   return false;
 }
 
+bool b3RobotSimulatorClientAPI::getOverlappingObjects(double *aabbMin, double *aabbMax, struct b3AABBOverlapData *overlapData)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+
+  command = b3InitAABBOverlapQuery(sm, aabbMin, aabbMax);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  b3GetAABBOverlapResults(sm, overlapData);
+
+  return true;
+}
+
+bool b3RobotSimulatorClientAPI::getAABB(int bodyUniqueId, int linkIndex, double *aabbMin, double *aabbMax)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+
+  if (bodyUniqueId < 0) {
+    b3Warning("Invalid bodyUniqueId");
+    return false;
+  }
+
+  if (linkIndex < -1) {
+    b3Warning("Invalid linkIndex");
+    return false;
+  }
+
+  if (aabbMin == NULL || aabbMax == NULL) {
+    b3Warning("Output AABB matrix is NULL");
+    return false;
+  }    
+
+  command = b3RequestCollisionInfoCommandInit(sm, bodyUniqueId);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  
+  statusType = b3GetStatusType(statusHandle);
+  if (statusType != CMD_REQUEST_COLLISION_INFO_COMPLETED) {
+    return false;
+  }
+  if (b3GetStatusAABB(statusHandle, linkIndex, aabbMin, aabbMax)) {
+    return true;
+  }
+  return false;
+}
+
 
 
 
