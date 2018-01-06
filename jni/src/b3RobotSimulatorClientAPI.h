@@ -298,7 +298,20 @@ struct b3RobotSimulatorAddUserDebugText3DArgs
   }
 };
 
+struct b3RobotSimulatorGetContactPointsArgs
+{
+  int m_bodyUniqueIdA;
+  int m_bodyUniqueIdB;
+  int m_linkIndexA;
+  int m_linkIndexB;
 
+  b3RobotSimulatorGetContactPointsArgs()
+    : m_bodyUniqueIdA(-1),
+      m_bodyUniqueIdB(-1),
+      m_linkIndexA(-2),
+      m_linkIndexB(-2)
+  {}
+};
 
 ///The b3RobotSimulatorClientAPI is pretty much the C++ version of pybullet
 ///as documented in the pybullet Quickstart Guide
@@ -433,7 +446,10 @@ public:
 
         bool enableJointForceTorqueSensor(int bodyUniqueId, int linkIndex, bool enable);
 
+        bool getDebugVisualizerCamera(struct b3OpenGLVisualizerCameraInfo *cameraInfo);
 
+        bool getContactPoints(struct b3RobotSimulatorGetContactPointsArgs &args, struct b3ContactInformation *contactInfo);
+	  
 	//////////////// INTERNAL
 
 	void loadBunny(double scale, double mass, double collisionMargin);

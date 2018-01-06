@@ -590,6 +590,63 @@ bool  b3RobotSimulatorClientAPI::enableJointForceTorqueSensor(int bodyUniqueId, 
   return false;
 }
 
+bool b3RobotSimulatorClientAPI::getDebugVisualizerCamera(struct b3OpenGLVisualizerCameraInfo *cameraInfo)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+
+  command = b3InitRequestOpenGLVisualizerCameraCommand(sm);
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  statusType = b3GetStatusOpenGLVisualizerCamera(statusHandle, cameraInfo);
+
+  if (statusType) {
+    return true;
+  }
+  return false;
+}
+
+bool b3RobotSimulatorClientAPI::getContactPoints(struct b3RobotSimulatorGetContactPointsArgs &args, struct b3ContactInformation *contactInfo)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType;
+
+  command = b3InitRequestContactPointInformation(sm);
+
+  if (args.m_bodyUniqueIdA>=0) {
+    b3SetContactFilterBodyA(command, args.m_bodyUniqueIdA);
+  }
+  if (args.m_bodyUniqueIdB>=0) {
+    b3SetContactFilterBodyB(command, args.m_bodyUniqueIdB);
+  }
+  if (args.m_linkIndexA>=-1) {
+    b3SetContactFilterLinkA(command, args.m_linkIndexA);
+  }
+  if (args.m_linkIndexB >=-1) {
+    b3SetContactFilterLinkB(command, args.m_linkIndexB);
+  }
+
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  statusType = b3GetStatusType(statusHandle);
+
+  if (statusType == CMD_CONTACT_POINT_INFORMATION_COMPLETED) {
+    b3GetContactPointInformation(sm, contactInfo);
+    return true;
+  }
+  return false;
+}
+
 
 
 

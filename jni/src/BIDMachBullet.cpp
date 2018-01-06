@@ -1122,6 +1122,138 @@ static void nativeDebugVisualizerCameraInfoToJava(JNIEnv *env, jobject jv, struc
   env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
 }
 
+static struct b3ContactPointData javaContactPointDataToNative(JNIEnv *env, jobject jv) {
+  int i;
+  struct  b3ContactPointData contactData;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/ContactPointData");
+
+  CHECKFIELD(m_contactFlagsID, env->GetFieldID(clazz, "m_contactFlags", "I"), "getContactPoints: can't access m_contactFlags\n", contactData);
+  CHECKFIELD(m_bodyUniqueIdAID, env->GetFieldID(clazz, "m_bodyUniqueIdA", "I"), "getContactPoints: can't access m_bodyUniqueIdA\n", contactData);
+  CHECKFIELD(m_bodyUniqueIdBID, env->GetFieldID(clazz, "m_bodyUniqueIdB", "I"), "getContactPoints: can't access m_bodyUniqueIdB\n", contactData);
+  CHECKFIELD(m_linkIndexAID, env->GetFieldID(clazz, "m_linkIndexA", "I"), "getContactPoints: can't access m_linkIndexA\n", contactData);
+  CHECKFIELD(m_linkIndexBID, env->GetFieldID(clazz, "m_linkIndexB", "I"), "getContactPoints: can't access m_linkIndexB\n", contactData);
+  CHECKFIELD(m_positionOnAInWSID, env->GetFieldID(clazz, "m_positionOnAInWS", "[D"), "getContactPoints: can't access m_positionOnAInWS\n", contactData);
+  CHECKFIELD(m_positionOnBInWSID, env->GetFieldID(clazz, "m_positionOnBInWS", "[D"), "getContactPoints: can't access m_positionOnBInWS\n", contactData);
+  CHECKFIELD(m_contactNormalOnBInWSID, env->GetFieldID(clazz, "m_contactNormalOnBInWS", "[D"), "getContactPoints: can't access m_contactNormalOnBInWS\n", contactData);
+  CHECKFIELD(m_contactDistanceID, env->GetFieldID(clazz, "m_contactDistance", "D"), "getContactPoints: can't access m_contactDistance\n", contactData);
+  CHECKFIELD(m_normalForceID, env->GetFieldID(clazz, "m_normalForce", "D"), "getContactPoints: can't access m_normalForce\n", contactData);
+
+  jdoubleArray jpositionOnAInWS = (jdoubleArray)env->GetObjectField(jv, m_positionOnAInWSID);
+  jdoubleArray jpositionOnBInWS = (jdoubleArray)env->GetObjectField(jv, m_positionOnBInWSID);
+  jdoubleArray jcontactNormalOnBInWS = (jdoubleArray)env->GetObjectField(jv, m_contactNormalOnBInWSID);
+  
+  CHECKVALUE(jpositionOnAInWS, "getContactPoints: m_positionOnAInWS is null\n", contactData);
+  CHECKVALUE(jpositionOnBInWS, "getContactPoints: m_positionOnBInWS is null\n", contactData);
+  CHECKVALUE(jcontactNormalOnBInWS, "getContactPoints: m_contactNormalOnBInWS is null\n", contactData);
+
+  CHECKDIMS(jpositionOnAInWS, 3, "getContactPoints: m_positionOnAInWS must have dimension 3\n", contactData);
+  CHECKDIMS(jpositionOnBInWS, 3, "getContactPoints: m_positionOnBInWS must have dimension 3\n", contactData);
+  CHECKDIMS(jcontactNormalOnBInWS, 3, "getContactPoints: m_contactNormalOnBInWS must have dimension 3\n", contactData);
+
+  contactData.m_contactFlags = env->GetIntField(jv, m_contactFlagsID);
+  contactData.m_bodyUniqueIdA = env->GetIntField(jv, m_bodyUniqueIdAID);
+  contactData.m_bodyUniqueIdB = env->GetIntField(jv, m_bodyUniqueIdBID);
+  contactData.m_linkIndexA = env->GetIntField(jv, m_linkIndexAID);
+  contactData.m_linkIndexB = env->GetIntField(jv, m_linkIndexBID);
+  contactData.m_contactDistance = env->GetDoubleField(jv, m_contactDistanceID);
+  contactData.m_normalForce = env->GetDoubleField(jv, m_normalForceID);
+  
+  double *positionOnAInWS = (double *)env->GetPrimitiveArrayCritical(jpositionOnAInWS, JNI_FALSE);
+  double *positionOnBInWS = (double *)env->GetPrimitiveArrayCritical(jpositionOnBInWS, JNI_FALSE);
+  double *contactNormalOnBInWS = (double *)env->GetPrimitiveArrayCritical(jcontactNormalOnBInWS, JNI_FALSE);
+
+  for (i = 0; i < 3; i++) {
+    contactData.m_positionOnAInWS[i] = positionOnAInWS[i];
+  }
+  for (i = 0; i < 3; i++) {
+    contactData.m_positionOnBInWS[i] = positionOnBInWS[i];
+  }
+  for (i = 0; i < 3; i++) {
+    contactData.m_contactNormalOnBInWS[i] = contactNormalOnBInWS[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jcontactNormalOnBInWS, contactNormalOnBInWS, 0);
+  env->ReleasePrimitiveArrayCritical(jpositionOnBInWS, positionOnBInWS, 0);
+  env->ReleasePrimitiveArrayCritical(jpositionOnAInWS, positionOnAInWS, 0);
+  return contactData;
+}
+
+static void nativeContactPointDataToJava(JNIEnv *env, jobject jv, b3ContactPointData &contactData) {
+  int i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/ContactPointData");
+
+  CHECKFIELD(m_contactFlagsID, env->GetFieldID(clazz, "m_contactFlags", "I"), "getContactPoints: can't access m_contactFlags\n",);
+  CHECKFIELD(m_bodyUniqueIdAID, env->GetFieldID(clazz, "m_bodyUniqueIdA", "I"), "getContactPoints: can't access m_bodyUniqueIdA\n",);
+  CHECKFIELD(m_bodyUniqueIdBID, env->GetFieldID(clazz, "m_bodyUniqueIdB", "I"), "getContactPoints: can't access m_bodyUniqueIdB\n",);
+  CHECKFIELD(m_linkIndexAID, env->GetFieldID(clazz, "m_linkIndexA", "I"), "getContactPoints: can't access m_linkIndexA\n",);
+  CHECKFIELD(m_linkIndexBID, env->GetFieldID(clazz, "m_linkIndexB", "I"), "getContactPoints: can't access m_linkIndexB\n",);
+  CHECKFIELD(m_positionOnAInWSID, env->GetFieldID(clazz, "m_positionOnAInWS", "[D"), "getContactPoints: can't access m_positionOnAInWS\n",);
+  CHECKFIELD(m_positionOnBInWSID, env->GetFieldID(clazz, "m_positionOnBInWS", "[D"), "getContactPoints: can't access m_positionOnBInWS\n",);
+  CHECKFIELD(m_contactNormalOnBInWSID, env->GetFieldID(clazz, "m_contactNormalOnBInWS", "[D"), "getContactPoints: can't access m_contactNormalOnBInWS\n",);
+  CHECKFIELD(m_contactDistanceID, env->GetFieldID(clazz, "m_contactDistance", "D"), "getContactPoints: can't access m_contactDistance\n",);
+  CHECKFIELD(m_normalForceID, env->GetFieldID(clazz, "m_normalForce", "D"), "getContactPoints: can't access m_normalForce\n",);
+
+  jdoubleArray jpositionOnAInWS = (jdoubleArray)env->GetObjectField(jv, m_positionOnAInWSID);
+  jdoubleArray jpositionOnBInWS = (jdoubleArray)env->GetObjectField(jv, m_positionOnBInWSID);
+  jdoubleArray jcontactNormalOnBInWS = (jdoubleArray)env->GetObjectField(jv, m_contactNormalOnBInWSID);
+  
+  CHECKVALUE(jpositionOnAInWS, "getContactPoints: m_positionOnAInWS is null\n",);
+  CHECKVALUE(jpositionOnBInWS, "getContactPoints: m_positionOnBInWS is null\n",);
+  CHECKVALUE(jcontactNormalOnBInWS, "getContactPoints: m_contactNormalOnBInWS is null\n",);
+
+  CHECKDIMS(jpositionOnAInWS, 3, "getContactPoints: m_positionOnAInWS must have dimension 3\n",);
+  CHECKDIMS(jpositionOnBInWS, 3, "getContactPoints: m_positionOnBInWS must have dimension 3\n",);
+  CHECKDIMS(jcontactNormalOnBInWS, 3, "getContactPoints: m_contactNormalOnBInWS must have dimension 3\n",);
+
+  env->SetIntField(jv, m_contactFlagsID, contactData.m_contactFlags);
+  env->SetIntField(jv, m_bodyUniqueIdAID, contactData.m_bodyUniqueIdA);
+  env->SetIntField(jv, m_bodyUniqueIdBID, contactData.m_bodyUniqueIdB);
+  env->SetIntField(jv, m_linkIndexAID, contactData.m_linkIndexA);
+  env->SetIntField(jv, m_linkIndexBID, contactData.m_linkIndexB);
+  env->SetDoubleField(jv, m_contactDistanceID, contactData.m_contactDistance);
+  env->SetDoubleField(jv, m_normalForceID, contactData.m_normalForce);
+  
+  double *positionOnAInWS = (double *)env->GetPrimitiveArrayCritical(jpositionOnAInWS, JNI_FALSE);
+  double *positionOnBInWS = (double *)env->GetPrimitiveArrayCritical(jpositionOnBInWS, JNI_FALSE);
+  double *contactNormalOnBInWS = (double *)env->GetPrimitiveArrayCritical(jcontactNormalOnBInWS, JNI_FALSE);
+
+  for (i = 0; i < 3; i++) {
+    positionOnAInWS[i] = contactData.m_positionOnAInWS[i];
+  }
+  for (i = 0; i < 3; i++) {
+    positionOnBInWS[i] = contactData.m_positionOnBInWS[i];
+  }
+  for (i = 0; i < 3; i++) {
+    contactNormalOnBInWS[i] = contactData.m_contactNormalOnBInWS[i];
+  }
+
+  env->ReleasePrimitiveArrayCritical(jcontactNormalOnBInWS, contactNormalOnBInWS, 0);
+  env->ReleasePrimitiveArrayCritical(jpositionOnBInWS, positionOnBInWS, 0);
+  env->ReleasePrimitiveArrayCritical(jpositionOnAInWS, positionOnAInWS, 0);
+}
+
+
+static void nativeContactInformationToJava(JNIEnv *env, jobject jv, struct b3ContactInformation &data) {
+  int npoints, i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/ContactInformation");
+  CHECKFIELD(numContactPointsID, env->GetFieldID(clazz, "m_numContactPoints", "I"), "ContactInformation: can't access m_numContactPoints\n",);
+  CHECKFIELD(contactPointDataID, env->GetFieldID(clazz, "m_contactPointData", "[Ledu/berkeley/bid/bullet/ContactPointData;"), "ContactInformation: can't access m_contactPointData\n",);
+  jclass cclass = (jclass) env->FindClass("edu/berkeley/bid/bullet/ContactPointData");
+  jmethodID cconstructor = env->GetMethodID(cclass, "<init>", "()V");
+  if (cconstructor == 0) {fprintf(stderr, "ContactInformation: can't access ContactPointData constructor\n"); return;}
+  npoints = data.m_numContactPoints;
+  env->SetIntField(jv, numContactPointsID, npoints);
+  if (npoints > 0) {
+    jobjectArray jcontactPoints = env->NewObjectArray(npoints, cclass, NULL);
+    env->SetObjectField(jv, contactPointDataID, jcontactPoints);
+    for (i = 0; i < npoints; i++) {
+      jobject jcontactPointData = env->NewObject(cclass, cconstructor);
+      nativeContactPointDataToJava(env, jcontactPointData, data.m_contactPointData[i]);
+      env->SetObjectArrayElement(jcontactPoints, i, jcontactPointData);
+    }
+  }
+}
+
 extern "C" {
 
 
@@ -2360,6 +2492,38 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_enableJointForceTorqueSensor
   return status;
 }
 
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getDebugVisualizerCamera
+(JNIEnv *env, jobject jRoboSimAPI, jobject jcameraInfo)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3OpenGLVisualizerCameraInfo cameraInfo;
+
+  bool status = jrsa -> getDebugVisualizerCamera(&cameraInfo);
+
+  nativeDebugVisualizerCameraInfoToJava(env, jcameraInfo, cameraInfo);
+
+  return status;
+}
+
+JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getContactPoints
+(JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueIdA, jint bodyUniqueIdB, jint linkIndexA, jint linkIndexB, jobject jcontactInfo)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3RobotSimulatorGetContactPointsArgs args;
+  struct b3ContactInformation contactInfo;
+
+  args.m_bodyUniqueIdA = bodyUniqueIdA;
+  args.m_bodyUniqueIdB = bodyUniqueIdB;
+  args.m_linkIndexA = linkIndexA;
+  args.m_linkIndexB = linkIndexB;
+  
+  bool status = jrsa -> getContactPoints(args, &contactInfo);
+
+  nativeContactInformationToJava(env, jcontactInfo, contactInfo);
+
+  return status;
+}
+  
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
@@ -2422,6 +2586,20 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_testDynamicsInfo
 {
   b3DynamicsInfo dynamicsInfo = javaDynamicsInfoToNative(env, min);
   nativeDynamicsInfoToJava(env, mout, dynamicsInfo);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testDebugVisualizerCameraInfo
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3OpenGLVisualizerCameraInfo cameraInfo = javaDebugVisualizerCameraInfoToNative(env, min);
+  nativeDebugVisualizerCameraInfoToJava(env, mout, cameraInfo);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_testContactPointData
+(JNIEnv *env, jobject obj, jobject min, jobject mout)
+{
+  b3ContactPointData contactData = javaContactPointDataToNative(env, min);
+  nativeContactPointDataToJava(env, mout, contactData);
 }
 
 }

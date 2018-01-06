@@ -345,6 +345,10 @@ public class Bullet implements Serializable {
 						    double erp, double contactERP, double frictionERP);
 
 
+    public static native boolean getDebugVisualizerCamera(DebugVisualizerCameraInfo info);
+
+    public static native boolean getContactPoints(int bodyUniqueIdA, int bodyUniqueIdB, int linkIndexA, int linkIndexB, ContactInformation info);
+    
     public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
 
     public static native void testTransform3(Transform3 min, Transform3 mout);
