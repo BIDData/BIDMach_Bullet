@@ -723,6 +723,25 @@ bool b3RobotSimulatorClientAPI::getOverlappingObjects(double *aabbMin, double *a
   return true;
 }
 
+
+bool b3RobotSimulatorClientAPI::getOverlappingObjects(b3Vector3 &aabbMin, b3Vector3 &aabbMax, struct b3AABBOverlapData *overlapData)
+{
+  double daabbMin[3];
+  double daabbMax[3];
+
+  daabbMin[0] = aabbMin.x;
+  daabbMin[1] = aabbMin.y;
+  daabbMin[2] = aabbMin.z;
+
+  daabbMax[0] = aabbMax.x;
+  daabbMax[1] = aabbMax.y;
+  daabbMax[2] = aabbMax.z;
+
+  return getOverlappingObjects(&daabbMin[0], &daabbMax[0], overlapData);
+}
+
+
+  
 bool b3RobotSimulatorClientAPI::getAABB(int bodyUniqueId, int linkIndex, double *aabbMin, double *aabbMax)
 {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
@@ -761,6 +780,25 @@ bool b3RobotSimulatorClientAPI::getAABB(int bodyUniqueId, int linkIndex, double 
   }
   return false;
 }
+
+bool b3RobotSimulatorClientAPI::getAABB(int bodyUniqueId, int linkIndex, b3Vector3 &aabbMin, b3Vector3 &aabbMax)
+{
+  double daabbMin[3];
+  double daabbMax[3];
+
+  bool status = getAABB(bodyUniqueId, linkIndex, &daabbMin[0], &daabbMax[0]);
+
+  aabbMin.x = (float)daabbMin[0];
+  aabbMin.y = (float)daabbMin[1];
+  aabbMin.z = (float)daabbMin[2];
+
+  aabbMax.x = (float)daabbMax[0];
+  aabbMax.y = (float)daabbMax[1];
+  aabbMax.z = (float)daabbMax[2];
+
+  return status;
+}
+
 
 void b3RobotSimulatorClientAPI::getMouseEvents(b3MouseEventsData* mouseEventsData)
 {

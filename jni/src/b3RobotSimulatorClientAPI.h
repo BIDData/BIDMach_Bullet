@@ -460,7 +460,11 @@ public:
 
 	bool getOverlappingObjects(double *aabbMin, double *aabbMax, struct b3AABBOverlapData *overlapData);
 
+	bool getOverlappingObjects(b3Vector3 &aabbMin, b3Vector3 &aabbMax, struct b3AABBOverlapData *overlapData);
+
 	bool getAABB(int bodyUniqueId, int linkIndex, double *aabbMin, double *aabbMax);
+
+	bool getAABB(int bodyUniqueId, int linkIndex, b3Vector3 &aabbMin, b3Vector3 &aabbMax);
 
 	  
 	//////////////// INTERNAL
