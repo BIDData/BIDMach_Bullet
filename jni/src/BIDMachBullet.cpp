@@ -854,6 +854,37 @@ static void nativeKeyboardEventsDataToJava(JNIEnv *env, jobject jv, struct b3Key
   }
 }
 
+static void nativeMouseEventsDataToJava(JNIEnv *env, jobject jv, struct b3MouseEventsData &data) {
+  int nevents, i;
+  jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/MouseEventsData");
+  CHECKFIELD(numMouseEventsID, env->GetFieldID(clazz, "m_numMouseEvents", "I"), "MouseEventsData: can't access m_numMouseEvents\n",);
+  CHECKFIELD(mouseEventsID, env->GetFieldID(clazz, "m_mouseEvents", "[Ledu/berkeley/bid/bullet/MouseEvent;"), "MouseEventsData: can't access m_mouseEvents\n",);
+  jclass mclass = (jclass) env->FindClass("edu/berkeley/bid/bullet/MouseEvent");
+  jmethodID mconstructor = env->GetMethodID(mclass, "<init>", "()V");
+  if (mconstructor == 0) {fprintf(stderr, "MouseEvent: can't access constructor\n"); return;}
+  CHECKFIELD(eventTypeID, env->GetFieldID(mclass, "m_eventType", "I"), "MouseEvent: can't access m_eventType\n",);
+  CHECKFIELD(mousePosXID, env->GetFieldID(mclass, "m_mousePosX", "F"), "MouseEvent: can't access m_mousePosX\n",);
+  CHECKFIELD(mousePosYID, env->GetFieldID(mclass, "m_mousePosY", "F"), "MouseEvent: can't access m_mousePosY\n",);
+  CHECKFIELD(buttonIndexID, env->GetFieldID(mclass, "m_buttonIndex", "I"), "MouseEvent: can't access m_buttonIndex\n",);
+  CHECKFIELD(buttonStateID, env->GetFieldID(mclass, "m_buttonState", "I"), "MouseEvent: can't access m_buttonState\n",);
+  nevents = data.m_numMouseEvents;
+  env->SetIntField(jv, numMouseEventsID, nevents);
+  if (nevents > 0) {
+    jobjectArray jmouseEvents = env->NewObjectArray(nevents, mclass, NULL);
+    env->SetObjectField(jv, mouseEventsID, jmouseEvents);
+    for (i = 0; i < nevents; i++) {
+      jobject mouseEvent = env->NewObject(mclass, mconstructor);
+      env->SetObjectArrayElement(jmouseEvents, i, mouseEvent);
+      
+      env->SetIntField(mouseEvent, eventTypeID, data.m_mouseEvents[i].m_eventType);
+      env->SetFloatField(mouseEvent, mousePosXID, data.m_mouseEvents[i].m_mousePosX);
+      env->SetFloatField(mouseEvent, mousePosYID, data.m_mouseEvents[i].m_mousePosY);
+      env->SetIntField(mouseEvent, buttonIndexID, data.m_mouseEvents[i].m_buttonIndex);
+      env->SetIntField(mouseEvent, buttonStateID, data.m_mouseEvents[i].m_buttonState);
+    }
+  }
+}
+
 static struct b3CameraImageData javaCameraImageDataToNative(JNIEnv *env, jobject jv) {
   struct b3CameraImageData data;
   jclass clazz = (jclass) env->FindClass("edu/berkeley/bid/bullet/CameraImageData");
@@ -2053,6 +2084,15 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_getKeyboardEventsData
   struct b3KeyboardEventsData keyboardEventsData;
   jrsa -> getKeyboardEvents(&keyboardEventsData);
   nativeKeyboardEventsDataToJava(env, jkeyboardEventsData, keyboardEventsData);
+}
+
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_getMouseEventsData
+(JNIEnv *env, jobject jRoboSimAPI, jobject jmouseEventsData)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  struct b3MouseEventsData mouseEventsData;
+  jrsa -> getMouseEvents(&mouseEventsData);
+  nativeMouseEventsDataToJava(env, jmouseEventsData, mouseEventsData);
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming

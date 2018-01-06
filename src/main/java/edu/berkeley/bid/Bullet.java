@@ -324,6 +324,14 @@ public class Bullet implements Serializable {
 	return keyboardEventsData;
     }
 
+    public native void getMouseEventsData(MouseEventsData mouseEventsData);
+
+    public MouseEventsData getMouseEventsData() {
+	MouseEventsData mouseEventsData = new MouseEventsData();
+	getMouseEventsData(mouseEventsData);
+	return mouseEventsData;
+    }
+
     public native void submitProfileTiming(String profileName, int durationInMicroseconds);
 
     public native int addUserDebugLine(double [] fromXYZ, double [] toXYZ, double [] colorRGB,

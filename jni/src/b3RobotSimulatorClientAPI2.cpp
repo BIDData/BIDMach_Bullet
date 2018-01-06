@@ -315,6 +315,16 @@ int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, st
   return -1;
 }
 
+int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, b3Vector3 &posXYZ, struct b3RobotSimulatorAddUserDebugText3DArgs & args)
+{
+  double dposXYZ[3];
+  dposXYZ[0] = posXYZ.x;
+  dposXYZ[1] = posXYZ.y;
+  dposXYZ[2] = posXYZ.z;
+
+  return addUserDebugText3D(text, &dposXYZ[0], args);
+}
+  
 int b3RobotSimulatorClientAPI::addUserDebugLine(double *fromXYZ, double *toXYZ, struct b3RobotSimulatorAddUserDebugLineArgs & args)
 {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
@@ -343,6 +353,20 @@ int b3RobotSimulatorClientAPI::addUserDebugLine(double *fromXYZ, double *toXYZ, 
   return -1;
 }
 
+int b3RobotSimulatorClientAPI::addUserDebugLine(b3Vector3 &fromXYZ, b3Vector3 &toXYZ, struct b3RobotSimulatorAddUserDebugLineArgs & args)
+{
+  double dfromXYZ[3];
+  double dtoXYZ[3];
+  dfromXYZ[0] = fromXYZ.x;
+  dfromXYZ[1] = fromXYZ.y;
+  dfromXYZ[2] = fromXYZ.z;
+
+  dtoXYZ[0] = toXYZ.x;
+  dtoXYZ[1] = toXYZ.y;
+  dtoXYZ[2] = toXYZ.z;
+  return addUserDebugLine(&dfromXYZ[0], &dtoXYZ[0], args);
+}
+  
 double b3RobotSimulatorClientAPI::readUserDebugParameter(int itemUniqueId) {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
   if (sm == 0) {
@@ -738,10 +762,16 @@ bool b3RobotSimulatorClientAPI::getAABB(int bodyUniqueId, int linkIndex, double 
   return false;
 }
 
+void b3RobotSimulatorClientAPI::getMouseEvents(b3MouseEventsData* mouseEventsData)
+{
+  mouseEventsData->m_numMouseEvents = 0;
+  mouseEventsData->m_mouseEvents = 0;
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return;
+  }
 
-
-
-
-
-
-
+  b3SharedMemoryCommandHandle command = b3RequestMouseEventsCommandInit(m_data->m_physicsClientHandle);
+  b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, command);
+  b3GetMouseEventsData(m_data->m_physicsClientHandle, mouseEventsData);
+}

@@ -408,7 +408,9 @@ public:
 
 	void submitProfileTiming(const std::string&  profileName, int durationInMicroSeconds=1);
 
-	// JFC: added these 21 methods
+	// JFC: added these 24 methods
+
+	void getMouseEvents(b3MouseEventsData* mouseEventsData);
 
 	bool getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeInverseKinematics, b3LinkState* linkState);
 
@@ -426,7 +428,7 @@ public:
 
         bool changeDynamics(int bodyUniqueId, int linkIndex, struct b3RobotSimulatorChangeDynamicsArgs &args);
 
-	int addUserDebugParameter(char * paramName, double rangeMin, double rangeMax, double startValue);
+	int addUserDebugParameter(char *paramName, double rangeMin, double rangeMax, double startValue);
 
 	double readUserDebugParameter(int itemUniqueId);
 
@@ -434,7 +436,11 @@ public:
 
         int addUserDebugText3D(char *text, double *textPosition, struct b3RobotSimulatorAddUserDebugText3DArgs &args);
 
+	int addUserDebugText3D(char *text, b3Vector3 &textPosition, struct b3RobotSimulatorAddUserDebugText3DArgs &args);
+
         int addUserDebugLine(double *fromXYZ, double *toXYZ, struct b3RobotSimulatorAddUserDebugLineArgs &args);
+
+	int addUserDebugLine(b3Vector3 &fromXYZ, b3Vector3 &toXYZ, struct b3RobotSimulatorAddUserDebugLineArgs &args);
 
 	bool setJointMotorControlArray(int bodyUniqueId, struct b3RobotSimulatorJointMotorArrayArgs &args);
 
