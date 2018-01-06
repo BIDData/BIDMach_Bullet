@@ -448,7 +448,11 @@ public:
 
 	bool applyExternalForce(int objectUniqueId, int linkIndex, double *force, double *position, int flags);
 
+	bool applyExternalForce(int objectUniqueId, int linkIndex, b3Vector3 &force, b3Vector3 &position, int flags);
+
 	bool applyExternalTorque(int objectUniqueId, int linkIndex, double *torque, int flags);
+
+	bool applyExternalTorque(int objectUniqueId, int linkIndex, b3Vector3 &torque, int flags);
 
         bool enableJointForceTorqueSensor(int bodyUniqueId, int linkIndex, bool enable);
 

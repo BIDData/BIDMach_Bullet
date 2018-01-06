@@ -572,6 +572,23 @@ bool b3RobotSimulatorClientAPI::applyExternalForce(int objectUniqueId, int linkI
   return true;
 }
 
+bool b3RobotSimulatorClientAPI::applyExternalForce(int objectUniqueId, int linkIndex, b3Vector3 &force, b3Vector3 &position, int flags)
+{
+  double dforce[3];
+  double dposition[3];
+
+  dforce[0] = force.x;
+  dforce[1] = force.y;
+  dforce[2] = force.z;
+
+  dposition[0] = position.x;
+  dposition[1] = position.y;
+  dposition[2] = position.z;
+
+  return applyExternalForce(objectUniqueId, linkIndex, &dforce[0], &dposition[0], flags);
+}
+
+
 bool b3RobotSimulatorClientAPI::applyExternalTorque(int objectUniqueId, int linkIndex, double *torque, int flags) 
 {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
@@ -586,6 +603,17 @@ bool b3RobotSimulatorClientAPI::applyExternalTorque(int objectUniqueId, int link
   b3ApplyExternalTorque(command, objectUniqueId, linkIndex, torque, flags);
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
   return true;
+}
+
+bool b3RobotSimulatorClientAPI::applyExternalTorque(int objectUniqueId, int linkIndex, b3Vector3 &torque, int flags)
+{
+  double dtorque[3];
+
+  dtorque[0] = torque.x;
+  dtorque[1] = torque.y;
+  dtorque[2] = torque.z;
+
+  return applyExternalTorque(objectUniqueId, linkIndex, &dtorque[0], flags);
 }
 
 bool  b3RobotSimulatorClientAPI::enableJointForceTorqueSensor(int bodyUniqueId, int jointIndex, bool enable)
