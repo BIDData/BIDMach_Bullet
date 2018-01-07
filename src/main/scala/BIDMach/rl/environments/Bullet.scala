@@ -419,15 +419,17 @@ class Bullet {
 	(cameraImage, depthImage, segmentation);
     };
 
-    def getOverlappingObjects(AABBMin:DMat, AABBMax:DMat) = {
-	javaBullet.getOverlappingObjects(AABBMin.data, AABBMax.data);
-    };
-
-    def getAABB(bodyUniqueId:Int, linkIndex:Int= -2) = {
+    def getAABB(bodyUniqueId:Int, linkIndex:Int):(DMat, DMat) = {
 	val AABBMin = DMat.zeros(1,3);
 	val AABBMax = DMat.zeros(1,3);
-	javaBullet.getOverlappingObjects(bodyUniqueId, linkIndex, AABBMin.data, AABBMax.data);
+	
+	javaBullet.getAABB(bodyUniqueId, linkIndex, AABBMin.data, AABBMax.data);
+	
 	(AABBMin, AABBMax);
+    };
+
+    def getOverlappingObjects(AABBMin:DMat, AABBMax:DMat) = {
+	javaBullet.getOverlappingObjects(AABBMin.data, AABBMax.data);
     };
 
     def getContactPoints(bodyUniqueIdA:Int, bodyUniqueIdB:Int, linkIndexA:Int, linkIndexB:Int) = {
@@ -488,7 +490,32 @@ class Bullet {
     def removeUserDebugItem(itemUniqueId:Int):Boolean = {
 	javaBullet.removeUserDebugItem(itemUniqueId);
     };
+
+    def configureDebugVisualizer(flags:Int, enable:Int):Unit = {
+	javaBullet.configureDebugVisualizer(flags, enable);
+    };
+
+    def getDebugVisualizerCamera() = {
+	javaBullet.getDebugVisualizerCamera();
+    };
+
+    def resetDebugVisualizerCamera(cameraDistance:Double, cameraPitch:Double, cameraYaw:Double, targetPos:FMat):Unit = {
+	val targetPos0 = fromFMatToVector3(targetPos);
+	javaBullet.resetDebugVisualizerCamera(cameraDistance, cameraPitch, cameraYaw, targetPos0);
+    };
     
+    def getKeyboardEventsData():KeyboardEventsData = {
+	val keyboardEventsData = new KeyboardEventsData();
+	javaBullet.getKeyboardEventsData(keyboardEventsData);
+	keyboardEventsData;
+    };
+
+    def getMouseEventsData():MouseEventsData = {
+	val mouseEventsData = new MouseEventsData();
+	javaBullet.getMouseEventsData(mouseEventsData);
+	mouseEventsData;
+    };
+
     def setInternalSimFlags(flags:Int):Unit = {
 	javaBullet.setInternalSimFlags(flags);
     };
@@ -531,21 +558,6 @@ class Bullet {
 
     def canSubmitCommand():Boolean = {
 	javaBullet.canSubmitCommand();
-    };
-
-    def configureDebugVisualizer(flags:Int, enable:Int):Unit = {
-	javaBullet.configureDebugVisualizer(flags, enable);
-    };
-
-    def resetDebugVisualizerCamera(cameraDistance:Double, cameraPitch:Double, cameraYaw:Double, targetPos:FMat):Unit = {
-	val targetPos0 = fromFMatToVector3(targetPos);
-	javaBullet.resetDebugVisualizerCamera(cameraDistance, cameraPitch, cameraYaw, targetPos0);
-    };
-
-    def getKeyboardEventsData():KeyboardEventsData = {
-	val keyboardEventsData = new KeyboardEventsData();
-	javaBullet.getKeyboardEventsData(keyboardEventsData);
-	keyboardEventsData;
     };
 
     def submitProfileTiming(profileName:String, durationInMicroseconds:Int):Unit = {

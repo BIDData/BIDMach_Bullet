@@ -63,7 +63,7 @@ public class Bullet implements Serializable {
 
     public native int[] loadBullet(String fname);
 
-    public static native int createCollisionShape(int shapeType, double radius, double [] halfExtents, double height,
+    public native int createCollisionShape(int shapeType, double radius, double [] halfExtents, double height,
 						  String fileName, double [] jmeshScale, double [] jplaneNormal, int flags);
 
 
@@ -274,28 +274,30 @@ public class Bullet implements Serializable {
 					      float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
 					      int renderer, byte [] rgbColorData, float [] depthValues, int [] segmentationValues);
 
-    public static native boolean getOverlappingObjects(double [] AABBMin, double [] AABBMax, OverlapData overlapData);
+    // (int bodyUniqueId, int linkIndex, double [] AABBMin, double [] AABBMax);
+    
+    public native boolean getAABB(int a, int b, double [] c, double [] d);
 
-    public OverlapData getOverlappingObjects(double [] AABBMin, double [] AABBMax) {
-	OverlapData overlapData = new OverlapData overlapData();
+    public native boolean getOverlappingObjects(double [] AABBMin, double [] AABBMax, AABBOverlapData overlapData);
+
+    public AABBOverlapData getOverlappingObjects(double [] AABBMin, double [] AABBMax) {
+	AABBOverlapData overlapData = new AABBOverlapData();
 	getOverlappingObjects(AABBMin, AABBMax, overlapData);
 	return overlapData;
     }
 	
-    public static native boolean getAABB(int bodyUniqueId, int linkIndex, double [] AABBMin, double [] AABBMax);
-
-    public static native boolean getContactPoints(int bodyUniqueIdA, int bodyUniqueIdB, int linkIndexA, int linkIndexB, ContactInformation info);
+    public native boolean getContactPoints(int bodyUniqueIdA, int bodyUniqueIdB, int linkIndexA, int linkIndexB, ContactInformation info);
 
     public ContactInformation getContactPoints(int bodyUniqueIdA, int bodyUniqueIdB, int linkIndexA, int linkIndexB) {
-	ContactInformation info = new ContactInformation;
+	ContactInformation info = new ContactInformation();
 	getContactPoints(bodyUniqueIdA, bodyUniqueIdB, linkIndexA, linkIndexB, info);
 	return info;
     }
 
-    public static native boolean getClosestPoints(int bodyUniqueIdA, int bodyUniqueIdB, double distance, int linkIndexA, int linkIndexB, ContactInformation info);
+    public native boolean getClosestPoints(int bodyUniqueIdA, int bodyUniqueIdB, double distance, int linkIndexA, int linkIndexB, ContactInformation info);
 
     public ContactInformation getClosestPoints(int bodyUniqueIdA, int bodyUniqueIdB, double distance, int linkIndexA, int linkIndexB) {
-	ContactInformation info = new ContactInformation;
+	ContactInformation info = new ContactInformation();
 	getClosestPoints(bodyUniqueIdA, bodyUniqueIdB, distance, linkIndexA, linkIndexB, info);
 	return info;
     }
@@ -351,8 +353,14 @@ public class Bullet implements Serializable {
 
     public native void configureDebugVisualizer(int flags, int enable);
 
-    public static native boolean getDebugVisualizerCamera(DebugVisualizerCameraInfo info);
+    public native boolean getDebugVisualizerCamera(DebugVisualizerCameraInfo info);
 
+    public DebugVisualizerCameraInfo getDebugVisualizerCamera() {
+	DebugVisualizerCameraInfo info = new DebugVisualizerCameraInfo();
+	getDebugVisualizerCamera(info);
+	return info;
+    }
+    
     public native void resetDebugVisualizerCamera(double cameraDistance, double cameraPitch, double cameraYaw, Vector3 targetPos);
 
     public native void getKeyboardEventsData(KeyboardEventsData keyboardEventsData);
