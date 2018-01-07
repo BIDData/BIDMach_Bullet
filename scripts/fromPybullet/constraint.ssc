@@ -1,0 +1,42 @@
+import BIDMach.rl.environments.bullet._
+import BIDMach.rl.environments.Bullet
+import BIDMach.rl.environments.Bullet._
+
+val p = new Bullet;
+
+var clid = p.connect(p.GUI);
+
+p.setPathPrefix("/code/bullet3/data/");
+
+p.loadURDF("plane.urdf");
+
+val cubeId = p.loadURDF("cube_small.urdf", row(0, 0, 1));
+
+p.setGravity(0,0,-10);
+
+p.setRealTimeSimulation(true);
+
+val cid = p.createConstraint(cubeId,-1,-1,-1,p.JOINT_FIXED,row(0,0,0),row(0,0,0),row(0,0,1));
+
+println(cid);
+println(p.getConstraintUniqueId(0));
+
+val prev=row(0,0,1);
+
+var a = -math.Pi;
+
+while (true) {
+    a=a+0.01;
+    if (a>math.Pi) {
+	a= -math.Pi;
+    }
+    Thread.sleep(10);
+    p.setGravity(0,0,-10);
+
+    val pivot = row(a,0,1);
+    val orn = p.getQuaternionFromEuler(a,0,0);
+    p.changeConstraint(cid, pivot, jointChildFrameOrientation=orn, maxForce=50);
+
+}
+
+p.removeConstraint(cid)

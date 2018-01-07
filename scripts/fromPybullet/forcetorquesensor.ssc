@@ -1,0 +1,46 @@
+import BIDMach.rl.environments.bullet._
+import BIDMach.rl.environments.Bullet
+import BIDMach.rl.environments.Bullet._
+
+val p = new Bullet;
+
+var clid = p.connect(p.DIRECT);
+
+p.setPathPrefix("/code/bullet3/data/");
+
+val hinge = p.loadURDF("hinge.urdf");
+
+println("mass of linkA = 1kg, linkB = 1kg, total mass = 2kg");
+
+val hingeJointIndex = 0;
+
+//by default, joint motors are enabled, maintaining zero velocity
+
+p.setJointMotorControl(hinge,hingeJointIndex,p.VELOCITY_CONTROL,0,0,0);
+
+p.setGravity(0,0,-10);
+
+p.stepSimulation();
+
+println("joint state without sensor");
+
+println(p.getJointState(0,0));
+
+p.enableJointForceTorqueSensor(hinge,hingeJointIndex);
+
+p.stepSimulation();
+
+println("joint state with force/torque sensor, gravity [0,0,-10]");
+
+println(p.getJointState(0,0));
+
+p.setGravity(0,0,0);
+
+p.stepSimulation();
+
+println("joint state with force/torque sensor, no gravity")
+
+println(p.getJointState(0,0));
+
+p.disconnect();
+

@@ -285,7 +285,7 @@ int b3RobotSimulatorClientAPI::addUserDebugParameter(char * paramName, double ra
   return -1;
 }
 
-int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, struct b3RobotSimulatorAddUserDebugText3DArgs & args)
+int b3RobotSimulatorClientAPI::addUserDebugText(char *text, double *posXYZ, struct b3RobotSimulatorAddUserDebugTextArgs & args)
 {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
   if (sm == 0) {
@@ -302,7 +302,9 @@ int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, st
     b3UserDebugItemSetParentObject(commandHandle, args.m_parentObjectUniqueId, args.m_parentLinkIndex);
   }
 
-  b3UserDebugTextSetOrientation(commandHandle, &args.m_textOrientation[0]);
+  if (args.m_flags & DEBUG_TEXT_HAS_ORIENTATION) {
+    b3UserDebugTextSetOrientation(commandHandle, &args.m_textOrientation[0]);
+  }
 
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
   statusType = b3GetStatusType(statusHandle);
@@ -315,14 +317,14 @@ int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, double *posXYZ, st
   return -1;
 }
 
-int b3RobotSimulatorClientAPI::addUserDebugText3D(char *text, b3Vector3 &posXYZ, struct b3RobotSimulatorAddUserDebugText3DArgs & args)
+int b3RobotSimulatorClientAPI::addUserDebugText(char *text, b3Vector3 &posXYZ, struct b3RobotSimulatorAddUserDebugTextArgs & args)
 {
   double dposXYZ[3];
   dposXYZ[0] = posXYZ.x;
   dposXYZ[1] = posXYZ.y;
   dposXYZ[2] = posXYZ.z;
 
-  return addUserDebugText3D(text, &dposXYZ[0], args);
+  return addUserDebugText(text, &dposXYZ[0], args);
 }
   
 int b3RobotSimulatorClientAPI::addUserDebugLine(double *fromXYZ, double *toXYZ, struct b3RobotSimulatorAddUserDebugLineArgs & args)

@@ -288,6 +288,9 @@ static b3JointInfo * javaJointInfoToNative(JNIEnv *env, jobject jv) {
   CHECKVALUE(jParentFrame, "JointInfo: m_parentFrame is null\n", jointInfo);
   CHECKVALUE(jChildFrame, "JointInfo: m_childFrame is null\n", jointInfo);
   CHECKVALUE(jJointAxis, "JointInfo: m_jointAxis is null\n", jointInfo);
+  CHECKDIMS(jParentFrame, 7, "JointInfo: m_parentFrame must have dimension 7\n", jointInfo);
+  CHECKDIMS(jChildFrame, 7, "JointInfo: m_childFrame must have dimension 7\n", jointInfo);
+  CHECKDIMS(jJointAxis, 3, "JointInfo: m_jointAxis must have dimension 3\n", jointInfo);
 
   double *parentFrame = (jdouble *)env->GetPrimitiveArrayCritical(jParentFrame, JNI_FALSE);
   double *childFrame = (jdouble *)env->GetPrimitiveArrayCritical(jChildFrame, JNI_FALSE);
@@ -357,6 +360,9 @@ static void nativeJointInfoToJava(JNIEnv *env, jobject jv, b3JointInfo *jointInf
   CHECKVALUE(jParentFrame, "JointInfo: m_parentFrame is null\n",);
   CHECKVALUE(jChildFrame, "JointInfo: m_childFrame is null\n",);
   CHECKVALUE(jJointAxis, "JointInfo: m_jointAxis is null\n",);
+  CHECKDIMS(jParentFrame, 7, "JointInfo: m_parentFrame must have dimension 7\n",);
+  CHECKDIMS(jChildFrame, 7, "JointInfo: m_childFrame must have dimension 7\n",);
+  CHECKDIMS(jJointAxis, 3, "JointInfo: m_jointAxis must have dimension 3\n",);
 
   double *parentFrame = (jdouble *)env->GetPrimitiveArrayCritical(jParentFrame, JNI_FALSE);
   double *childFrame = (jdouble *)env->GetPrimitiveArrayCritical(jChildFrame, JNI_FALSE);
@@ -1597,6 +1603,22 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumJoints
   return njoints;
 }
 
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumConstraints
+(JNIEnv *env, jobject jRoboSimAPI)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  int nconstraints = jrsa -> getNumConstraints();
+  return nconstraints;
+}
+
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getConstraintUniqueId
+(JNIEnv *env, jobject jRoboSimAPI, jint serialIndex)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+  int uid = jrsa -> getConstraintUniqueId(serialIndex);
+  return uid;
+}
+
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointInfo
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject jJointInfo)
 {
@@ -1619,11 +1641,13 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createConstraint
 }
 
 JNIEXPORT jint Java_edu_berkeley_bid_Bullet_changeConstraint
-(JNIEnv *env, jobject jRoboSimAPI, jint constraintId, jobject jJointInfo)
+(JNIEnv *env, jobject jRoboSimAPI, jint constraintId, jobject jjointInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  b3JointInfo *jointInfo = javaJointInfoToNative(env, jJointInfo);
+  b3JointInfo *jointInfo = javaJointInfoToNative(env, jjointInfo);
+
   int retval = jrsa -> changeConstraint(constraintId, jointInfo);
+  
   deleteJointInfo(jointInfo);
   return retval;
 }
@@ -2055,17 +2079,20 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_startStateLogging
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   CHECKVALUE(jfileName, "startStateLogging: fileName is null", 0);
-  CHECKVALUE(jobjectUniqueIds, "startStateLogging: objectUniqueIds array is null", 0);
   const char *fileName = env->GetStringUTFChars(jfileName, NULL);
-  jint *arrayObjectUniqueIds = env->GetIntArrayElements(jobjectUniqueIds, NULL);
-  jint size = env->GetArrayLength(jobjectUniqueIds);
+  int *arrayObjectUniqueIds = NULL;
+  int size = 0;
+  if (jobjectUniqueIds != NULL) {
+    arrayObjectUniqueIds = env->GetIntArrayElements(jobjectUniqueIds, NULL);
+    size = env->GetArrayLength(jobjectUniqueIds);
+  }
   b3AlignedObjectArray<int> objectUniqueIds = b3AlignedObjectArray<int>();
-  objectUniqueIds.resize(size);
+  if (size > 0) objectUniqueIds.resize(size);
   for (int i = 0; i < size; i++) {
     objectUniqueIds[i] = arrayObjectUniqueIds[i];
   }
   jint logid = jrsa -> startStateLogging((b3StateLoggingType)loggingType, fileName, objectUniqueIds, maxLogDof);
-  env->ReleaseIntArrayElements(jobjectUniqueIds, arrayObjectUniqueIds, 0);
+  if (jobjectUniqueIds != NULL) env->ReleaseIntArrayElements(jobjectUniqueIds, arrayObjectUniqueIds, 0);
   env->ReleaseStringUTFChars(jfileName, fileName);
   return logid;
 }
@@ -2361,7 +2388,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
 }
 
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText3D
+JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText
 (JNIEnv *env, jobject jRoboSimAPI, jstring jtext, jdoubleArray jpositionXYZ, jdoubleArray jorientation, jdoubleArray jcolorRGB,
  jdouble size, jdouble lifeTime, jint parentObjectUniqueId, jint parentLinkIndex)
 {
@@ -2371,14 +2398,14 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText3D
   double *orientation = NULL;
   double *colorRGB = NULL;
 
-  CHECKVALUE(jtext, "addUserDebugText3D: text string is null", -1);
-  CHECKVALUE(jpositionXYZ, "addUserDebugText3D: positionXYZ array is null", -1);
-  CHECKDIMS(jpositionXYZ, 3, "addUserDebugText3D: position array dimension must be 3", -1);
+  CHECKVALUE(jtext, "addUserDebugText: text string is null", -1);
+  CHECKVALUE(jpositionXYZ, "addUserDebugText: positionXYZ array is null", -1);
+  CHECKDIMS(jpositionXYZ, 3, "addUserDebugText: position array dimension must be 3", -1);
   if (jorientation != NULL) {
-    CHECKDIMS(jorientation, 4, "addUserDebugText3D: orientation array dimension must be 4", -1);
+    CHECKDIMS(jorientation, 4, "addUserDebugText: orientation array dimension must be 4", -1);
   }
   if (jcolorRGB != NULL) {
-    CHECKDIMS(jcolorRGB, 3, "addUserDebugText3D: colorRGB array dimension must be 3", -1);
+    CHECKDIMS(jcolorRGB, 3, "addUserDebugText: colorRGB array dimension must be 3", -1);
   }
  
   text = (char *)(env->GetStringUTFChars(jtext, 0));
@@ -2386,9 +2413,14 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText3D
   if (jorientation != NULL) orientation = (double *)env->GetPrimitiveArrayCritical(jorientation, JNI_FALSE);
   if (jcolorRGB != NULL) colorRGB = (double *)env->GetPrimitiveArrayCritical(jcolorRGB, JNI_FALSE);
 
-  struct b3RobotSimulatorAddUserDebugText3DArgs args;
+  struct b3RobotSimulatorAddUserDebugTextArgs args;
+  args.m_parentObjectUniqueId = parentObjectUniqueId;
+  args.m_parentLinkIndex = parentLinkIndex;
+  args.m_size = size;
+  args.m_lifeTime = lifeTime;
 
   if (orientation != NULL) {
+    args.m_flags |= DEBUG_TEXT_HAS_ORIENTATION;
     args.m_textOrientation[0] = orientation[0];
     args.m_textOrientation[1] = orientation[1];
     args.m_textOrientation[2] = orientation[2];
@@ -2401,7 +2433,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText3D
     args.m_colorRGB[2] = colorRGB[2];
   }
 
-  int iparam = jrsa -> addUserDebugText3D(text, positionXYZ, args);
+  int iparam = jrsa -> addUserDebugText(text, positionXYZ, args);
 
   if (colorRGB != NULL) env->ReleasePrimitiveArrayCritical(jcolorRGB, colorRGB, 0);
   if (orientation != NULL) env->ReleasePrimitiveArrayCritical(jorientation, orientation, 0);
@@ -2431,6 +2463,10 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugLine
   if (jcolorRGB != NULL) colorRGB = (double *)env->GetPrimitiveArrayCritical(jcolorRGB, JNI_FALSE);
 
   struct b3RobotSimulatorAddUserDebugLineArgs args;
+  args.m_parentObjectUniqueId = parentObjectUniqueId;
+  args.m_parentLinkIndex = parentLinkIndex;
+  args.m_lineWidth = lineWidth;
+  args.m_lifeTime = lifeTime;
 
   if (colorRGB != NULL) {
     args.m_colorRGB[0] = colorRGB[0];

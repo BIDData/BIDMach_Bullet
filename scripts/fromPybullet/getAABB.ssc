@@ -1,0 +1,94 @@
+import BIDMach.rl.environments.bullet._
+import BIDMach.rl.environments.Bullet
+import BIDMach.rl.environments.Bullet._
+
+val p = new Bullet;
+
+p.setPathPrefix("/code/bullet3/data/");
+
+val draw=true
+val printtext = false
+
+if (draw) {
+    p.connect(p.GUI);
+} else {
+    p.connect(p.DIRECT);
+}
+val r2d2 = p.loadURDF("r2d2.urdf");
+
+def drawAABB(aabbMin:FMat, aabbMax:FMat) = {
+	var f = row(aabbMin(0),aabbMin(1),aabbMin(2))
+	var t = row(aabbMax(0),aabbMin(1),aabbMin(2))
+	p.addUserDebugLine(f,t,row(1,0,0))
+	
+	f = row(aabbMin(0),aabbMin(1),aabbMin(2))
+	t = row(aabbMin(0),aabbMax(1),aabbMin(2))
+	p.addUserDebugLine(f,t,row(0,1,0))
+	
+	f = row(aabbMin(0),aabbMin(1),aabbMin(2))
+	t = row(aabbMin(0),aabbMin(1),aabbMax(2))
+	p.addUserDebugLine(f,t,row(0,0,1))
+
+	f = row(aabbMin(0),aabbMin(1),aabbMax(2))
+	t = row(aabbMin(0),aabbMax(1),aabbMax(2))
+	p.addUserDebugLine(f,t,row(1,1,1))
+
+	f = row(aabbMin(0),aabbMin(1),aabbMax(2))
+	t = row(aabbMax(0),aabbMin(1),aabbMax(2))
+	p.addUserDebugLine(f,t,row(1,1,1))
+
+	f = row(aabbMax(0),aabbMin(1),aabbMin(2))
+	t = row(aabbMax(0),aabbMin(1),aabbMax(2))
+	p.addUserDebugLine(f,t,row(1,1,1))
+
+	f = row(aabbMax(0),aabbMin(1),aabbMin(2))
+	t = row(aabbMax(0),aabbMax(1),aabbMin(2))
+	p.addUserDebugLine(f,t,row(1,1,1))
+	
+	f = row(aabbMax(0),aabbMax(1),aabbMin(2))
+	t = row(aabbMin(0),aabbMax(1),aabbMin(2))
+	p.addUserDebugLine(f,t,row(1,1,1))
+	
+	f = row(aabbMin(0),aabbMax(1),aabbMin(2))
+	t = row(aabbMin(0),aabbMax(1),aabbMax(2))
+	p.addUserDebugLine(f,t,row(1,1,1))
+	
+	f = row(aabbMax(0),aabbMax(1),aabbMax(2))
+	t = row(aabbMin(0),aabbMax(1),aabbMax(2))
+	p.addUserDebugLine(f,t,row(1.0,0.5,0.5))
+	
+	f = row(aabbMax(0),aabbMax(1),aabbMax(2))
+	t = row(aabbMax(0),aabbMin(1),aabbMax(2))
+	p.addUserDebugLine(f,t,row(1,1,1))
+	
+	f = row(aabbMax(0),aabbMax(1),aabbMax(2))
+	t = row(aabbMax(0),aabbMax(1),aabbMin(2))
+	p.addUserDebugLine(f,t,row(1,1,1))
+};
+
+val (aabbMin, aabbMax) = p.getAABB(r2d2)
+
+if (printtext) {
+    println(aabbMin);
+    println(aabbMax);
+};
+
+if (draw) {
+    drawAABB(aabbMin, aabbMax);
+}
+	
+
+for (i <- 0 until (p.getNumJoints(r2d2))) {
+    val (aabbMin, aabbMax) = p.getAABB(r2d2,i);
+    if (printtext) {
+	println(aabbMin);
+	println(aabbMax);
+    }
+    if (draw) {
+	drawAABB(aabbMin, aabbMax);
+    }
+}
+
+while (true) {
+    p.stepSimulation();
+}

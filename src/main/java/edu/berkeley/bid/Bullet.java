@@ -181,33 +181,48 @@ public class Bullet implements Serializable {
     public native int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex, JointInfo jointInfo);
 
     public int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex,
-				int jointType, double [] jointAxis, double [] parentFramePosition, double [] childFramePosition,
-				double [] parentFrameOrientation, double [] childFrameOrientation) {
+				int jointType, float [] jointAxis, float [] parentFramePosition, float [] childFramePosition,
+				float [] parentFrameOrientation, float [] childFrameOrientation) {
 
 	JointInfo jointInfo = new JointInfo("","");
 	jointInfo.m_jointType = jointType;
+
+	jointInfo.m_jointAxis[0] = jointAxis[0];
+	jointInfo.m_jointAxis[1] = jointAxis[1];
+	jointInfo.m_jointAxis[2] = jointAxis[2];
 
 	jointInfo.m_parentFrame[0] = parentFramePosition[0];
 	jointInfo.m_parentFrame[1] = parentFramePosition[1];
 	jointInfo.m_parentFrame[2] = parentFramePosition[2];
 	
-	jointInfo.m_parentFrame[3] = parentFrameOrientation[0];
-	jointInfo.m_parentFrame[4] = parentFrameOrientation[1];
-	jointInfo.m_parentFrame[5] = parentFrameOrientation[2];
-	jointInfo.m_parentFrame[6] = parentFrameOrientation[3];
-
 	jointInfo.m_childFrame[0] = childFramePosition[0];
 	jointInfo.m_childFrame[1] = childFramePosition[1];
 	jointInfo.m_childFrame[2] = childFramePosition[2];
-	
-	jointInfo.m_childFrame[3] = childFrameOrientation[0];
-	jointInfo.m_childFrame[4] = childFrameOrientation[1];
-	jointInfo.m_childFrame[5] = childFrameOrientation[2];
-	jointInfo.m_childFrame[6] = childFrameOrientation[3];
 
-	jointInfo.m_jointAxis[0] = jointAxis[0];
-	jointInfo.m_jointAxis[1] = jointAxis[1];
-	jointInfo.m_jointAxis[2] = jointAxis[2];
+	if (parentFrameOrientation != null) {
+	    jointInfo.m_parentFrame[3] = parentFrameOrientation[0];
+	    jointInfo.m_parentFrame[4] = parentFrameOrientation[1];
+	    jointInfo.m_parentFrame[5] = parentFrameOrientation[2];
+	    jointInfo.m_parentFrame[6] = parentFrameOrientation[3];
+	} else {
+	    jointInfo.m_parentFrame[3] = 0;
+	    jointInfo.m_parentFrame[4] = 0;
+	    jointInfo.m_parentFrame[5] = 0;
+	    jointInfo.m_parentFrame[6] = 1;
+	}
+
+	if (childFrameOrientation != null) {
+	    jointInfo.m_childFrame[3] = childFrameOrientation[0];
+	    jointInfo.m_childFrame[4] = childFrameOrientation[1];
+	    jointInfo.m_childFrame[5] = childFrameOrientation[2];
+	    jointInfo.m_childFrame[6] = childFrameOrientation[3];
+	} else {
+	    jointInfo.m_childFrame[3] = 0;
+	    jointInfo.m_childFrame[4] = 0;
+	    jointInfo.m_childFrame[5] = 0;
+	    jointInfo.m_childFrame[6] = 1;
+	}
+
 
 	return createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, jointInfo);
     }
@@ -215,6 +230,35 @@ public class Bullet implements Serializable {
     public native void removeConstraint(int constraintId);
 
     public native int changeConstraint(int constraintId, JointInfo jointInfo);
+
+    public int changeConstraint(int userConstraintUniqueId, float [] jointChildPivot, float [] jointChildFrameOrientation, double maxForce) {
+
+	JointInfo jointInfo = new JointInfo("","");
+	jointInfo.m_flags = 0;
+
+	if (maxForce >= 0) {
+	    jointInfo.m_flags |= eJointChangeMaxForce;
+	    jointInfo.m_jointMaxForce = maxForce;
+	}
+
+	if (jointChildPivot != null) {
+	    jointInfo.m_flags |= eJointChangeChildFramePosition;
+	    jointInfo.m_childFrame[0] = jointChildPivot[0];
+	    jointInfo.m_childFrame[1] = jointChildPivot[1];
+	    jointInfo.m_childFrame[2] = jointChildPivot[2];
+	}
+
+	if (jointChildFrameOrientation != null) {
+	    jointInfo.m_flags |= eJointChangeChildFrameOrientation;
+	    jointInfo.m_childFrame[3] = jointChildFrameOrientation[0];
+	    jointInfo.m_childFrame[4] = jointChildFrameOrientation[1];
+	    jointInfo.m_childFrame[5] = jointChildFrameOrientation[2];
+	    jointInfo.m_childFrame[6] = jointChildFrameOrientation[3];
+	} 
+
+	return changeConstraint(userConstraintUniqueId, jointInfo);
+    }
+
 
     public native int getNumConstraints();
 
@@ -236,7 +280,7 @@ public class Bullet implements Serializable {
 
     public native void resetSimulation();
 
-    public native void startStateLogging(int loggingType, String fileName, int [] objectUniqueIds, int maxLogDof);
+    public native int startStateLogging(int loggingType, String fileName, int [] objectUniqueIds, int maxLogDof);
 
     public native void stopStateLogging(int stateLoggerUniqueId);
 
@@ -342,8 +386,8 @@ public class Bullet implements Serializable {
     public native int addUserDebugLine(double [] fromXYZ, double [] toXYZ, double [] colorRGB,
 				       double lineWidth, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
 
-    public native int addUserDebugText3D(String text, double [] position, double [] orientation, double [] colorRGB,
-					 double size, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
+    public native int addUserDebugText(String text, double [] position, double [] orientation, double [] colorRGB,
+				       double textSize, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
 
     public native int addUserDebugParameter(String paramName, double rangeMin, double rangeMax, double startValue);
 
@@ -399,7 +443,6 @@ public class Bullet implements Serializable {
     public native boolean canSubmitCommand();
 
     public native void submitProfileTiming(String profileName, int durationInMicroseconds);
-
 
     
     public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
@@ -496,4 +539,77 @@ public class Bullet implements Serializable {
     public static final int STATE_LOG_JOINT_MOTOR_TORQUES=1;
     public static final int STATE_LOG_JOINT_USER_TORQUES=2;
     public static final int STATE_LOG_JOINT_TORQUES = STATE_LOG_JOINT_MOTOR_TORQUES+STATE_LOG_JOINT_USER_TORQUES;
+
+    public static final int eRevoluteType = 0;
+    public static final int ePrismaticType = 1;
+    public static final int eSphericalType = 2;
+    public static final int ePlanarType = 3;
+    public static final int eFixedType = 4;
+    public static final int ePoint2PointType = 5;
+    public static final int eGearType=6;
+
+    public static final int eSensorForceTorqueType = 1;
+
+    public static final int CONTACT_QUERY_MODE_REPORT_EXISTING_CONTACT_POINTS = 0;
+    public static final int CONTACT_QUERY_MODE_COMPUTE_CLOSEST_POINTS = 1;
+
+    public static final int eButtonIsDown = 1;
+    public static final int eButtonTriggered = 2;
+    public static final int eButtonReleased = 4;
+
+    public static final int VR_DEVICE_CONTROLLER=1;
+    public static final int VR_DEVICE_HMD=2;
+    public static final int VR_DEVICE_GENERIC_TRACKER=4;
+
+    public static final int ER_TINY_RENDERER=(1<<16);
+    public static final int ER_BULLET_HARDWARE_OPENGL=(1<<17);
+
+    public static final int MAX_VR_BUTTONS = 64;
+
+    public static final int MAX_VR_CONTROLLERS = 8;
+
+    public static final int MAX_RAY_INTERSECTION_BATCH_SIZE = 256;
+    public static final int MAX_RAY_HITS = MAX_RAY_INTERSECTION_BATCH_SIZE;
+    public static final int MAX_KEYBOARD_EVENTS = 256;
+    public static final int MAX_MOUSE_EVENTS = 256;
+
+    public static final int VR_CAMERA_TRACK_OBJECT_ORIENTATION = 1;
+
+    public static final int B3G_ESCAPE = 27;
+    
+    public static final int B3G_F1 = 0xff00;
+    public static final int B3G_F2 = 0xff01;
+    public static final int B3G_F3 = 0xff02;
+    public static final int B3G_F4 = 0xff03;
+    public static final int B3G_F5 = 0xff04;
+    public static final int B3G_F6 = 0xff05;
+    public static final int B3G_F7 = 0xff06;
+    public static final int B3G_F8 = 0xff07;
+    public static final int B3G_F9 = 0xff08;
+    public static final int B3G_F10 = 0xff09;
+    public static final int B3G_F11 = 0xff0a;
+    public static final int B3G_F12 = 0xff0b;
+    public static final int B3G_F13 = 0xff0c;
+    public static final int B3G_F14 = 0xff0d;
+    public static final int B3G_F15 = 0xff0e;
+    public static final int B3G_LEFT_ARROW = 0xff0f;
+    public static final int B3G_RIGHT_ARROW = 0xff10;
+    public static final int B3G_UP_ARROW = 0xff11;
+    public static final int B3G_DOWN_ARROW = 0xff12;
+    public static final int B3G_PAGE_UP = 0xff13;
+    public static final int B3G_PAGE_DOWN = 0xff14;
+    public static final int B3G_END = 0xff15;
+    public static final int B3G_HOME = 0xff16;
+    public static final int B3G_INSERT = 0xff17;
+    public static final int B3G_DELETE = 0xff18;
+    public static final int B3G_BACKSPACE = 0xff19;
+    public static final int B3G_SHIFT = 0xff1a;
+    public static final int B3G_CONTROL = 0xff1b;
+    public static final int B3G_ALT = 0xff1c;
+    public static final int B3G_RETURN = 0xff1d;
+
+    public static final int eJointChangeMaxForce = 1;
+    public static final int eJointChangeChildFramePosition = 2;
+    public static final int eJointChangeChildFrameOrientation = 4;
+
 }

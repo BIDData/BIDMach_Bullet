@@ -270,7 +270,11 @@ struct b3RobotSimulatorAddUserDebugLineArgs
   }
 };
 
-struct b3RobotSimulatorAddUserDebugText3DArgs
+enum b3AddUserDebugTextFlags {
+  DEBUG_TEXT_HAS_ORIENTATION = 1
+};
+  
+struct b3RobotSimulatorAddUserDebugTextArgs
 {
   double m_colorRGB[3];
   double m_size;
@@ -278,13 +282,14 @@ struct b3RobotSimulatorAddUserDebugText3DArgs
   double m_textOrientation[4];
   int m_parentObjectUniqueId;
   int m_parentLinkIndex;
+  int m_flags;
 
-  b3RobotSimulatorAddUserDebugText3DArgs()
-    : 
-      m_size(1),
+  b3RobotSimulatorAddUserDebugTextArgs()
+    : m_size(1),
       m_lifeTime(0),
       m_parentObjectUniqueId(-1),
-      m_parentLinkIndex(-1)
+      m_parentLinkIndex(-1),
+      m_flags(0)
   {
     m_colorRGB[0] = 1;
     m_colorRGB[1] = 1;
@@ -466,9 +471,9 @@ public:
 
 	bool removeUserDebugItem(int itemUniqueId);
 
-        int addUserDebugText3D(char *text, double *textPosition, struct b3RobotSimulatorAddUserDebugText3DArgs &args);
+        int addUserDebugText(char *text, double *textPosition, struct b3RobotSimulatorAddUserDebugTextArgs &args);
 
-	int addUserDebugText3D(char *text, b3Vector3 &textPosition, struct b3RobotSimulatorAddUserDebugText3DArgs &args);
+	int addUserDebugText(char *text, b3Vector3 &textPosition, struct b3RobotSimulatorAddUserDebugTextArgs &args);
 
         int addUserDebugLine(double *fromXYZ, double *toXYZ, struct b3RobotSimulatorAddUserDebugLineArgs &args);
 

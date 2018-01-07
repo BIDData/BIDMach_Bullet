@@ -1,0 +1,43 @@
+import BIDMach.rl.environments.bullet._
+import BIDMach.rl.environments.Bullet
+import BIDMach.rl.environments.Bullet._
+
+val p = new Bullet;
+
+p.setPathPrefix("/code/bullet3/data/");
+
+p.connect(p.GUI);
+
+p.resetSimulation();
+
+val timinglog = p.startStateLogging(p.STATE_LOGGING_PROFILE_TIMINGS, "loadingBenchVR.json");
+
+p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0);
+
+println("load plane.urdf");
+p.loadURDF("plane.urdf");
+
+println("load r2d2.urdf");
+p.loadURDF("r2d2.urdf",row(0,0,1));
+
+println("load kitchen/1.sdf");
+p.loadSDF("kitchens/1.sdf");
+
+println("load 100 times plate.urdf");
+for (i <- 0 until 100) {
+    p.loadURDF("dinnerware/plate.urdf",row(0,i,1));
+}
+
+p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,1);
+
+p.stopStateLogging(timinglog);
+
+println("stopped state logging");
+
+p.getCameraImage(320,200);
+
+while (true) {
+    p.stepSimulation();
+}
+
+

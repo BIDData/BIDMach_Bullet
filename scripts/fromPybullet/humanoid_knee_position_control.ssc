@@ -1,0 +1,53 @@
+import BIDMach.rl.environments.bullet._
+import BIDMach.rl.environments.Bullet
+import BIDMach.rl.environments.Bullet._
+
+val p = new Bullet;
+
+p.setPathPrefix("/code/bullet3/data/");
+
+var cid = p.connect(p.SHARED_MEMORY);
+
+if (!cid) {
+    cid = p.connect(p.GUI);
+}
+
+p.resetSimulation();
+
+val useRealTime = true;
+
+p.setRealTimeSimulation(useRealTime);
+
+p.setGravity(0,0,-10);
+
+p.loadSDF("stadium.sdf");
+
+val obUids = p.loadMJCF("mjcf/humanoid_fixed.xml");
+
+val human = obUids(0);
+
+for (i <- 0 until p.getNumJoints(human)) {
+    p.setJointMotorControl(human,i,p.POSITION_CONTROL,targetPosition=0,force=500);
+}
+
+val kneeAngleTargetId = p.addUserDebugParameter("kneeAngle",-4,4,-1);
+val maxForceId = p.addUserDebugParameter("maxForce",0,500,10);
+
+val kneeAngleTargetLeftId = p.addUserDebugParameter("kneeAngleL",-4,4,-1);
+val maxForceLeftId = p.addUserDebugParameter("maxForceL",0,500,10);
+
+
+val kneeJointIndex=11;
+val kneeJointIndexLeft=18;
+
+while (true) {
+    Thread.sleep(10);
+    val kneeAngleTarget = p.readUserDebugParameter(kneeAngleTargetId);
+    val maxForce = p.readUserDebugParameter(maxForceId);
+    p.setJointMotorControl(human,kneeJointIndex,p.POSITION_CONTROL,targetPosition=kneeAngleTarget,force=maxForce);
+    val kneeAngleTargetLeft = p.readUserDebugParameter(kneeAngleTargetLeftId);
+    val maxForceLeft = p.readUserDebugParameter(maxForceLeftId);
+    p.setJointMotorControl(human,kneeJointIndexLeft,p.POSITION_CONTROL,targetPosition=kneeAngleTargetLeft,force=maxForceLeft);
+
+    if (useRealTime) p.stepSimulation();
+}

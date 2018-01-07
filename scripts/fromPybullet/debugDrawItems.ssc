@@ -1,0 +1,29 @@
+import BIDMach.rl.environments.bullet._
+import BIDMach.rl.environments.Bullet
+import BIDMach.rl.environments.Bullet._
+
+val p = new Bullet;
+
+var clid = p.connect(p.GUI);
+
+p.setPathPrefix("/code/bullet3/data/");
+
+p.loadURDF("plane.urdf");
+
+val kuka = p.loadURDF("kuka_iiwa/model.urdf");
+
+p.addUserDebugText("tip", row(0,0,0.1f), textColorRGB=row(1,0,0), textSize=1.5, parentObjectUniqueId=kuka, parentLinkIndex=6);
+p.addUserDebugLine(row(0,0,0), row(0.1f,0,0), row(1,0,0), parentObjectUniqueId=kuka, parentLinkIndex=6);
+p.addUserDebugLine(row(0,0,0), row(0,0.1f,0), row(0,1,0), parentObjectUniqueId=kuka, parentLinkIndex=6);
+p.addUserDebugLine(row(0,0,0), row(0,0,0.1f), row(0,0,1), parentObjectUniqueId=kuka, parentLinkIndex=6);
+
+p.setRealTimeSimulation(false);
+
+var angle=0.0;
+while (true) {
+    Thread.sleep(10);
+    p.resetJointState(kuka,2,angle);
+    p.resetJointState(kuka,3,angle);
+    angle+=0.01;
+}
+	    
