@@ -63,6 +63,10 @@ public class Bullet implements Serializable {
 
     public native int[] loadBullet(String fname);
 
+    public static native int createCollisionShape(int shapeType, double radius, double [] halfExtents, double height,
+						  String fileName, double [] jmeshScale, double [] jplaneNormal, int flags);
+
+
     public native void stepSimulation();
 
     public native void setRealTimeSimulation(boolean enable);
@@ -97,6 +101,14 @@ public class Bullet implements Serializable {
 	return jointInfo;
     }
 
+    public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
+					    int controlMode,  double targetPosition, double targetVelocity,
+					    double force, double kp, double kd);
+
+    public native boolean setJointMotorControlArray(int bodyUniqueId, int [] jointIndices, int controlMode,
+						    double [] targetPositions, double [] targetVelocities, double [] maxTorques, double [] kps, double [] kds);
+
+    
     public native boolean getJointState(int bodyUniqueId, int jointIndex, JointSensorState state);
 
     public JointSensorState getJointState(int bodyUniqueId, int jointIndex) {
@@ -135,13 +147,6 @@ public class Bullet implements Serializable {
     }
 
     public native boolean enableJointForceTorqueSensor(int bodyUniqueId, int jointIndex, boolean enable);
-
-    public native void setJointMotorControl(int bodyUniqueId, int jointIndex,
-					    int controlMode,  double targetPosition, double targetVelocity,
-					    double force, double kp, double kd);
-
-    public native boolean setJointMotorControlArray(int bodyUniqueId, int [] jointIndices, int controlMode,
-						    double [] targetPositions, double [] targetVelocities, double [] maxTorques, double [] kps, double [] kds);
     
     public native boolean getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeForwardKinematics, LinkState linkState);
 
@@ -155,11 +160,11 @@ public class Bullet implements Serializable {
 
     public native boolean resetBaseVelocity(int bodyUniqueId, Vector3 baseVelocity, Vector3 baseAngularV);
 
+    public native boolean applyExternalForce(int objectUniqueId, int linkIndex, double [] force, double [] position, int flags);
+
+    public native boolean applyExternalTorque(int objectUniqueId, int linkIndex, double [] torque, int flags);
+
     public native int getNumBodies();
-
-    public native int getBodyUniqueId(int bodyId);
-
-    public native boolean removeBody(int bodyUniqeId);
 
     public native boolean getBodyInfo(int bodyUniqueId, BodyInfo bodyInfo);
 
@@ -169,9 +174,9 @@ public class Bullet implements Serializable {
 	return bodyInfo;
     }
 
-    public native boolean applyExternalForce(int objectUniqueId, int linkIndex, double [] force, double [] position, int flags);
+    public native int getBodyUniqueId(int bodyId);
 
-    public native boolean applyExternalTorque(int objectUniqueId, int linkIndex, double [] torque, int flags);
+    public native boolean removeBody(int bodyUniqeId);
 
     public native int createConstraint(int parentBodyIndex, int parentJointIndex, int childBodyIndex, int childJointIndex, JointInfo jointInfo);
 
@@ -207,20 +212,27 @@ public class Bullet implements Serializable {
 	return createConstraint(parentBodyIndex, parentJointIndex, childBodyIndex, childJointIndex, jointInfo);
     }
 
+    public native void removeConstraint(int constraintId);
 
     public native int changeConstraint(int constraintId, JointInfo jointInfo);
 
-    public native void removeConstraint(int constraintId);
+    public native int getNumConstraints();
+
+    public native int getConstraintUniqueId(int serialIndex);
+
+    public native boolean getDynamicsInfo(int bodyUniqueId, int jointIndex, DynamicsInfo dynamicsInfo);
+
+    public native boolean changeDynamics(int bodyUniqueId, int linkIndex, double mass, double lateralFriction, double spinningFriction,
+					 double rollingFriction, double restitution, double linearDamping, double angularDamping,
+					 double contactStiffness, double contactDamping, int frictionAnchor);
 
     public native void setTimeStep(double t);
 
-    public native void setInternalSimFlags(int flags);
-
-    public native void setNumSimulationSubSteps(int numSubSteps);
-
-    public native void setNumSolverIterations(int numSolverIterations);
-
-    public native void setContactBreakingThreshold(double threshold);
+    public native boolean setPhysicsEngineParameter(double fixedTimeStep, int numSolverIterations, int useSplitImpulse,
+						    double splitImpulsePenetrationThreshold, int numSubSteps,
+						    int collisionFilterMode, double contactBreakingThreshold,
+						    int maxNumCmdPer1ms, int enableFileCaching, double restitutionVelocityThreshold,
+						    double erp, double contactERP, double frictionERP);
 
     public native void resetSimulation();
 
@@ -228,16 +240,18 @@ public class Bullet implements Serializable {
 
     public native void stopStateLogging(int stateLoggerUniqueId);
 
-    public static native void computeViewMatrixFromPositions(float [] jcameraPosition, float [] jcameraTargetPosition,
-							     float [] jcameraUp, float [] jviewMatrix);
+    public static native void computeViewMatrix(float [] jcameraPosition, float [] jcameraTargetPosition,
+						float [] jcameraUp, float [] jviewMatrix);
 
     public static native void computeViewMatrixFromYawPitchRoll(float [] cameraTargetPosition, float distance, float yaw, float pitch, float roll,
 								int upAxisIndex, float [] viewMatrix);
+
     
     public static native void computeProjectionMatrix(float left, float right, float bottom, float top,
 						      float nearVal, float farVal, float [] jprojectionMatrix);
 
     public static native void computeProjectionMatrixFOV(float fov, float aspect, float nearVal, float farVal, float [] jprojectionMatrix);
+
 
     public native boolean getCameraImage(int width, int height,
 					 float [] viewMatrix, float [] projectionMatrix,
@@ -259,6 +273,32 @@ public class Bullet implements Serializable {
 					      float lightDistance, int hasShadow,
 					      float lightAmbientCoeff, float lightDiffuseCoeff, float lightSpecularCoeff,
 					      int renderer, byte [] rgbColorData, float [] depthValues, int [] segmentationValues);
+
+    public static native boolean getOverlappingObjects(double [] AABBMin, double [] AABBMax, OverlapData overlapData);
+
+    public OverlapData getOverlappingObjects(double [] AABBMin, double [] AABBMax) {
+	OverlapData overlapData = new OverlapData overlapData();
+	getOverlappingObjects(AABBMin, AABBMax, overlapData);
+	return overlapData;
+    }
+	
+    public static native boolean getAABB(int bodyUniqueId, int linkIndex, double [] AABBMin, double [] AABBMax);
+
+    public static native boolean getContactPoints(int bodyUniqueIdA, int bodyUniqueIdB, int linkIndexA, int linkIndexB, ContactInformation info);
+
+    public ContactInformation getContactPoints(int bodyUniqueIdA, int bodyUniqueIdB, int linkIndexA, int linkIndexB) {
+	ContactInformation info = new ContactInformation;
+	getContactPoints(bodyUniqueIdA, bodyUniqueIdB, linkIndexA, linkIndexB, info);
+	return info;
+    }
+
+    public static native boolean getClosestPoints(int bodyUniqueIdA, int bodyUniqueIdB, double distance, int linkIndexA, int linkIndexB, ContactInformation info);
+
+    public ContactInformation getClosestPoints(int bodyUniqueIdA, int bodyUniqueIdB, double distance, int linkIndexA, int linkIndexB) {
+	ContactInformation info = new ContactInformation;
+	getClosestPoints(bodyUniqueIdA, bodyUniqueIdB, distance, linkIndexA, linkIndexB, info);
+	return info;
+    }
 
     public native boolean calculateInverseDynamics(int bodyUniqueId, double [] jointPositions, double [] jointVelocities,
 						   double [] jointAccelerations, double [] jointForcesOutput) ;
@@ -296,23 +336,22 @@ public class Bullet implements Serializable {
 	return jointAnglesOutput;
     }
 
-    public native boolean getDynamicsInfo(int bodyUniqueId, int jointIndex, DynamicsInfo dynamicsInfo);
 
-    public native boolean changeDynamics(int bodyUniqueId, int linkIndex, double mass, double lateralFriction, double spinningFriction,
-					 double rollingFriction, double restitution, double linearDamping, double angularDamping,
-					 double contactStiffness, double contactDamping, int frictionAnchor);
+    public native int addUserDebugLine(double [] fromXYZ, double [] toXYZ, double [] colorRGB,
+				       double lineWidth, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
 
-    public native void renderScene();
+    public native int addUserDebugText3D(String text, double [] position, double [] orientation, double [] colorRGB,
+					 double size, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
 
-    public native void debugDraw();
+    public native int addUserDebugParameter(String paramName, double rangeMin, double rangeMax, double startValue);
 
-    public native void setTimeOut(double t);
+    public native double readUserDebugParameter(int itemUniqueId);
 
-    public native void syncBodies();
-
-    public native boolean canSubmitCommand();
+    public native boolean removeUserDebugItem(int itemUniqueId);
 
     public native void configureDebugVisualizer(int flags, int enable);
+
+    public static native boolean getDebugVisualizerCamera(DebugVisualizerCameraInfo info);
 
     public native void resetDebugVisualizerCamera(double cameraDistance, double cameraPitch, double cameraYaw, Vector3 targetPos);
 
@@ -332,30 +371,28 @@ public class Bullet implements Serializable {
 	return mouseEventsData;
     }
 
+
+    public native void setInternalSimFlags(int flags);
+
+    public native void setNumSimulationSubSteps(int numSubSteps);
+
+    public native void setNumSolverIterations(int numSolverIterations);
+
+    public native void setContactBreakingThreshold(double threshold);
+
+    public native void renderScene();
+
+    public native void debugDraw();
+
+    public native void setTimeOut(double t);
+
+    public native void syncBodies();
+
+    public native boolean canSubmitCommand();
+
     public native void submitProfileTiming(String profileName, int durationInMicroseconds);
 
-    public native int addUserDebugLine(double [] fromXYZ, double [] toXYZ, double [] colorRGB,
-				       double lineWidth, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
 
-    public native int addUserDebugText3D(String text, double [] position, double [] orientation, double [] colorRGB,
-					 double size, double lifeTime, int parentObjectUniqueId, int parentLinkIndex);
-
-    public native int addUserDebugParameter(String paramName, double rangeMin, double rangeMax, double startValue);
-
-    public native double readUserDebugParameter(int itemUniqueId);
-
-    public native boolean removeUserDebugItem(int itemUniqueId);
-
-    public native boolean setPhysicsEngineParameter(double fixedTimeStep, int numSolverIterations, int useSplitImpulse,
-						    double splitImpulsePenetrationThreshold, int numSubSteps,
-						    int collisionFilterMode, double contactBreakingThreshold,
-						    int maxNumCmdPer1ms, int enableFileCaching, double restitutionVelocityThreshold,
-						    double erp, double contactERP, double frictionERP);
-
-
-    public static native boolean getDebugVisualizerCamera(DebugVisualizerCameraInfo info);
-
-    public static native boolean getContactPoints(int bodyUniqueIdA, int bodyUniqueIdB, int linkIndexA, int linkIndexB, ContactInformation info);
     
     public static native void testMatrix3x3(Matrix3x3 min, Matrix3x3 mout);
 

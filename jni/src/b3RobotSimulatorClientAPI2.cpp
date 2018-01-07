@@ -699,7 +699,7 @@ bool b3RobotSimulatorClientAPI::getContactPoints(struct b3RobotSimulatorGetConta
   return false;
 }
 
-bool b3RobotSimulatorClientAPI::getClosestPoints(struct b3RobotSimulatorGetContactPointsArgs &args, float distance, struct b3ContactInformation *contactInfo)
+bool b3RobotSimulatorClientAPI::getClosestPoints(struct b3RobotSimulatorGetContactPointsArgs &args, double distance, struct b3ContactInformation *contactInfo)
 {
   b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
   if (sm == 0) {
@@ -885,5 +885,25 @@ int b3RobotSimulatorClientAPI::createCollisionShape(int shapeType, struct b3Robo
     return uid;
   }
   return -1;
+}
+
+int b3RobotSimulatorClientAPI::getNumConstraints() const
+{
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return -1;
+  }
+  return b3GetNumUserConstraints(m_data->m_physicsClientHandle);
+}
+
+int b3RobotSimulatorClientAPI::getConstraintUniqueId(int serialIndex)
+{
+  if (!isConnected()) {
+    b3Warning("Not connected");
+    return -1;
+  }
+  int userConstraintId = -1;
+  userConstraintId = b3GetUserConstraintId(m_data->m_physicsClientHandle, serialIndex);
+  return userConstraintId;
 }
 

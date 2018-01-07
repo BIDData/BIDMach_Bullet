@@ -90,6 +90,27 @@ class Bullet {
 	javaBullet.resetBasePositionAndOrientation(bodyUniqueId, basePosition, baseOrientation);
     };
 
+    def getQuaternionFromEuler(euler:FMat):BIDMat.Quaternion = {
+	val euler0 = fromFMatToVector3(euler);
+	val q = new edu.berkeley.bid.bullet.Quaternion();
+	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
+	JavaQtoBIDMatQ(q);
+    };
+
+    def getQuaternionFromEuler(yawZ:Double, pitchY:Double, rollX:Double):BIDMat.Quaternion = {
+	val euler0 = fromFMatToVector3(MatFunctions.row(yawZ, pitchY, rollX));
+	val q = new edu.berkeley.bid.bullet.Quaternion();
+	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
+	JavaQtoBIDMatQ(q);
+    };
+
+    def getEulerFromQuaternion(q:BIDMat.Quaternion):FMat = {
+	val v = new Vector3();
+	val q0 = BIDMatQtoJavaQ(q);
+	edu.berkeley.bid.Bullet.getEulerFromQuaternion(q0, v);
+	fromVector3ToFMat(v);
+    }
+
     def getNumJoints(bodyUniqueId:Int):Int = {
 	javaBullet.getNumJoints(bodyUniqueId);
     };
@@ -98,28 +119,6 @@ class Bullet {
 	val jointInfo = new JointInfo();
 	javaBullet.getJointInfo(bodyUniqueId, jointIndex, jointInfo.javaJointInfo);
 	jointInfo;
-    };
-
-    def getJointStates(bodyUniqueId:Int):JointStates = {
-	val javaJointStates = new edu.berkeley.bid.bullet.JointStates2();
-	javaBullet.getJointStates(bodyUniqueId, javaJointStates);
-	new JointStates(javaJointStates);
-    };    
-
-    def getJointStates4(bodyUniqueId:Int, jointIndices:IMat):(DMat, DMat, DMat, DMat) = {
-	val numJoints = jointIndices.length;
-	val jointPositions = DMat.zeros(1, numJoints);
-	val jointVelocities = DMat.zeros(1, numJoints);
-	val jointForceTorques = DMat.zeros(numJoints, 6);
-	val jointMotorTorques = DMat.zeros(1, numJoints);
-	javaBullet.getJointStates(bodyUniqueId, jointIndices.data,
-				  jointPositions.data, jointVelocities.data,
-				  jointForceTorques.data, jointMotorTorques.data);
-	(jointPositions, jointVelocities, jointForceTorques.t, jointMotorTorques);
-    };
-
-    def enableJointForceTorqueSensor(bodyUniqueId:Int, jointIndex:Int, enable:Boolean) = {
-	javaBullet.enableJointForceTorqueSensor(bodyUniqueId, jointIndex, enable);
     };
 
     def setJointMotorControl(bodyUniqueId:Int, jointIndex:Int, controlMode:Int,
@@ -146,6 +145,28 @@ class Bullet {
 	javaBullet.resetJointState(bodyUniqueId, jointIndex, targetValue);
     };
 
+    def getJointStates(bodyUniqueId:Int):JointStates = {
+	val javaJointStates = new edu.berkeley.bid.bullet.JointStates2();
+	javaBullet.getJointStates(bodyUniqueId, javaJointStates);
+	new JointStates(javaJointStates);
+    };    
+
+    def getJointStates4(bodyUniqueId:Int, jointIndices:IMat):(DMat, DMat, DMat, DMat) = {
+	val numJoints = jointIndices.length;
+	val jointPositions = DMat.zeros(1, numJoints);
+	val jointVelocities = DMat.zeros(1, numJoints);
+	val jointForceTorques = DMat.zeros(numJoints, 6);
+	val jointMotorTorques = DMat.zeros(1, numJoints);
+	javaBullet.getJointStates(bodyUniqueId, jointIndices.data,
+				  jointPositions.data, jointVelocities.data,
+				  jointForceTorques.data, jointMotorTorques.data);
+	(jointPositions, jointVelocities, jointForceTorques.t, jointMotorTorques);
+    };
+
+    def enableJointForceTorqueSensor(bodyUniqueId:Int, jointIndex:Int, enable:Boolean) = {
+	javaBullet.enableJointForceTorqueSensor(bodyUniqueId, jointIndex, enable);
+    };
+
     def getLinkState(bodyUniqueId:Int, linkIndex:Int, computeLinkVelocity:Int = 0, computeForwardKinematics:Int = 0):LinkState = {
 	val linkState = new LinkState();
 	javaBullet.getLinkState(bodyUniqueId, linkIndex, computeLinkVelocity, computeForwardKinematics, linkState.javaLinkState);
@@ -165,16 +186,16 @@ class Bullet {
 	javaBullet.resetBaseVelocity(bodyUniqueId, baseVelocity0, baseAngularV0);
     };
 
-    def getNumBodies = {
+    def applyExternalForce(objectUniqueId:Int, linkIndex:Int, force:DMat, position:DMat, flags:Int) = {
+	javaBullet.applyExternalForce(objectUniqueId, linkIndex, force.data, position.data, flags);
+    };
+	
+    def applyExternalTorque(objectUniqueId:Int, linkIndex:Int, torque:DMat, flags:Int) = {
+	javaBullet.applyExternalTorque(objectUniqueId, linkIndex, torque.data, flags);
+    };
+
+    def getNumBodies() = {
 	javaBullet.getNumBodies;
-    };
-
-    def getBodyUniqueId(bodyId:Int) = {
-	javaBullet.getBodyUniqueId(bodyId)
-    };
-
-    def removeBody(bodyUniqeId:Int) = {
-	javaBullet.removeBody(bodyUniqeId);
     };
 
     def getBodyInfo(bodyUniqueId:Int):BodyInfo = {
@@ -183,12 +204,12 @@ class Bullet {
 	bodyInfo;
     };
 
-    def applyExternalForce(objectUniqueId:Int, linkIndex:Int, force:DMat, position:DMat, flags:Int) = {
-	javaBullet.applyExternalForce(objectUniqueId, linkIndex, force.data, position.data, flags);
+    def getBodyUniqueId(bodyId:Int) = {
+	javaBullet.getBodyUniqueId(bodyId)
     };
-	
-    def applyExternalTorque(objectUniqueId:Int, linkIndex:Int, torque:DMat, flags:Int) = {
-	javaBullet.applyExternalTorque(objectUniqueId, linkIndex, torque.data, flags);
+
+    def removeBody(bodyUniqeId:Int) = {
+	javaBullet.removeBody(bodyUniqeId);
     };
 
     def createConstraint(parentBodyIndex:Int, parentJointIndex:Int, childBodyIndex:Int, childJointIndex:Int, jointInfo:JointInfo):Int = {
@@ -213,28 +234,48 @@ class Bullet {
     def removeConstraint(constraintId:Int):Unit = {
 	javaBullet.removeConstraint(constraintId);
     };
+
+    def getNumConstraints():Int = {
+	javaBullet.getNumConstraints();
+    };
+
+    def getConstraintUniqueId(serialIndex:Int):Int = {
+	javaBullet.getConstraintUniqueId(serialIndex);
+    };
+
+    def getDynamicsInfo(bodyUniqueId:Int, jointIndex:Int):DynamicsInfo = {
+	val dynamicsInfo = new DynamicsInfo();
+	javaBullet.getDynamicsInfo(bodyUniqueId, jointIndex, dynamicsInfo.javaDynamicsInfo);
+	dynamicsInfo;
+    };
+
+    def changeDynamics(bodyUniqueId:Int, linkIndex:Int, mass:Double, lateralFriction:Double= -1, spinningFriction:Double= -1,
+		       rollingFriction:Double= -1, restitution:Double= -1, linearDamping:Double= -1, angularDamping:Double= -1,
+		       contactStiffness:Double= -1, contactDamping:Double= -1, frictionAnchor:Int= -1):Boolean = {
 	
+	javaBullet.changeDynamics(bodyUniqueId, linkIndex, mass, lateralFriction, spinningFriction,
+				  rollingFriction, restitution, linearDamping, angularDamping,
+				  contactStiffness, contactDamping, frictionAnchor);
+    };
+
     def	setTimeStep(t:Double):Unit = {
 	javaBullet.setTimeStep(t);
     };
 
-    def setInternalSimFlags(flags:Int):Unit = {
-	javaBullet.setInternalSimFlags(flags);
-    };
+    def setPhysicsEngineParameter(fixedTimeStep:Double= -1, numSolverIterations:Int= -1, useSplitImpulse:Int= -1,
+				  splitImpulsePenetrationThreshold:Double= -1, numSubSteps:Int= -1,
+				  collisionFilterMode:Int= -1, contactBreakingThreshold:Double= -1,
+				  maxNumCmdPer1ms:Int= -1, enableFileCaching:Int= -1, restitutionVelocityThreshold:Double= -1,
+				  erp:Double= -1, contactERP:Double= -1, frictionERP:Double= -1) = {
 	
-    def setNumSimulationSubSteps(numSubSteps:Int):Unit = {
-	javaBullet.setNumSimulationSubSteps(numSubSteps);
-    };
+	javaBullet.setPhysicsEngineParameter(fixedTimeStep, numSolverIterations, useSplitImpulse,
+					     splitImpulsePenetrationThreshold, numSubSteps,
+					     collisionFilterMode, contactBreakingThreshold,
+					     maxNumCmdPer1ms, enableFileCaching, restitutionVelocityThreshold,
+					     erp, contactERP, frictionERP);
+    };	
 
-    def setNumSolverIterations(numSolverIterations:Int):Unit = {
-	javaBullet.setNumSolverIterations(numSolverIterations);
-    };
-
-    def setContactBreakingThreshold(threshold:Double):Unit = {
-	javaBullet.setContactBreakingThreshold(threshold);
-    }
-
-	def resetSimulation():Unit = {
+    def resetSimulation():Unit = {
 	javaBullet.resetSimulation();
     };
 
@@ -247,12 +288,36 @@ class Bullet {
 	javaBullet.stopStateLogging(stateLoggerUniqueId);
     };
 
-    def fromFMatToFloatArray(mat:FMat):Array[Float] = {
-	if (mat.asInstanceOf[AnyRef] == null) {
-	    null;
-	} else {
-	    mat.data;
-	}
+    def computeViewMatrix(cameraPosition:FMat, cameraTargetPosition:FMat, cameraUp:FMat):FMat = {
+	val viewMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeViewMatrix(cameraPosition.data, cameraTargetPosition.data,
+						  cameraUp.data, viewMatrix.data);
+	viewMatrix;
+    };
+
+    def computeViewMatrixFromYawPitchRoll(cameraTargetPosition:FMat, distance:Float, yaw:Float, pitch:Float, roll:Float, upAxisIndex:Int) = {
+	val viewMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeViewMatrixFromYawPitchRoll(cameraTargetPosition.data, distance, yaw, pitch, roll, upAxisIndex, viewMatrix.data);
+	viewMatrix;
+    };
+
+    def computeProjectionMatrix(left:Float, right:Float, bottom:Float, top:Float,
+				nearVal:Float, farVal:Float):FMat = {
+	val projectionMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeProjectionMatrix(left, right, bottom, top, nearVal, farVal, projectionMatrix.data);
+
+	projectionMatrix;
+    };
+
+    def computeProjectionMatrixFOV(fov:Float, aspect:Float, nearVal:Float, farVal:Float):FMat = {
+	val projectionMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeProjectionMatrixFOV(fov, aspect, nearVal, farVal, projectionMatrix.data);
+
+	projectionMatrix;
     };
 
     def getCameraImage(width:Int, height:Int,
@@ -354,6 +419,24 @@ class Bullet {
 	(cameraImage, depthImage, segmentation);
     };
 
+    def getOverlappingObjects(AABBMin:DMat, AABBMax:DMat) = {
+	javaBullet.getOverlappingObjects(AABBMin.data, AABBMax.data);
+    };
+
+    def getAABB(bodyUniqueId:Int, linkIndex:Int= -2) = {
+	val AABBMin = DMat.zeros(1,3);
+	val AABBMax = DMat.zeros(1,3);
+	javaBullet.getOverlappingObjects(bodyUniqueId, linkIndex, AABBMin.data, AABBMax.data);
+	(AABBMin, AABBMax);
+    };
+
+    def getContactPoints(bodyUniqueIdA:Int, bodyUniqueIdB:Int, linkIndexA:Int, linkIndexB:Int) = {
+	javaBullet.getContactPoints(bodyUniqueIdA, bodyUniqueIdB, linkIndexA, linkIndexB);
+    };
+
+    def getClosestPoints(bodyUniqueIdA:Int, bodyUniqueIdB:Int, distance:Double, linkIndexA:Int, linkIndexB:Int) = {
+	javaBullet.getClosestPoints(bodyUniqueIdA, bodyUniqueIdB, distance, linkIndexA, linkIndexB);
+    };
 
     def calculateInverseDynamics(bodyUniqueId:Int, jointPositions:DMat, jointVelocities:DMat, jointAccelerations:DMat):DMat = {
 	val numJoints = getNumJoints(bodyUniqueId);
@@ -384,19 +467,50 @@ class Bullet {
 	jointAnglesOutput;
     };
 
-    def getDynamicsInfo(bodyUniqueId:Int, jointIndex:Int):DynamicsInfo = {
-	val dynamicsInfo = new DynamicsInfo();
-	javaBullet.getDynamicsInfo(bodyUniqueId, jointIndex, dynamicsInfo.javaDynamicsInfo);
-	dynamicsInfo;
+    def addUserDebugLine(fromXYZ:DMat, toXYZ:DMat, colorRGB:DMat= MatFunctions.drow(1,1,1), lineWidth:Double=1, lifeTime:Double= 0,
+			 parentObjectUniqueId:Int= -1, parentLinkIndex:Int= -1) = {
+	javaBullet.addUserDebugLine(fromXYZ.data, toXYZ.data, colorRGB.data, lineWidth, lifeTime, parentObjectUniqueId, parentLinkIndex);
     };
 
-    def changeDynamics(bodyUniqueId:Int, linkIndex:Int, mass:Double, lateralFriction:Double= -1, spinningFriction:Double= -1,
-		       rollingFriction:Double= -1, restitution:Double= -1, linearDamping:Double= -1, angularDamping:Double= -1,
-		       contactStiffness:Double= -1, contactDamping:Double= -1, frictionAnchor:Int= -1):Boolean = {
+    def addUserDebugText3D(text:String, position:DMat, orientation:DMat, colorRGB:DMat= MatFunctions.drow(1,1,1), size:Double= 1, lifeTime:Double= 0,
+			   parentObjectUniqueId:Int= -1, parentLinkIndex:Int= -1) = {
+	javaBullet.addUserDebugText3D(text, position.data, getData(orientation), colorRGB.data, size, lifeTime, parentObjectUniqueId, parentLinkIndex);
+    };
+
+    def addUserDebugParameter(paramName:String, rangeMin:Double, rangeMax:Double, startValue:Double):Int = {
+	javaBullet.addUserDebugParameter(paramName, rangeMin, rangeMax, startValue);
+    };
+
+    def readUserDebugParameter(itemUniqueId:Int):Double = {
+	javaBullet.readUserDebugParameter(itemUniqueId);
+    };
+
+    def removeUserDebugItem(itemUniqueId:Int):Boolean = {
+	javaBullet.removeUserDebugItem(itemUniqueId);
+    };
+    
+    def setInternalSimFlags(flags:Int):Unit = {
+	javaBullet.setInternalSimFlags(flags);
+    };
 	
-	javaBullet.changeDynamics(bodyUniqueId, linkIndex, mass, lateralFriction, spinningFriction,
-				  rollingFriction, restitution, linearDamping, angularDamping,
-				  contactStiffness, contactDamping, frictionAnchor);
+    def setNumSimulationSubSteps(numSubSteps:Int):Unit = {
+	javaBullet.setNumSimulationSubSteps(numSubSteps);
+    };
+
+    def setNumSolverIterations(numSolverIterations:Int):Unit = {
+	javaBullet.setNumSolverIterations(numSolverIterations);
+    };
+
+    def setContactBreakingThreshold(threshold:Double):Unit = {
+	javaBullet.setContactBreakingThreshold(threshold);
+    };
+
+    def fromFMatToFloatArray(mat:FMat):Array[Float] = {
+	if (mat.asInstanceOf[AnyRef] == null) {
+	    null;
+	} else {
+	    mat.data;
+	}
     };
 
     def renderScene():Unit = {
@@ -438,40 +552,23 @@ class Bullet {
 	javaBullet.submitProfileTiming(profileName, durationInMicroseconds);
     };
 
-    def addUserDebugLine(fromXYZ:DMat, toXYZ:DMat, colorRGB:DMat= MatFunctions.drow(1,1,1), lineWidth:Double=1, lifeTime:Double= 0,
-			 parentObjectUniqueId:Int= -1, parentLinkIndex:Int= -1) = {
-	javaBullet.addUserDebugLine(fromXYZ.data, toXYZ.data, colorRGB.data, lineWidth, lifeTime, parentObjectUniqueId, parentLinkIndex);
+    def getData(a:FMat):Array[Float]= {
+	if (a.asInstanceOf[AnyRef] != null) {
+	    a.data;
+	} else {
+	    null;
+	}
     };
 
-    def addUserDebugText3D(text:String, position:DMat, orientation:DMat, colorRGB:DMat= MatFunctions.drow(1,1,1), size:Double= 1, lifeTime:Double= 0,
-			   parentObjectUniqueId:Int= -1, parentLinkIndex:Int= -1) = {
-	javaBullet.addUserDebugText3D(text, position.data, getData(orientation), colorRGB.data, size, lifeTime, parentObjectUniqueId, parentLinkIndex);
-    };
+    def getData(a:DMat):Array[Double]= {
+	if (a.asInstanceOf[AnyRef] != null) {
+	    a.data;
+	} else {
+	    null;
+	}
+    }
 
-    def addUserDebugParameter(paramName:String, rangeMin:Double, rangeMax:Double, startValue:Double):Int = {
-	javaBullet.addUserDebugParameter(paramName, rangeMin, rangeMax, startValue);
-    };
 
-    def readUserDebugParameter(itemUniqueId:Int):Double = {
-	javaBullet.readUserDebugParameter(itemUniqueId);
-    };
-
-    def removeUserDebugItem(itemUniqueId:Int):Boolean = {
-	javaBullet.removeUserDebugItem(itemUniqueId);
-    };
-
-    def setPhysicsEngineParameter(fixedTimeStep:Double= -1, numSolverIterations:Int= -1, useSplitImpulse:Int= -1,
-				  splitImpulsePenetrationThreshold:Double= -1, numSubSteps:Int= -1,
-				  collisionFilterMode:Int= -1, contactBreakingThreshold:Double= -1,
-				  maxNumCmdPer1ms:Int= -1, enableFileCaching:Int= -1, restitutionVelocityThreshold:Double= -1,
-				  erp:Double= -1, contactERP:Double= -1, frictionERP:Double= -1) = {
-	
-	javaBullet.setPhysicsEngineParameter(fixedTimeStep, numSolverIterations, useSplitImpulse,
-					     splitImpulsePenetrationThreshold, numSubSteps,
-					     collisionFilterMode, contactBreakingThreshold,
-					     maxNumCmdPer1ms, enableFileCaching, restitutionVelocityThreshold,
-					     erp, contactERP, frictionERP);
-    };	
 }
 
 object Bullet {
@@ -524,74 +621,6 @@ object Bullet {
 	}
     }
 
-    def getQuaternionFromEuler(euler:FMat):BIDMat.Quaternion = {
-	val euler0 = fromFMatToVector3(euler);
-	val q = new edu.berkeley.bid.bullet.Quaternion();
-	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
-	JavaQtoBIDMatQ(q);
-    };
-
-    def getQuaternionFromEuler(yawZ:Double, pitchY:Double, rollX:Double):BIDMat.Quaternion = {
-	val euler0 = fromFMatToVector3(MatFunctions.row(yawZ, pitchY, rollX));
-	val q = new edu.berkeley.bid.bullet.Quaternion();
-	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
-	JavaQtoBIDMatQ(q);
-    };
-
-    def getEulerFromQuaternion(q:BIDMat.Quaternion):FMat = {
-	val v = new Vector3();
-	val q0 = BIDMatQtoJavaQ(q);
-	edu.berkeley.bid.Bullet.getEulerFromQuaternion(q0, v);
-	fromVector3ToFMat(v);
-    }
-
-    def computeViewMatrixFromPositions(cameraPosition:FMat, cameraTargetPosition:FMat, cameraUp:FMat):FMat = {
-	val viewMatrix = FMat.zeros(4,4);
-
-	edu.berkeley.bid.Bullet.computeViewMatrixFromPositions(cameraPosition.data, cameraTargetPosition.data,
-							       cameraUp.data, viewMatrix.data);
-	viewMatrix;
-    }
-
-    def computeViewMatrixFromYawPitchRoll(cameraTargetPosition:FMat, distance:Float, yaw:Float, pitch:Float, roll:Float, upAxisIndex:Int) = {
-	val viewMatrix = FMat.zeros(4,4);
-
-	edu.berkeley.bid.Bullet.computeViewMatrixFromYawPitchRoll(cameraTargetPosition.data, distance, yaw, pitch, roll, upAxisIndex, viewMatrix.data);
-	viewMatrix;
-    }
-
-    def computeProjectionMatrix(left:Float, right:Float, bottom:Float, top:Float,
-				nearVal:Float, farVal:Float):FMat = {
-	val projectionMatrix = FMat.zeros(4,4);
-
-	edu.berkeley.bid.Bullet.computeProjectionMatrix(left, right, bottom, top, nearVal, farVal, projectionMatrix.data);
-
-	projectionMatrix;
-    }
-
-    def computeProjectionMatrixFOV(fov:Float, aspect:Float, nearVal:Float, farVal:Float):FMat = {
-	val projectionMatrix = FMat.zeros(4,4);
-
-	edu.berkeley.bid.Bullet.computeProjectionMatrixFOV(fov, aspect, nearVal, farVal, projectionMatrix.data);
-
-	projectionMatrix;
-    }
-
-    def getData(a:FMat):Array[Float]= {
-	if (a.asInstanceOf[AnyRef] != null) {
-	    a.data;
-	} else {
-	    null;
-	}
-    };
-
-    def getData(a:DMat):Array[Double]= {
-	if (a.asInstanceOf[AnyRef] != null) {
-	    a.data;
-	} else {
-	    null;
-	}
-    }
 
 
 

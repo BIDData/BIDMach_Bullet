@@ -492,7 +492,7 @@ public:
 
         bool getContactPoints(struct b3RobotSimulatorGetContactPointsArgs &args, struct b3ContactInformation *contactInfo);
 
-	bool getClosestPoints(struct b3RobotSimulatorGetContactPointsArgs &args, float distance, struct b3ContactInformation *contactInfo);
+	bool getClosestPoints(struct b3RobotSimulatorGetContactPointsArgs &args, double distance, struct b3ContactInformation *contactInfo);
 
 	bool getOverlappingObjects(double *aabbMin, double *aabbMax, struct b3AABBOverlapData *overlapData);
 
@@ -503,6 +503,10 @@ public:
 	bool getAABB(int bodyUniqueId, int linkIndex, b3Vector3 &aabbMin, b3Vector3 &aabbMax);
 
         int createCollisionShape(int shapeType, struct b3RobotSimulatorCreateCollisionShapeArgs &args);
+
+        int getNumConstraints() const;
+
+        int getConstraintUniqueId(int serialIndex);
 
         //////////////// INTERNAL
 

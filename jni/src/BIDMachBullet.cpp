@@ -2107,7 +2107,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
   env->ReleaseStringUTFChars(jprofileName, profileName);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrixFromPositions
+JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrix
 (JNIEnv *env, jobject obj, jfloatArray jcameraPosition, jfloatArray jcameraTargetPosition,
  jfloatArray jcameraUp, jfloatArray jviewMatrix)
 {
@@ -2657,7 +2657,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getAABB
 
 
 JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createCollisionShape
-(JNIEnv *env, jobject jRoboSimAPI, jint shapeType, jdouble radius, jdoubleArray jhalfExtents, jfloat height,
+(JNIEnv *env, jobject jRoboSimAPI, jint shapeType, jdouble radius, jdoubleArray jhalfExtents, jdouble height,
  jstring jfileName, jdoubleArray jmeshScale, jdoubleArray jplaneNormal, jint flags)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
