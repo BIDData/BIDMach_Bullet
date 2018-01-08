@@ -54,6 +54,32 @@ static void deleteJointInfo(b3JointInfo * ptr) {
   }
 }
 
+static b3CameraImageData allocCameraImage(int width, int height) {
+  struct b3CameraImageData cameraImage;
+  int length = width * height;
+  /* cameraImage.m_pixelWidth = width;
+  cameraImage.m_pixelHeight = height;
+  cameraImage.m_rgbColorData = new unsigned char[4*length];
+  cameraImage.m_depthValues = new float[length];
+  cameraImage.m_segmentationMaskValues = new int[length]; */
+  return cameraImage;
+}  
+
+static void deleteCameraImageFields(b3CameraImageData cameraImage) {
+  /*  if (cameraImage.m_rgbColorData != NULL) {
+    delete [] cameraImage.m_rgbColorData;
+    cameraImage.m_rgbColorData = NULL;
+  }
+  if (cameraImage.m_depthValues != NULL) {
+    delete [] cameraImage.m_depthValues;
+    cameraImage.m_depthValues = NULL;
+  }
+  if (cameraImage.m_segmentationMaskValues != NULL) {
+    delete [] cameraImage.m_segmentationMaskValues;
+    cameraImage.m_segmentationMaskValues = NULL;
+    }*/
+}
+
 static b3RobotSimulatorClientAPI *getRobotSimulatorClientAPI(JNIEnv *env, jobject jRoboSimAPI)
 {
   static jclass clazz = NULL;
@@ -76,8 +102,6 @@ static void setRobotSimulatorClientAPI(JNIEnv *env, jobject jRoboSimAPI, b3Robot
   jlong handle = void2long(pch);
   env->SetLongField(jRoboSimAPI, handle_id, handle);
 }
-
-
 
 static void getQuaternionFields(JNIEnv *env, jclass &qclass, jfieldID &qxfield, jfieldID &qyfield, jfieldID &qzfield, jfieldID &qwfield)
 {
@@ -2111,6 +2135,10 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_getKeyboardEventsData
   struct b3KeyboardEventsData keyboardEventsData;
   jrsa -> getKeyboardEvents(&keyboardEventsData);
   nativeKeyboardEventsDataToJava(env, jkeyboardEventsData, keyboardEventsData);
+  if (keyboardEventsData.m_keyboardEvents != NULL) {
+    //    delete [] keyboardEventsData.m_keyboardEvents;
+    keyboardEventsData.m_keyboardEvents = NULL;
+  }
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_getMouseEventsData
@@ -2120,6 +2148,10 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_getMouseEventsData
   struct b3MouseEventsData mouseEventsData;
   jrsa -> getMouseEvents(&mouseEventsData);
   nativeMouseEventsDataToJava(env, jmouseEventsData, mouseEventsData);
+  if (mouseEventsData.m_mouseEvents != NULL) {
+    //    delete [] mouseEventsData.m_mouseEvents;
+    //    mouseEventsData.m_mouseEvents = NULL;
+  }
 }
 
 JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
@@ -2275,7 +2307,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
  jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
  jint renderer, jobject jcameraImage)
 {
-  struct b3CameraImageData cameraImage;
+  struct b3CameraImageData cameraImage = allocCameraImage(width, height);
   jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
 					jviewMatrix, jprojectionMatrix,
 					jlightDirection, jlightColor,
@@ -2283,6 +2315,8 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
 					lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
 					renderer, cameraImage);
   nativeCameraImageDataToJava(env, jcameraImage, cameraImage);
+
+  deleteCameraImageFields(cameraImage);
   return status;
 }
 
@@ -2296,7 +2330,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
 {
   int i;
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3CameraImageData cameraImage;
+  struct b3CameraImageData cameraImage = allocCameraImage(width, height);
   int *rgbColorData = NULL;
   float *depthValues = NULL;
   int *segmentationMaskValues = NULL;
@@ -2338,11 +2372,12 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
     env->ReleasePrimitiveArrayCritical(jsegmentationMaskValues, segmentationMaskValues, 0);
   }
 
+  deleteCameraImageFields(cameraImage);
   return status;
 }
 
 JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
-(JNIEnv *env, jobject jRoboSimAPI, jobject jcameraImage, jint width, jint height,
+(JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
  jfloatArray jlightDirection, jfloatArray jlightColor,
  jfloat lightDistance, jint hasShadow,
@@ -2350,10 +2385,22 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
  jint renderer, jbyteArray jrgbColorData, jfloatArray jdepthValues, jintArray jsegmentationMaskValues)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3CameraImageData cameraImage;
+  struct b3CameraImageData cameraImage = allocCameraImage(width, height);
   char *rgbColorData = NULL;
   float *depthValues = NULL;
   int *segmentationMaskValues = NULL;
+
+  int length = width * height;
+  CHECKVALUE(jrgbColorData, "getCameraImageBytes: rgb output array is null", false);
+  CHECKDIMS(jrgbColorData, length*4, "getCameraImageBytes: rgb output array dimension doesnt match image size", false);
+
+  if (jdepthValues != NULL) {
+    CHECKDIMS(jdepthValues, length, "getCameraImageBytes: depth output array dimension doesnt match image size", false);
+  }
+
+  if (jsegmentationMaskValues != NULL) {
+    CHECKDIMS(jsegmentationMaskValues, length, "getCameraImageBytes: segmentation output array dimension doesnt match image size", false);
+  }
 
   jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
 					jviewMatrix, jprojectionMatrix,
@@ -2362,28 +2409,23 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
 					lightAmbientCoeff, lightDiffuseCoeff, lightSpecularCoeff,
 					renderer, cameraImage);
 
-  int length = width * height;
-  CHECKVALUE(jrgbColorData, "getCameraImageInts: rgb output array is null", false);
-  CHECKDIMS(jrgbColorData, length, "getCameraImageInts: rgb output array dimension doesnt match image size", false);
-
   rgbColorData = (char *)env->GetPrimitiveArrayCritical(jrgbColorData, JNI_FALSE);
   memcpy(rgbColorData, cameraImage.m_rgbColorData, length*4*sizeof(char));
   env->ReleasePrimitiveArrayCritical(jrgbColorData, rgbColorData, 0);
 
   if (jdepthValues != NULL) {
-    CHECKDIMS(jdepthValues, length, "getCameraImageInts: depth output array dimension doesnt match image size", false);
     depthValues = (float *)env->GetPrimitiveArrayCritical(jdepthValues, JNI_FALSE);
     memcpy(depthValues, cameraImage.m_depthValues, length*sizeof(float));
     env->ReleasePrimitiveArrayCritical(jdepthValues, depthValues, 0);
   }
 
   if (jsegmentationMaskValues != NULL) {
-    CHECKDIMS(jsegmentationMaskValues, length, "getCameraImageInts: segmentation output array dimension doesnt match image size", false);
     segmentationMaskValues = (int *)env->GetPrimitiveArrayCritical(jsegmentationMaskValues, JNI_FALSE);
     memcpy(segmentationMaskValues, cameraImage.m_segmentationMaskValues, length*sizeof(int));
     env->ReleasePrimitiveArrayCritical(jsegmentationMaskValues, segmentationMaskValues, 0);
   }
 
+  deleteCameraImageFields(cameraImage);
   return status;
 }
 
@@ -2662,6 +2704,11 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getOverlappingObjects
   bool status = jrsa -> getOverlappingObjects(AABBMin, AABBMax, &overlapData);
 
   nativeAABBOverlapDataToJava(env, joverlapData, overlapData);
+
+  if (overlapData.m_overlappingObjects != NULL) {
+    //    delete [] overlapData.m_overlappingObjects;
+    //    overlapData.m_overlappingObjects = NULL;
+  }
 
   env->ReleasePrimitiveArrayCritical(jAABBMax, AABBMax, 0);
   env->ReleasePrimitiveArrayCritical(jAABBMin, AABBMin, 0);

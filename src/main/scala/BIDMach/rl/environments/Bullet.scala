@@ -90,26 +90,14 @@ class Bullet {
 	javaBullet.resetBasePositionAndOrientation(bodyUniqueId, basePosition, baseOrientation);
     };
 
-    def getQuaternionFromEuler(euler:FMat):BIDMat.Quaternion = {
-	val euler0 = fromFMatToVector3(euler);
-	val q = new edu.berkeley.bid.bullet.Quaternion();
-	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
-	JavaQtoBIDMatQ(q);
-    };
+    def getQuaternionFromEuler(euler:FMat):BIDMat.Quaternion =
+	Bullet.getQuaternionFromEuler(euler);
 
-    def getQuaternionFromEuler(yawZ:Double, pitchY:Double, rollX:Double):BIDMat.Quaternion = {
-	val euler0 = fromFMatToVector3(MatFunctions.row(yawZ, pitchY, rollX));
-	val q = new edu.berkeley.bid.bullet.Quaternion();
-	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
-	JavaQtoBIDMatQ(q);
-    };
+    def getQuaternionFromEuler(yawZ:Double, pitchY:Double, rollX:Double):BIDMat.Quaternion =
+	Bullet.getQuaternionFromEuler(yawZ, pitchY, rollX);
 
-    def getEulerFromQuaternion(q:BIDMat.Quaternion):FMat = {
-	val v = new Vector3();
-	val q0 = BIDMatQtoJavaQ(q);
-	edu.berkeley.bid.Bullet.getEulerFromQuaternion(q0, v);
-	fromVector3ToFMat(v);
-    }
+    def getEulerFromQuaternion(q:BIDMat.Quaternion):FMat =
+	Bullet.getEulerFromQuaternion(q);
 
     def getNumJoints(bodyUniqueId:Int):Int = {
 	javaBullet.getNumJoints(bodyUniqueId);
@@ -249,7 +237,7 @@ class Bullet {
 	dynamicsInfo;
     };
 
-    def changeDynamics(bodyUniqueId:Int, linkIndex:Int, mass:Double, lateralFriction:Double= -1, spinningFriction:Double= -1,
+    def changeDynamics(bodyUniqueId:Int, linkIndex:Int, mass:Double= -1, lateralFriction:Double= -1, spinningFriction:Double= -1,
 		       rollingFriction:Double= -1, restitution:Double= -1, linearDamping:Double= -1, angularDamping:Double= -1,
 		       contactStiffness:Double= -1, contactDamping:Double= -1, frictionAnchor:Int= -1):Boolean = {
 	
@@ -288,37 +276,17 @@ class Bullet {
 	javaBullet.stopStateLogging(stateLoggerUniqueId);
     };
 
-    def computeViewMatrix(cameraPosition:FMat, cameraTargetPosition:FMat, cameraUp:FMat):FMat = {
-	val viewMatrix = FMat.zeros(4,4);
+    def computeViewMatrix(cameraPosition:FMat, cameraTargetPosition:FMat, cameraUp:FMat):FMat =
+	Bullet.computeViewMatrix(cameraPosition, cameraTargetPosition, cameraUp);
 
-	edu.berkeley.bid.Bullet.computeViewMatrix(cameraPosition.data, cameraTargetPosition.data,
-						  cameraUp.data, viewMatrix.data);
-	viewMatrix;
-    };
+    def computeViewMatrixFromYawPitchRoll(cameraTargetPosition:FMat, distance:Float, yaw:Float, pitch:Float, roll:Float, upAxisIndex:Int) =
+	Bullet.computeViewMatrixFromYawPitchRoll(cameraTargetPosition, distance, yaw, pitch, roll, upAxisIndex);
 
-    def computeViewMatrixFromYawPitchRoll(cameraTargetPosition:FMat, distance:Float, yaw:Float, pitch:Float, roll:Float, upAxisIndex:Int) = {
-	val viewMatrix = FMat.zeros(4,4);
+    def computeProjectionMatrix(left:Float, right:Float, bottom:Float, top:Float, nearVal:Float, farVal:Float):FMat =
+	Bullet.computeProjectionMatrix(left, right, bottom, top, nearVal, farVal);
 
-	edu.berkeley.bid.Bullet.computeViewMatrixFromYawPitchRoll(cameraTargetPosition.data, distance, yaw, pitch, roll, upAxisIndex, viewMatrix.data);
-	viewMatrix;
-    };
-
-    def computeProjectionMatrix(left:Float, right:Float, bottom:Float, top:Float,
-				nearVal:Float, farVal:Float):FMat = {
-	val projectionMatrix = FMat.zeros(4,4);
-
-	edu.berkeley.bid.Bullet.computeProjectionMatrix(left, right, bottom, top, nearVal, farVal, projectionMatrix.data);
-
-	projectionMatrix;
-    };
-
-    def computeProjectionMatrixFOV(fov:Float, aspect:Float, nearVal:Float, farVal:Float):FMat = {
-	val projectionMatrix = FMat.zeros(4,4);
-
-	edu.berkeley.bid.Bullet.computeProjectionMatrixFOV(fov, aspect, nearVal, farVal, projectionMatrix.data);
-
-	projectionMatrix;
-    };
+    def computeProjectionMatrixFOV(fov:Float, aspect:Float, nearVal:Float, farVal:Float):FMat =
+	Bullet.computeProjectionMatrixFOV(fov, aspect, nearVal, farVal);
 
     def getCameraImage(width:Int, height:Int,
 		       viewMatrix:FMat=null, projectionMatrix:FMat=null,
@@ -716,6 +684,59 @@ class Bullet {
 }
 
 object Bullet {
+
+    def getQuaternionFromEuler(euler:FMat):BIDMat.Quaternion = {
+	val euler0 = fromFMatToVector3(euler);
+	val q = new edu.berkeley.bid.bullet.Quaternion();
+	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
+	JavaQtoBIDMatQ(q);
+    };
+
+    def getQuaternionFromEuler(yawZ:Double, pitchY:Double, rollX:Double):BIDMat.Quaternion = {
+	val euler0 = fromFMatToVector3(MatFunctions.row(yawZ, pitchY, rollX));
+	val q = new edu.berkeley.bid.bullet.Quaternion();
+	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
+	JavaQtoBIDMatQ(q);
+    };
+
+    def getEulerFromQuaternion(q:BIDMat.Quaternion):FMat = {
+	val v = new Vector3();
+	val q0 = BIDMatQtoJavaQ(q);
+	edu.berkeley.bid.Bullet.getEulerFromQuaternion(q0, v);
+	fromVector3ToFMat(v);
+    };
+
+    def computeViewMatrix(cameraPosition:FMat, cameraTargetPosition:FMat, cameraUp:FMat):FMat = {
+	val viewMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeViewMatrix(cameraPosition.data, cameraTargetPosition.data,
+						  cameraUp.data, viewMatrix.data);
+	viewMatrix;
+    };
+
+    def computeViewMatrixFromYawPitchRoll(cameraTargetPosition:FMat, distance:Float, yaw:Float, pitch:Float, roll:Float, upAxisIndex:Int) = {
+	val viewMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeViewMatrixFromYawPitchRoll(cameraTargetPosition.data, distance, yaw, pitch, roll, upAxisIndex, viewMatrix.data);
+	viewMatrix;
+    };
+
+    def computeProjectionMatrix(left:Float, right:Float, bottom:Float, top:Float,
+				nearVal:Float, farVal:Float):FMat = {
+	val projectionMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeProjectionMatrix(left, right, bottom, top, nearVal, farVal, projectionMatrix.data);
+
+	projectionMatrix;
+    };
+
+    def computeProjectionMatrixFOV(fov:Float, aspect:Float, nearVal:Float, farVal:Float):FMat = {
+	val projectionMatrix = FMat.zeros(4,4);
+
+	edu.berkeley.bid.Bullet.computeProjectionMatrixFOV(fov, aspect, nearVal, farVal, projectionMatrix.data);
+
+	projectionMatrix;
+    };
 
     def BIDMatQtoJavaQ(q:BIDMat.Quaternion):edu.berkeley.bid.bullet.Quaternion = {
 	if (q.asInstanceOf[AnyRef] != null) {

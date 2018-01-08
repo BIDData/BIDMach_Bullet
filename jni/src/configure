@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="2.0.13-cuda8.0beta"
+VERSION="2.0.14-cuda8.0beta"
 DEVVERSION="dev-cuda8.0"
 
 if [ "$BULLET_HOME" = "" ]; then
@@ -10,52 +10,25 @@ if [ "$ZLIB_DIR" = "" ]; then
     ZLIB_DIR="/code/zlib"
 fi
 
-BULLET_LIBS="${BULLET_HOME}/examples/RobotSimulator/libRobotSimulator.a \
-${BULLET_HOME}/examples/ExampleBrowser/libBulletExampleBrowserLib.a \
-${BULLET_HOME}/Extras/Serialize/BulletFileLoader/libBulletFileLoader.a \
+BULLET_LIBS="${BULLET_HOME}/Extras/BulletRobotics/libBulletRobotics.a \
+${BULLET_HOME}/Extras/InverseDynamics/libBulletInverseDynamicsUtils.a \
 ${BULLET_HOME}/Extras/Serialize/BulletWorldImporter/libBulletWorldImporter.a \
+${BULLET_HOME}/Extras/Serialize/BulletFileLoader/libBulletFileLoader.a \
 ${BULLET_HOME}/src/BulletSoftBody/libBulletSoftBody.a \
 ${BULLET_HOME}/src/BulletDynamics/libBulletDynamics.a \
-${BULLET_HOME}/src/Bullet3Dynamics/libBullet3Dynamics.a \
 ${BULLET_HOME}/src/BulletCollision/libBulletCollision.a \
-${BULLET_HOME}/src/Bullet3Collision/libBullet3Collision.a \
-${BULLET_HOME}/Extras/InverseDynamics/libBulletInverseDynamicsUtils.a \
 ${BULLET_HOME}/src/BulletInverseDynamics/libBulletInverseDynamics.a \
 ${BULLET_HOME}/src/LinearMath/libLinearMath.a \
 ${BULLET_HOME}/examples/OpenGLWindow/libOpenGLWindow.a \
+${BULLET_HOME}/examples/ExampleBrowser/libBulletExampleBrowserLib.a \
 ${BULLET_HOME}/examples/ThirdPartyLibs/Gwen/libgwen.a \
-${BULLET_HOME}/examples/ThirdPartyLibs/BussIK/libBussIK.a \
 ${BULLET_HOME}/src/Bullet3Common/libBullet3Common.a"
 
-# ${BULLET_HOME}/src/Bullet3Geometry/libBullet3Geometry.a \
-# ${BULLET_HOME}/src/Bullet3OpenCL/libBullet3OpenCL_clew.a \
-# ${BULLET_HOME}/src/Bullet3Serialize/Bullet2FileLoader/libBullet2FileLoader.a \
-# ${BULLET_HOME}/Extras/BulletRobotics/libBulletRobotics.a \
 
-
-# BULLET_LIBS="${BULLET_HOME}/examples/OpenGLWindow/libOpenGLWindow.a \
-# ${BULLET_HOME}/examples/ThirdPartyLibs/BussIK/libBussIK.a \
-# ${BULLET_HOME}/examples/ThirdPartyLibs/Gwen/libGwen.a \
-# ${BULLET_HOME}/Extras/BulletRobotics/libBulletRobotics.a \
-# ${BULLET_HOME}/Extras/ConvexDecomposition/libConvexDecomposition.a \
-# ${BULLET_HOME}/Extras/GIMPACTUtils/libGIMPACTUtils.a \
-# ${BULLET_HOME}/Extras/HACD/libHACD.a \
-# ${BULLET_HOME}/Extras/InverseDynamics/libBulletInverseDynamicsUtils.a \
-# ${BULLET_HOME}/Extras/Serialize/BulletFileLoader/libBulletFileLoader.a \
-# ${BULLET_HOME}/Extras/Serialize/BulletWorldImporter/libBulletWorldImporter.a \
-# ${BULLET_HOME}/Extras/Serialize/BulletXmlWorldImporter/libBulletXmlWorldImporter.a \
-# ${BULLET_HOME}/src/Bullet3Collision/libBullet3Collision.a \
-# ${BULLET_HOME}/src/Bullet3Common/libBullet3Common.a \
+# ${BULLET_HOME}/examples/RobotSimulator/libRobotSimulator.a \
 # ${BULLET_HOME}/src/Bullet3Dynamics/libBullet3Dynamics.a \
-# ${BULLET_HOME}/src/Bullet3Geometry/libBullet3Geometry.a \
-# ${BULLET_HOME}/src/Bullet3OpenCL/libBullet3OpenCL_clew.a \
-# ${BULLET_HOME}/src/Bullet3Serialize/Bullet2FileLoader/libBullet2FileLoader.a \
-# ${BULLET_HOME}/src/BulletCollision/libBulletCollision.a \
-# ${BULLET_HOME}/src/BulletDynamics/libBulletDynamics.a \
-# ${BULLET_HOME}/src/BulletInverseDynamics/libBulletInverseDynamics.a \
-# ${BULLET_HOME}/src/BulletSoftBody/libBulletSoftBody.a \
-# ${BULLET_HOME}/src/LinearMath/libLinearMath.a \
-# ${BULLET_HOME}/examples/RobotSimulator/CMakeFiles/App_RobotSimulator.dir/b3RobotSimulatorClientAPI.o"
+# ${BULLET_HOME}/src/Bullet3Collision/libBullet3Collision.a \
+# ${BULLET_HOME}/examples/ThirdPartyLibs/BussIK/libBussIK.a \
 
 OS=`uname -a`
 PARLIB=$1

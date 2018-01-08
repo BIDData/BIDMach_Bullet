@@ -1,0 +1,43 @@
+import BIDMach.rl.environments.bullet._
+import BIDMach.rl.environments.Bullet
+import BIDMach.rl.environments.Bullet._
+
+val p = new Bullet;
+
+p.connect(p.GUI);
+//p.connect(p.SHARED_MEMORY);
+
+p.setPathPrefix("/code/bullet3/data/");
+
+val restitutionId = p.addUserDebugParameter("restitution",0,1,1);
+val restitutionVelocityThresholdId = p.addUserDebugParameter("res. vel. threshold",0,3,0.2);
+
+val lateralFrictionId = p.addUserDebugParameter("lateral friction",0,1,0.5);
+val spinningFrictionId = p.addUserDebugParameter("spinning friction",0,1,0.03);
+val rollingFrictionId = p.addUserDebugParameter("rolling friction",0,1,0.03);
+
+val plane = p.loadURDF("plane_with_restitution.urdf");
+val sphere = p.loadURDF("sphere_with_restitution.urdf",row(0,0,2));
+
+p.setRealTimeSimulation(true);
+p.setGravity(0,0,-10);
+while (true) {
+    val restitution = p.readUserDebugParameter(restitutionId);
+    val restitutionVelocityThreshold = p.readUserDebugParameter(restitutionVelocityThresholdId);
+    p.setPhysicsEngineParameter(restitutionVelocityThreshold=restitutionVelocityThreshold);
+
+    val	lateralFriction = 	p.readUserDebugParameter(lateralFrictionId);
+    val spinningFriction = 	p.readUserDebugParameter(spinningFrictionId);
+    val rollingFriction = 	p.readUserDebugParameter(rollingFrictionId);
+    p.changeDynamics(plane,-1,lateralFriction=1);
+    p.changeDynamics(sphere,-1,lateralFriction=lateralFriction);
+    p.changeDynamics(sphere,-1,spinningFriction=spinningFriction);
+    p.changeDynamics(sphere,-1,rollingFriction=rollingFriction);
+	
+    p.changeDynamics(plane,-1,restitution=restitution);
+    p.changeDynamics(sphere,-1,restitution=restitution);
+    val (pos,orn)=p.getBasePositionAndOrientation(sphere);
+    // println("pos=")
+    // println(pos)
+    Thread.sleep(10);
+}
