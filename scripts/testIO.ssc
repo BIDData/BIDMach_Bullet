@@ -1,4 +1,3 @@
-import edu.berkeley.bid.Bullet
 import edu.berkeley.bid.bullet._
 
 val r1 = new Vector3(1,2,3);

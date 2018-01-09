@@ -1,5 +1,5 @@
-package edu.berkeley.bid;
-import edu.berkeley.bid.bullet.*;
+package edu.berkeley.bid.bullet;
+import edu.berkeley.bid.LibUtils;
 import java.io.*;
 
 public class Bullet implements Serializable {

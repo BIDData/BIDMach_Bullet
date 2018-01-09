@@ -1,6 +1,4 @@
 import BIDMach.rl.environments.bullet._
-import BIDMach.rl.environments.Bullet
-import BIDMach.rl.environments.Bullet._
 
 val p = new Bullet;
 
@@ -35,7 +33,6 @@ val maxForceId = p.addUserDebugParameter("maxForce",0,500,10);
 
 val kneeAngleTargetLeftId = p.addUserDebugParameter("kneeAngleL",-4,4,-1);
 val maxForceLeftId = p.addUserDebugParameter("maxForceL",0,500,10);
-
 
 val kneeJointIndex=11;
 val kneeJointIndexLeft=18;

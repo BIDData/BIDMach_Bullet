@@ -1,18 +1,16 @@
 import BIDMach.rl.environments.bullet._
-import BIDMach.rl.environments.Bullet
-import BIDMach.rl.environments.Bullet._
 
 val p = new Bullet;
 
-var clid = p.connect(eCONNECT_GUI);
-//var clid = p.connect(eCONNECT_SHARED_MEMORY);
-if (!clid) p.connect(eCONNECT_DIRECT);
+var clid = p.connect(p.GUI);
+//var clid = p.connect(p.SHARED_MEMORY);
+if (!clid) p.connect(p.DIRECT);
 
 p.setPathPrefix("/code/bullet3/data/");
 p.loadURDF("plane.urdf",row(0,0,-0.3f));
 
 val kukaId = p.loadURDF("kuka_iiwa/model.urdf",row(0,0,0));
-p.resetBasePositionAndOrientation(kukaId,row(0,0,0),Quaternion(1,0,0,0));
+p.resetBasePositionAndOrientation(kukaId,row(0,0,0),Quaternion(0,0,0,1));
 val kukaEndEffectorIndex = 6;
 val numJoints = p.getNumJoints(kukaId);
 	
@@ -50,11 +48,11 @@ val trialDuration = 15;
 p.setRealTimeSimulation(useRealTimeSimulation);
 
 var t=0.0;
-var prevPose=drow(0,0,0);
-var prevPose1=drow(0,0,0);
+var prevPose=row(0,0,0);
+var prevPose1=row(0,0,0);
 var hasPrevPose = false;
 var jointPoses:DMat = null;
-var pos:DMat = null;
+var pos:FMat = null;
 var ls:LinkState = null;
 	
 while (true) {
@@ -71,9 +69,9 @@ while (true) {
     }
  
     for (i <- 0 until 1) {
-	pos = drow(-0.4,0.2*math.cos(t),0+0.2*math.sin(t));
+	pos = row(-0.4,0.2*math.cos(t),0+0.2*math.sin(t));
 	// end effector points down, not up (in case useOrientation==1);
-        val orn = getQuaternionFromEuler(0,-math.Pi.toFloat,0);
+        val orn = p.getQuaternionFromEuler(0,-math.Pi.toFloat,0);
 	
 	if (useNullSpace) {
 	    if (useOrientation) {
@@ -91,7 +89,7 @@ while (true) {
 	
 	if (useSimulation) {
 	    for (i <- 0 until numJoints) {
-		p.setJointMotorControl(kukaId,jointIndex=i,controlMode=POSITION_CONTROL,targetPosition=jointPoses(i),targetVelocity=0,force=500,positionGain=0.03,velocityGain=1);
+		p.setJointMotorControl(kukaId,jointIndex=i,controlMode=p.POSITION_CONTROL,targetPosition=jointPoses(i),targetVelocity=0,force=500,positionGain=0.03,velocityGain=1);
 	    }
 	} else {
 	    // reset the joint state (ignoring all dynamics, not recommended to use during simulation)
@@ -105,10 +103,10 @@ while (true) {
     if (hasPrevPose) {
 	println("pos "+prevPose+", "+pos);
 	println("pos1 "+prevPose1+", "+ls.worldLinkFramePosition);
-	p.addUserDebugLine(prevPose, pos, drow(0,0,0.3), 1, trialDuration);
-	p.addUserDebugLine(prevPose1,ls.worldLinkFramePosition, drow(1,0,0), 1, trialDuration);
+	p.addUserDebugLine(prevPose, pos, row(0,0,0.3), 1, trialDuration);
+	p.addUserDebugLine(prevPose1,FMat(ls.worldLinkFramePosition), row(1,0,0), 1, trialDuration);
     }
     prevPose=pos;
-    prevPose1=ls.worldLinkFramePosition;
+    prevPose1=FMat(ls.worldLinkFramePosition);
     hasPrevPose = true;
 }

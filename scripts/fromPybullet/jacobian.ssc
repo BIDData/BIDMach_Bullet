@@ -1,12 +1,10 @@
 :silent
 import BIDMach.rl.environments.bullet._
-import BIDMach.rl.environments.Bullet
-import BIDMach.rl.environments.Bullet._
 
 val p = new Bullet;
-var clid = p.connect(eCONNECT_SHARED_MEMORY);
-//var clid = p.connect(eCONNECT_GUI);
-if (!clid) p.connect(eCONNECT_DIRECT);
+var clid = p.connect(p.SHARED_MEMORY);
+//var clid = p.connect(p.GUI);
+if (!clid) p.connect(p.DIRECT);
 
 def getJointStates(robot:Int) = {
     val (pos, vel, _, torq) = p.getJointStates4(robot, irow(0->p.getNumJoints(robot)));
@@ -18,7 +16,7 @@ def setJointPosition(robot:Int, position:DMat, kp:Double=1.0, kv:Double=0.3) = {
     val zero_vec = dzeros(1, num_joints);
     val one_vec = dones(1, num_joints);
     if (position.length == num_joints) {
-	p.setJointMotorControlArray(robot, irow(0->num_joints), POSITION_CONTROL,
+	p.setJointMotorControlArray(robot, irow(0->num_joints), p.POSITION_CONTROL,
 				      targetPositions=position, targetVelocities=zero_vec,
 				      positionGains=kp * one_vec, velocityGains=kv * one_vec);
     } else {
@@ -45,7 +43,7 @@ val kukaEndEffectorIndex = 6;
 val numJoints = p.getNumJoints(kukaId);
 // Set a joint target for the position control and step the sim
 setJointPosition(kukaId, 0.1*dones(1,numJoints));
-//p.setJointMotorControl(kukaId,0,POSITION_CONTROL,0.1,0,100000,1,0.3);
+//p.setJointMotorControl(kukaId,0,p.POSITION_CONTROL,0.1,0,100000,1,0.3);
 p.stepSimulation();
 // Get the joint and link state directly from Bullet.
 val (pos, vel, torq) = getJointStates(kukaId);

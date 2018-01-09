@@ -1,5 +1,4 @@
-package BIDMach.rl.environments;
-import BIDMach.rl.environments.bullet._;
+package BIDMach.rl.environments.bullet;
 import edu.berkeley.bid.bullet.{Vector3,Matrix3x3}
 import BIDMat.{BMat,DMat,FMat,IMat,Quaternion};
 import BIDMat.MatFunctions;
@@ -7,9 +6,9 @@ import BIDMat.MatFunctions;
 
 class Bullet {
 
-    val javaBullet = new edu.berkeley.bid.Bullet();
+    val javaBullet = new edu.berkeley.bid.bullet.Bullet();
 
-    import BIDMach.rl.environments.Bullet._;
+    import BIDMach.rl.environments.bullet.Bullet._;
 
     var filePathPrefix:String = null;
 
@@ -109,10 +108,10 @@ class Bullet {
 	jointInfo;
     };
 
-    def setJointMotorControl(bodyUniqueId:Int, jointIndex:Int, controlMode:Int,
+    def setJointMotorControl(bodyIndex:Int, jointIndex:Int, controlMode:Int,
 			     targetPosition:Double = 0, targetVelocity:Double = 0,
 			     force:Double = 100000, positionGain:Double = 0.1, velocityGain:Double = 1.0):Unit = {
-	javaBullet.setJointMotorControl(bodyUniqueId, jointIndex, controlMode, targetPosition, targetVelocity, force, positionGain, velocityGain);
+	javaBullet.setJointMotorControl(bodyIndex, jointIndex, controlMode, targetPosition, targetVelocity, force, positionGain, velocityGain);
     };
 
     def setJointMotorControlArray(bodyUniqueId:Int, jointIndices:IMat, controlMode:Int,
@@ -565,121 +564,121 @@ class Bullet {
     
 
 
-    final val SHARED_MEMORY = edu.berkeley.bid.Bullet.eCONNECT_SHARED_MEMORY;
-    final val DIRECT = edu.berkeley.bid.Bullet.eCONNECT_DIRECT;
-    final val GUI = edu.berkeley.bid.Bullet.eCONNECT_GUI;
-    final val UDP = edu.berkeley.bid.Bullet.eCONNECT_UDP;
-    final val TCP = edu.berkeley.bid.Bullet.eCONNECT_TCP;
-    final val GUI_SERVER = edu.berkeley.bid.Bullet.eCONNECT_GUI_SERVER;
+    final val SHARED_MEMORY = edu.berkeley.bid.bullet.Bullet.eCONNECT_SHARED_MEMORY;
+    final val DIRECT = edu.berkeley.bid.bullet.Bullet.eCONNECT_DIRECT;
+    final val GUI = edu.berkeley.bid.bullet.Bullet.eCONNECT_GUI;
+    final val UDP = edu.berkeley.bid.bullet.Bullet.eCONNECT_UDP;
+    final val TCP = edu.berkeley.bid.bullet.Bullet.eCONNECT_TCP;
+    final val GUI_SERVER = edu.berkeley.bid.bullet.Bullet.eCONNECT_GUI_SERVER;
 
-    final val JOINT_REVOLUTE = edu.berkeley.bid.Bullet.eRevoluteType;
-    final val JOINT_PRISMATIC = edu.berkeley.bid.Bullet.ePrismaticType;
-    final val JOINT_SPHERICAL = edu.berkeley.bid.Bullet.eSphericalType;
-    final val JOINT_PLANAR = edu.berkeley.bid.Bullet.ePlanarType;
-    final val JOINT_FIXED = edu.berkeley.bid.Bullet.eFixedType;
-    final val JOINT_POINT2POINT = edu.berkeley.bid.Bullet.ePoint2PointType;
-    final val JOINT_GEAR = edu.berkeley.bid.Bullet.eGearType;
+    final val JOINT_REVOLUTE = edu.berkeley.bid.bullet.Bullet.eRevoluteType;
+    final val JOINT_PRISMATIC = edu.berkeley.bid.bullet.Bullet.ePrismaticType;
+    final val JOINT_SPHERICAL = edu.berkeley.bid.bullet.Bullet.eSphericalType;
+    final val JOINT_PLANAR = edu.berkeley.bid.bullet.Bullet.ePlanarType;
+    final val JOINT_FIXED = edu.berkeley.bid.bullet.Bullet.eFixedType;
+    final val JOINT_POINT2POINT = edu.berkeley.bid.bullet.Bullet.ePoint2PointType;
+    final val JOINT_GEAR = edu.berkeley.bid.bullet.Bullet.eGearType;
 
-    final val SENSOR_FORCE_TORQUE = edu.berkeley.bid.Bullet.eSensorForceTorqueType;
+    final val SENSOR_FORCE_TORQUE = edu.berkeley.bid.bullet.Bullet.eSensorForceTorqueType;
 
-    final val TORQUE_CONTROL = edu.berkeley.bid.Bullet.CONTROL_MODE_TORQUE;
-    final val VELOCITY_CONTROL = edu.berkeley.bid.Bullet.CONTROL_MODE_VELOCITY;
-    final val POSITION_CONTROL = edu.berkeley.bid.Bullet.CONTROL_MODE_POSITION_VELOCITY_PD;
+    final val TORQUE_CONTROL = edu.berkeley.bid.bullet.Bullet.CONTROL_MODE_TORQUE;
+    final val VELOCITY_CONTROL = edu.berkeley.bid.bullet.Bullet.CONTROL_MODE_VELOCITY;
+    final val POSITION_CONTROL = edu.berkeley.bid.bullet.Bullet.CONTROL_MODE_POSITION_VELOCITY_PD;
 
-    final val LINK_FRAME = edu.berkeley.bid.Bullet.EF_LINK_FRAME;
-    final val WORLD_FRAME = edu.berkeley.bid.Bullet.EF_WORLD_FRAME;
+    final val LINK_FRAME = edu.berkeley.bid.bullet.Bullet.EF_LINK_FRAME;
+    final val WORLD_FRAME = edu.berkeley.bid.bullet.Bullet.EF_WORLD_FRAME;
 
-    final val CONTACT_REPORT_EXISTING = edu.berkeley.bid.Bullet.CONTACT_QUERY_MODE_REPORT_EXISTING_CONTACT_POINTS;
-    final val CONTACT_RECOMPUTE_CLOSEST = edu.berkeley.bid.Bullet.CONTACT_QUERY_MODE_COMPUTE_CLOSEST_POINTS;
+    final val CONTACT_REPORT_EXISTING = edu.berkeley.bid.bullet.Bullet.CONTACT_QUERY_MODE_REPORT_EXISTING_CONTACT_POINTS;
+    final val CONTACT_RECOMPUTE_CLOSEST = edu.berkeley.bid.bullet.Bullet.CONTACT_QUERY_MODE_COMPUTE_CLOSEST_POINTS;
 
-    final val VR_BUTTON_IS_DOWN = edu.berkeley.bid.Bullet.eButtonIsDown;
-    final val VR_BUTTON_WAS_TRIGGERED = edu.berkeley.bid.Bullet.eButtonTriggered;
-    final val VR_BUTTON_WAS_RELEASED = edu.berkeley.bid.Bullet.eButtonReleased;
+    final val VR_BUTTON_IS_DOWN = edu.berkeley.bid.bullet.Bullet.eButtonIsDown;
+    final val VR_BUTTON_WAS_TRIGGERED = edu.berkeley.bid.bullet.Bullet.eButtonTriggered;
+    final val VR_BUTTON_WAS_RELEASED = edu.berkeley.bid.bullet.Bullet.eButtonReleased;
 
-    final val VR_MAX_CONTROLLERS = edu.berkeley.bid.Bullet.MAX_VR_CONTROLLERS;
-    final val VR_MAX_BUTTONS = edu.berkeley.bid.Bullet.MAX_VR_BUTTONS;
+    final val VR_MAX_CONTROLLERS = edu.berkeley.bid.bullet.Bullet.MAX_VR_CONTROLLERS;
+    final val VR_MAX_BUTTONS = edu.berkeley.bid.bullet.Bullet.MAX_VR_BUTTONS;
 
-    final val VR_DEVICE_CONTROLLER = edu.berkeley.bid.Bullet.VR_DEVICE_CONTROLLER;
-    final val VR_DEVICE_HMD = edu.berkeley.bid.Bullet.VR_DEVICE_HMD;
-    final val VR_DEVICE_GENERIC_TRACKER = edu.berkeley.bid.Bullet.VR_DEVICE_GENERIC_TRACKER;
+    final val VR_DEVICE_CONTROLLER = edu.berkeley.bid.bullet.Bullet.VR_DEVICE_CONTROLLER;
+    final val VR_DEVICE_HMD = edu.berkeley.bid.bullet.Bullet.VR_DEVICE_HMD;
+    final val VR_DEVICE_GENERIC_TRACKER = edu.berkeley.bid.bullet.Bullet.VR_DEVICE_GENERIC_TRACKER;
 
-    final val VR_CAMERA_TRACK_OBJECT_ORIENTATION = edu.berkeley.bid.Bullet.VR_CAMERA_TRACK_OBJECT_ORIENTATION;
+    final val VR_CAMERA_TRACK_OBJECT_ORIENTATION = edu.berkeley.bid.bullet.Bullet.VR_CAMERA_TRACK_OBJECT_ORIENTATION;
 
-    final val KEY_IS_DOWN = edu.berkeley.bid.Bullet.eButtonIsDown;
-    final val KEY_WAS_TRIGGERED = edu.berkeley.bid.Bullet.eButtonTriggered;
-    final val KEY_WAS_RELEASED = edu.berkeley.bid.Bullet.eButtonReleased;
+    final val KEY_IS_DOWN = edu.berkeley.bid.bullet.Bullet.eButtonIsDown;
+    final val KEY_WAS_TRIGGERED = edu.berkeley.bid.bullet.Bullet.eButtonTriggered;
+    final val KEY_WAS_RELEASED = edu.berkeley.bid.bullet.Bullet.eButtonReleased;
 
-    final val STATE_LOGGING_MINITAUR = edu.berkeley.bid.Bullet.STATE_LOGGING_MINITAUR;
-    final val STATE_LOGGING_GENERIC_ROBOT = edu.berkeley.bid.Bullet.STATE_LOGGING_GENERIC_ROBOT;
-    final val STATE_LOGGING_VR_CONTROLLERS = edu.berkeley.bid.Bullet.STATE_LOGGING_VR_CONTROLLERS;
-    final val STATE_LOGGING_VIDEO_MP4 = edu.berkeley.bid.Bullet.STATE_LOGGING_VIDEO_MP4;
-    final val STATE_LOGGING_CONTACT_POINTS = edu.berkeley.bid.Bullet.STATE_LOGGING_CONTACT_POINTS;
-    final val STATE_LOGGING_PROFILE_TIMINGS = edu.berkeley.bid.Bullet.STATE_LOGGING_PROFILE_TIMINGS;
+    final val STATE_LOGGING_MINITAUR = edu.berkeley.bid.bullet.Bullet.STATE_LOGGING_MINITAUR;
+    final val STATE_LOGGING_GENERIC_ROBOT = edu.berkeley.bid.bullet.Bullet.STATE_LOGGING_GENERIC_ROBOT;
+    final val STATE_LOGGING_VR_CONTROLLERS = edu.berkeley.bid.bullet.Bullet.STATE_LOGGING_VR_CONTROLLERS;
+    final val STATE_LOGGING_VIDEO_MP4 = edu.berkeley.bid.bullet.Bullet.STATE_LOGGING_VIDEO_MP4;
+    final val STATE_LOGGING_CONTACT_POINTS = edu.berkeley.bid.bullet.Bullet.STATE_LOGGING_CONTACT_POINTS;
+    final val STATE_LOGGING_PROFILE_TIMINGS = edu.berkeley.bid.bullet.Bullet.STATE_LOGGING_PROFILE_TIMINGS;
 
-    final val COV_ENABLE_GUI = edu.berkeley.bid.Bullet.COV_ENABLE_GUI;
-    final val COV_ENABLE_SHADOWS = edu.berkeley.bid.Bullet.COV_ENABLE_SHADOWS;
-    final val COV_ENABLE_WIREFRAME = edu.berkeley.bid.Bullet.COV_ENABLE_WIREFRAME;
-    final val COV_ENABLE_VR_PICKING = edu.berkeley.bid.Bullet.COV_ENABLE_VR_PICKING;
-    final val COV_ENABLE_VR_TELEPORTING = edu.berkeley.bid.Bullet.COV_ENABLE_VR_TELEPORTING;
-    final val COV_ENABLE_RENDERING = edu.berkeley.bid.Bullet.COV_ENABLE_RENDERING;
-    final val COV_ENABLE_VR_RENDER_CONTROLLERS = edu.berkeley.bid.Bullet.COV_ENABLE_VR_RENDER_CONTROLLERS;
-    final val COV_ENABLE_KEYBOARD_SHORTCUTS = edu.berkeley.bid.Bullet.COV_ENABLE_KEYBOARD_SHORTCUTS;
-    final val COV_ENABLE_MOUSE_PICKING = edu.berkeley.bid.Bullet.COV_ENABLE_MOUSE_PICKING;
+    final val COV_ENABLE_GUI = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_GUI;
+    final val COV_ENABLE_SHADOWS = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_SHADOWS;
+    final val COV_ENABLE_WIREFRAME = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_WIREFRAME;
+    final val COV_ENABLE_VR_PICKING = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_VR_PICKING;
+    final val COV_ENABLE_VR_TELEPORTING = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_VR_TELEPORTING;
+    final val COV_ENABLE_RENDERING = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_RENDERING;
+    final val COV_ENABLE_VR_RENDER_CONTROLLERS = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_VR_RENDER_CONTROLLERS;
+    final val COV_ENABLE_KEYBOARD_SHORTCUTS = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_KEYBOARD_SHORTCUTS;
+    final val COV_ENABLE_MOUSE_PICKING = edu.berkeley.bid.bullet.Bullet.COV_ENABLE_MOUSE_PICKING;
 
 
-    final val ER_TINY_RENDERER = edu.berkeley.bid.Bullet.ER_TINY_RENDERER;
-    final val ER_BULLET_HARDWARE_OPENGL = edu.berkeley.bid.Bullet.ER_BULLET_HARDWARE_OPENGL;
+    final val ER_TINY_RENDERER = edu.berkeley.bid.bullet.Bullet.ER_TINY_RENDERER;
+    final val ER_BULLET_HARDWARE_OPENGL = edu.berkeley.bid.bullet.Bullet.ER_BULLET_HARDWARE_OPENGL;
 
-    final val URDF_USE_INERTIA_FROM_FILE = edu.berkeley.bid.Bullet.URDF_USE_INERTIA_FROM_FILE;
-    final val URDF_USE_SELF_COLLISION = edu.berkeley.bid.Bullet.URDF_USE_SELF_COLLISION;
-    final val URDF_USE_SELF_COLLISION_EXCLUDE_PARENT = edu.berkeley.bid.Bullet.URDF_USE_SELF_COLLISION_EXCLUDE_PARENT;
-    final val URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS = edu.berkeley.bid.Bullet.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS;
+    final val URDF_USE_INERTIA_FROM_FILE = edu.berkeley.bid.bullet.Bullet.URDF_USE_INERTIA_FROM_FILE;
+    final val URDF_USE_SELF_COLLISION = edu.berkeley.bid.bullet.Bullet.URDF_USE_SELF_COLLISION;
+    final val URDF_USE_SELF_COLLISION_EXCLUDE_PARENT = edu.berkeley.bid.bullet.Bullet.URDF_USE_SELF_COLLISION_EXCLUDE_PARENT;
+    final val URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS = edu.berkeley.bid.bullet.Bullet.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS;
 
-    final val MAX_RAY_INTERSECTION_BATCH_SIZE = edu.berkeley.bid.Bullet.MAX_RAY_INTERSECTION_BATCH_SIZE;
+    final val MAX_RAY_INTERSECTION_BATCH_SIZE = edu.berkeley.bid.bullet.Bullet.MAX_RAY_INTERSECTION_BATCH_SIZE;
 
-    final val B3G_F1 = edu.berkeley.bid.Bullet.B3G_F1;
-    final val B3G_F2 = edu.berkeley.bid.Bullet.B3G_F2;
-    final val B3G_F3 = edu.berkeley.bid.Bullet.B3G_F3;
-    final val B3G_F4 = edu.berkeley.bid.Bullet.B3G_F4;
-    final val B3G_F5 = edu.berkeley.bid.Bullet.B3G_F5;
-    final val B3G_F6 = edu.berkeley.bid.Bullet.B3G_F6;
-    final val B3G_F7 = edu.berkeley.bid.Bullet.B3G_F7;
-    final val B3G_F8 = edu.berkeley.bid.Bullet.B3G_F8;
-    final val B3G_F9 = edu.berkeley.bid.Bullet.B3G_F9;
-    final val B3G_F10 = edu.berkeley.bid.Bullet.B3G_F10;
-    final val B3G_F11 = edu.berkeley.bid.Bullet.B3G_F11;
-    final val B3G_F12 = edu.berkeley.bid.Bullet.B3G_F12;
-    final val B3G_F13 = edu.berkeley.bid.Bullet.B3G_F13;
-    final val B3G_F14 = edu.berkeley.bid.Bullet.B3G_F14;
-    final val B3G_F15 = edu.berkeley.bid.Bullet.B3G_F15;
-    final val B3G_LEFT_ARROW = edu.berkeley.bid.Bullet.B3G_LEFT_ARROW;
-    final val B3G_RIGHT_ARROW = edu.berkeley.bid.Bullet.B3G_RIGHT_ARROW;
-    final val B3G_UP_ARROW = edu.berkeley.bid.Bullet.B3G_UP_ARROW;
-    final val B3G_DOWN_ARROW = edu.berkeley.bid.Bullet.B3G_DOWN_ARROW;
-    final val B3G_PAGE_UP = edu.berkeley.bid.Bullet.B3G_PAGE_UP;
-    final val B3G_PAGE_DOWN = edu.berkeley.bid.Bullet.B3G_PAGE_DOWN;
-    final val B3G_END = edu.berkeley.bid.Bullet.B3G_END;
-    final val B3G_HOME = edu.berkeley.bid.Bullet.B3G_HOME;
-    final val B3G_INSERT = edu.berkeley.bid.Bullet.B3G_INSERT;
-    final val B3G_DELETE = edu.berkeley.bid.Bullet.B3G_DELETE;
-    final val B3G_BACKSPACE = edu.berkeley.bid.Bullet.B3G_BACKSPACE;
-    final val B3G_SHIFT = edu.berkeley.bid.Bullet.B3G_SHIFT;
-    final val B3G_CONTROL = edu.berkeley.bid.Bullet.B3G_CONTROL;
-    final val B3G_ALT = edu.berkeley.bid.Bullet.B3G_ALT;
-    final val B3G_RETURN = edu.berkeley.bid.Bullet.B3G_RETURN;
+    final val B3G_F1 = edu.berkeley.bid.bullet.Bullet.B3G_F1;
+    final val B3G_F2 = edu.berkeley.bid.bullet.Bullet.B3G_F2;
+    final val B3G_F3 = edu.berkeley.bid.bullet.Bullet.B3G_F3;
+    final val B3G_F4 = edu.berkeley.bid.bullet.Bullet.B3G_F4;
+    final val B3G_F5 = edu.berkeley.bid.bullet.Bullet.B3G_F5;
+    final val B3G_F6 = edu.berkeley.bid.bullet.Bullet.B3G_F6;
+    final val B3G_F7 = edu.berkeley.bid.bullet.Bullet.B3G_F7;
+    final val B3G_F8 = edu.berkeley.bid.bullet.Bullet.B3G_F8;
+    final val B3G_F9 = edu.berkeley.bid.bullet.Bullet.B3G_F9;
+    final val B3G_F10 = edu.berkeley.bid.bullet.Bullet.B3G_F10;
+    final val B3G_F11 = edu.berkeley.bid.bullet.Bullet.B3G_F11;
+    final val B3G_F12 = edu.berkeley.bid.bullet.Bullet.B3G_F12;
+    final val B3G_F13 = edu.berkeley.bid.bullet.Bullet.B3G_F13;
+    final val B3G_F14 = edu.berkeley.bid.bullet.Bullet.B3G_F14;
+    final val B3G_F15 = edu.berkeley.bid.bullet.Bullet.B3G_F15;
+    final val B3G_LEFT_ARROW = edu.berkeley.bid.bullet.Bullet.B3G_LEFT_ARROW;
+    final val B3G_RIGHT_ARROW = edu.berkeley.bid.bullet.Bullet.B3G_RIGHT_ARROW;
+    final val B3G_UP_ARROW = edu.berkeley.bid.bullet.Bullet.B3G_UP_ARROW;
+    final val B3G_DOWN_ARROW = edu.berkeley.bid.bullet.Bullet.B3G_DOWN_ARROW;
+    final val B3G_PAGE_UP = edu.berkeley.bid.bullet.Bullet.B3G_PAGE_UP;
+    final val B3G_PAGE_DOWN = edu.berkeley.bid.bullet.Bullet.B3G_PAGE_DOWN;
+    final val B3G_END = edu.berkeley.bid.bullet.Bullet.B3G_END;
+    final val B3G_HOME = edu.berkeley.bid.bullet.Bullet.B3G_HOME;
+    final val B3G_INSERT = edu.berkeley.bid.bullet.Bullet.B3G_INSERT;
+    final val B3G_DELETE = edu.berkeley.bid.bullet.Bullet.B3G_DELETE;
+    final val B3G_BACKSPACE = edu.berkeley.bid.bullet.Bullet.B3G_BACKSPACE;
+    final val B3G_SHIFT = edu.berkeley.bid.bullet.Bullet.B3G_SHIFT;
+    final val B3G_CONTROL = edu.berkeley.bid.bullet.Bullet.B3G_CONTROL;
+    final val B3G_ALT = edu.berkeley.bid.bullet.Bullet.B3G_ALT;
+    final val B3G_RETURN = edu.berkeley.bid.bullet.Bullet.B3G_RETURN;
 
-    final val GEOM_SPHERE = edu.berkeley.bid.Bullet.GEOM_SPHERE;
-    final val GEOM_BOX = edu.berkeley.bid.Bullet.GEOM_BOX;
-    final val GEOM_CYLINDER = edu.berkeley.bid.Bullet.GEOM_CYLINDER;
-    final val GEOM_MESH = edu.berkeley.bid.Bullet.GEOM_MESH;
-    final val GEOM_PLANE = edu.berkeley.bid.Bullet.GEOM_PLANE;
-    final val GEOM_CAPSULE = edu.berkeley.bid.Bullet.GEOM_CAPSULE;
+    final val GEOM_SPHERE = edu.berkeley.bid.bullet.Bullet.GEOM_SPHERE;
+    final val GEOM_BOX = edu.berkeley.bid.bullet.Bullet.GEOM_BOX;
+    final val GEOM_CYLINDER = edu.berkeley.bid.bullet.Bullet.GEOM_CYLINDER;
+    final val GEOM_MESH = edu.berkeley.bid.bullet.Bullet.GEOM_MESH;
+    final val GEOM_PLANE = edu.berkeley.bid.bullet.Bullet.GEOM_PLANE;
+    final val GEOM_CAPSULE = edu.berkeley.bid.bullet.Bullet.GEOM_CAPSULE;
 
-    final val GEOM_FORCE_CONCAVE_TRIMESH = edu.berkeley.bid.Bullet.GEOM_FORCE_CONCAVE_TRIMESH;
+    final val GEOM_FORCE_CONCAVE_TRIMESH = edu.berkeley.bid.bullet.Bullet.GEOM_FORCE_CONCAVE_TRIMESH;
 	
-    final val STATE_LOG_JOINT_MOTOR_TORQUES = edu.berkeley.bid.Bullet.STATE_LOG_JOINT_MOTOR_TORQUES;
-    final val STATE_LOG_JOINT_USER_TORQUES = edu.berkeley.bid.Bullet.STATE_LOG_JOINT_USER_TORQUES;
-    final val STATE_LOG_JOINT_TORQUES = edu.berkeley.bid.Bullet.STATE_LOG_JOINT_USER_TORQUES+STATE_LOG_JOINT_MOTOR_TORQUES;
+    final val STATE_LOG_JOINT_MOTOR_TORQUES = edu.berkeley.bid.bullet.Bullet.STATE_LOG_JOINT_MOTOR_TORQUES;
+    final val STATE_LOG_JOINT_USER_TORQUES = edu.berkeley.bid.bullet.Bullet.STATE_LOG_JOINT_USER_TORQUES;
+    final val STATE_LOG_JOINT_TORQUES = edu.berkeley.bid.bullet.Bullet.STATE_LOG_JOINT_USER_TORQUES+STATE_LOG_JOINT_MOTOR_TORQUES;
 
 }
 
@@ -688,28 +687,28 @@ object Bullet {
     def getQuaternionFromEuler(euler:FMat):BIDMat.Quaternion = {
 	val euler0 = fromFMatToVector3(euler);
 	val q = new edu.berkeley.bid.bullet.Quaternion();
-	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
+	edu.berkeley.bid.bullet.Bullet.getQuaternionFromEuler(euler0, q);
 	JavaQtoBIDMatQ(q);
     };
 
     def getQuaternionFromEuler(yawZ:Double, pitchY:Double, rollX:Double):BIDMat.Quaternion = {
 	val euler0 = fromFMatToVector3(MatFunctions.row(yawZ, pitchY, rollX));
 	val q = new edu.berkeley.bid.bullet.Quaternion();
-	edu.berkeley.bid.Bullet.getQuaternionFromEuler(euler0, q);
+	edu.berkeley.bid.bullet.Bullet.getQuaternionFromEuler(euler0, q);
 	JavaQtoBIDMatQ(q);
     };
 
     def getEulerFromQuaternion(q:BIDMat.Quaternion):FMat = {
 	val v = new Vector3();
 	val q0 = BIDMatQtoJavaQ(q);
-	edu.berkeley.bid.Bullet.getEulerFromQuaternion(q0, v);
+	edu.berkeley.bid.bullet.Bullet.getEulerFromQuaternion(q0, v);
 	fromVector3ToFMat(v);
     };
 
     def computeViewMatrix(cameraPosition:FMat, cameraTargetPosition:FMat, cameraUp:FMat):FMat = {
 	val viewMatrix = FMat.zeros(4,4);
 
-	edu.berkeley.bid.Bullet.computeViewMatrix(cameraPosition.data, cameraTargetPosition.data,
+	edu.berkeley.bid.bullet.Bullet.computeViewMatrix(cameraPosition.data, cameraTargetPosition.data,
 						  cameraUp.data, viewMatrix.data);
 	viewMatrix;
     };
@@ -717,7 +716,7 @@ object Bullet {
     def computeViewMatrixFromYawPitchRoll(cameraTargetPosition:FMat, distance:Float, yaw:Float, pitch:Float, roll:Float, upAxisIndex:Int) = {
 	val viewMatrix = FMat.zeros(4,4);
 
-	edu.berkeley.bid.Bullet.computeViewMatrixFromYawPitchRoll(cameraTargetPosition.data, distance, yaw, pitch, roll, upAxisIndex, viewMatrix.data);
+	edu.berkeley.bid.bullet.Bullet.computeViewMatrixFromYawPitchRoll(cameraTargetPosition.data, distance, yaw, pitch, roll, upAxisIndex, viewMatrix.data);
 	viewMatrix;
     };
 
@@ -725,7 +724,7 @@ object Bullet {
 				nearVal:Float, farVal:Float):FMat = {
 	val projectionMatrix = FMat.zeros(4,4);
 
-	edu.berkeley.bid.Bullet.computeProjectionMatrix(left, right, bottom, top, nearVal, farVal, projectionMatrix.data);
+	edu.berkeley.bid.bullet.Bullet.computeProjectionMatrix(left, right, bottom, top, nearVal, farVal, projectionMatrix.data);
 
 	projectionMatrix;
     };
@@ -733,7 +732,7 @@ object Bullet {
     def computeProjectionMatrixFOV(fov:Float, aspect:Float, nearVal:Float, farVal:Float):FMat = {
 	val projectionMatrix = FMat.zeros(4,4);
 
-	edu.berkeley.bid.Bullet.computeProjectionMatrixFOV(fov, aspect, nearVal, farVal, projectionMatrix.data);
+	edu.berkeley.bid.bullet.Bullet.computeProjectionMatrixFOV(fov, aspect, nearVal, farVal, projectionMatrix.data);
 
 	projectionMatrix;
     };

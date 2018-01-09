@@ -1,6 +1,4 @@
 import BIDMach.rl.environments.bullet._
-import BIDMach.rl.environments.Bullet
-import BIDMach.rl.environments.Bullet._
 
 val p = new Bullet;
 

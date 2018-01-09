@@ -1,6 +1,4 @@
 import BIDMach.rl.environments.bullet._
-import BIDMach.rl.environments.Bullet
-import BIDMach.rl.environments.Bullet._
 
 val p = new Bullet;
 
@@ -16,7 +14,7 @@ val planeId = p.loadURDF("plane.urdf")
 
 val cubeStartPos = row(0,0,0.6f);
 
-val cubeStartOrient = getQuaternionFromEuler(row(0,0,0));
+val cubeStartOrient = p.getQuaternionFromEuler(row(0,0,0));
 
 //val boxId = p.loadURDF("r2d2.urdf", cubeStartPos, cubeStartOrient)
 
@@ -26,9 +24,9 @@ p.stepSimulation()
 
 val imgsize = 256
 
-val view = computeViewMatrix(row(1,1,2),row(0,0,0),row(0,0,1));
+val view = p.computeViewMatrix(row(1,1,2),row(0,0,0),row(0,0,1));
 
-val proj = computeProjectionMatrixFOV(20, 1, 0.01f, 100);
+val proj = p.computeProjectionMatrixFOV(20, 1, 0.01f, 100);
 
 val img = p.getCameraImageInts1(imgsize, imgsize, view, proj);
 

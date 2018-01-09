@@ -54,38 +54,12 @@ static void deleteJointInfo(b3JointInfo * ptr) {
   }
 }
 
-static b3CameraImageData allocCameraImage(int width, int height) {
-  struct b3CameraImageData cameraImage;
-  int length = width * height;
-  /* cameraImage.m_pixelWidth = width;
-  cameraImage.m_pixelHeight = height;
-  cameraImage.m_rgbColorData = new unsigned char[4*length];
-  cameraImage.m_depthValues = new float[length];
-  cameraImage.m_segmentationMaskValues = new int[length]; */
-  return cameraImage;
-}  
-
-static void deleteCameraImageFields(b3CameraImageData cameraImage) {
-  /*  if (cameraImage.m_rgbColorData != NULL) {
-    delete [] cameraImage.m_rgbColorData;
-    cameraImage.m_rgbColorData = NULL;
-  }
-  if (cameraImage.m_depthValues != NULL) {
-    delete [] cameraImage.m_depthValues;
-    cameraImage.m_depthValues = NULL;
-  }
-  if (cameraImage.m_segmentationMaskValues != NULL) {
-    delete [] cameraImage.m_segmentationMaskValues;
-    cameraImage.m_segmentationMaskValues = NULL;
-    }*/
-}
-
 static b3RobotSimulatorClientAPI *getRobotSimulatorClientAPI(JNIEnv *env, jobject jRoboSimAPI)
 {
   static jclass clazz = NULL;
   static jfieldID handle_id = NULL;
   if (clazz == NULL) {
-    clazz = (jclass) env->NewGlobalRef(env->FindClass("edu/berkeley/bid/Bullet"));
+    clazz = (jclass) env->NewGlobalRef(env->FindClass("edu/berkeley/bid/bullet/Bullet"));
   }
   if (handle_id == NULL) {
     handle_id = env->GetFieldID(clazz, "handle", "J");
@@ -1342,7 +1316,7 @@ static void nativeAABBOverlapDataToJava(JNIEnv *env, jobject jv, struct b3AABBOv
 extern "C" {
 
 
-JNIEXPORT jint JNICALL Java_edu_berkeley_bid_Bullet_newRobotSimulatorClientAPI
+JNIEXPORT jint JNICALL Java_edu_berkeley_bid_bullet_Bullet_newRobotSimulatorClientAPI
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI* sim = new b3RobotSimulatorClientAPI();
@@ -1353,7 +1327,7 @@ JNIEXPORT jint JNICALL Java_edu_berkeley_bid_Bullet_newRobotSimulatorClientAPI
   return status;
 }
 
-JNIEXPORT jint JNICALL Java_edu_berkeley_bid_Bullet_deleteRobotSimulatorClientAPI
+JNIEXPORT jint JNICALL Java_edu_berkeley_bid_bullet_Bullet_deleteRobotSimulatorClientAPI
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1364,21 +1338,21 @@ JNIEXPORT jint JNICALL Java_edu_berkeley_bid_Bullet_deleteRobotSimulatorClientAP
   return 0;
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_renderScene
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_renderScene
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> renderScene();
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_debugDraw
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_debugDraw
 (JNIEnv *env, jobject jRoboSimAPI, jint debugDrawMode)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> debugDraw(debugDrawMode);
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_connect
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_connect
 (JNIEnv *env, jobject jRoboSimAPI, jint method, jstring jhostname, jint port)
 {
   char *hostname = (char *)(env->GetStringUTFChars(jhostname, 0));
@@ -1390,42 +1364,42 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_connect
   return success;
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_disconnect
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_disconnect
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> disconnect();
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_isConnected
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_isConnected
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   return jrsa -> isConnected();
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setTimeOut
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setTimeOut
 (JNIEnv *env, jobject jRoboSimAPI, jdouble t)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   return jrsa -> setTimeOut(t);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_syncBodies
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_syncBodies
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> syncBodies();
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_resetSimulation
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_resetSimulation
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> resetSimulation();
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_getQuaternionFromEuler
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_getQuaternionFromEuler
 (JNIEnv *env, jobject jRoboSimAPI, jobject jVec3, jobject jQuat)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1434,7 +1408,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_getQuaternionFromEuler
   nativeQuaternionToJava(env, jQuat, qv);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_getEulerFromQuaternion
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_getEulerFromQuaternion
 (JNIEnv *env, jobject jRoboSimAPI, jobject jQuat, jobject jVec3)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1443,7 +1417,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_getEulerFromQuaternion
   nativeVector3ToJava(env, jVec3, bv);
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_loadURDF
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_loadURDF
 (JNIEnv *env, jobject jRoboSimAPI, jstring jfname, jobject jStartPos, jobject jStartOrient, 
  jboolean jForceOverrideFixedBase, jboolean jUseMultiBody, jint jFlags)
 {
@@ -1462,7 +1436,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_loadURDF
   return results;
 }
 
-JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadSDF
+JNIEXPORT jintArray Java_edu_berkeley_bid_bullet_Bullet_loadSDF
 (JNIEnv *env, jobject jRoboSimAPI, jstring jfname, jboolean jForceOverrideFixedBase, jboolean jUseMultiBody)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1489,7 +1463,7 @@ JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadSDF
   return results;
 }
 
-JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadMJCF
+JNIEXPORT jintArray Java_edu_berkeley_bid_bullet_Bullet_loadMJCF
 (JNIEnv *env, jobject jRoboSimAPI, jstring jfname)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1512,7 +1486,7 @@ JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadMJCF
   return results;
 }
 
-JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadBullet
+JNIEXPORT jintArray Java_edu_berkeley_bid_bullet_Bullet_loadBullet
 (JNIEnv *env, jobject jRoboSimAPI, jstring jfname)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1535,7 +1509,7 @@ JNIEXPORT jintArray Java_edu_berkeley_bid_Bullet_loadBullet
   return results;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyInfo
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getBodyInfo
 (JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBodyInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1551,7 +1525,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyInfo
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBasePositionAndOrientation
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getBasePositionAndOrientation
 (JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBasePosition, jobject jBaseOrient)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1563,7 +1537,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBasePositionAndOrientation
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetBasePositionAndOrientation
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_resetBasePositionAndOrientation
 (JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBasePosition, jobject jBaseOrient)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1573,7 +1547,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetBasePositionAndOrientation
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBaseVelocity
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getBaseVelocity
 (JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBaseVelocity, jobject jBaseAngularV)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1585,7 +1559,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBaseVelocity
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetBaseVelocity
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_resetBaseVelocity
 (JNIEnv *env, jobject jRoboSimAPI, jint  bodyUniqueId, jobject jBaseVelocity, jobject jBaseAngularV)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1595,7 +1569,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetBaseVelocity
   return status;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumBodies
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_getNumBodies
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1603,7 +1577,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumBodies
   return nbodies;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getBodyUniqueId
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_getBodyUniqueId
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyId)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1611,7 +1585,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getBodyUniqueId
   return uid;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_removeBody
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_removeBody
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1619,7 +1593,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_removeBody
   return status;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumJoints
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_getNumJoints
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1627,7 +1601,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumJoints
   return njoints;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumConstraints
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_getNumConstraints
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1635,7 +1609,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getNumConstraints
   return nconstraints;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getConstraintUniqueId
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_getConstraintUniqueId
 (JNIEnv *env, jobject jRoboSimAPI, jint serialIndex)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1643,7 +1617,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_getConstraintUniqueId
   return uid;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointInfo
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getJointInfo
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject jJointInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1654,7 +1628,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointInfo
   return status;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createConstraint
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_createConstraint
 (JNIEnv *env, jobject jRoboSimAPI, jint parentBodyIndex, jint parentJointIndex, jint childBodyIndex, jint childJointIndex, jobject jJointInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1664,7 +1638,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createConstraint
   return constraintId;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_changeConstraint
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_changeConstraint
 (JNIEnv *env, jobject jRoboSimAPI, jint constraintId, jobject jjointInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1676,14 +1650,14 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_changeConstraint
   return retval;
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_removeConstraint
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_removeConstraint
 (JNIEnv *env, jobject jRoboSimAPI, jint constraintId)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> removeConstraint(constraintId);
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointState
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getJointState
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject state)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1693,7 +1667,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointState
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointStates
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getJointStates
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jobject state)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1704,7 +1678,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getJointStates
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetJointState
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_resetJointState
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jdouble targetValue)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1712,7 +1686,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_resetJointState
   return status;
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setJointMotorControl
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex,
  int controlMode,  double targetPosition, double targetVelocity, double force,
  double kp, double kd)
@@ -1728,7 +1702,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setJointMotorControl
   jrsa -> setJointMotorControl(bodyUniqueId, jointIndex, motorArgs);
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_setJointMotorControlArray
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_setJointMotorControlArray
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId,  jintArray jjointIndices, int controlMode,
  jdoubleArray jtargetPositions, jdoubleArray jtargetVelocities, jdoubleArray jforces, jdoubleArray jkps, jdoubleArray jkds)
 {
@@ -1804,35 +1778,35 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_setJointMotorControlArray
 
 
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_stepSimulation
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_stepSimulation
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> stepSimulation();
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_canSubmitCommand
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_canSubmitCommand
 (JNIEnv *env, jobject jRoboSimAPI)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   return jrsa -> canSubmitCommand();
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setRealTimeSimulation
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setRealTimeSimulation
 (JNIEnv *env, jobject jRoboSimAPI, jboolean enableRealTimeSimulation)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setRealTimeSimulation(enableRealTimeSimulation);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setInternalSimFlags
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setInternalSimFlags
 (JNIEnv *env, jobject jRoboSimAPI, jint flags)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setInternalSimFlags(flags);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setGravity
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setGravity
 (JNIEnv *env, jobject jRoboSimAPI, jobject jgravity)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -1840,35 +1814,35 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_setGravity
   jrsa -> setGravity(gravity);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setTimeStep
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setTimeStep
 (JNIEnv *env, jobject jRoboSimAPI, jdouble t)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setTimeStep(t);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setNumSimulationSubSteps
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setNumSimulationSubSteps
 (JNIEnv *env, jobject jRoboSimAPI, jint numSubSteps)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setNumSimulationSubSteps(numSubSteps);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setNumSolverIterations
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setNumSolverIterations
 (JNIEnv *env, jobject jRoboSimAPI, jint numSolverIterations)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setNumSolverIterations(numSolverIterations);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_setContactBreakingThreshold
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_setContactBreakingThreshold
 (JNIEnv *env, jobject jRoboSimAPI, jdouble threshold)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> setContactBreakingThreshold(threshold);
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseKinematics
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_calculateInverseKinematics
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint endEffectorLinkIndex,
  jdoubleArray jendEffectorTargetPosition, jdoubleArray jendEffectorTargetOrientation, 
  jdoubleArray jlowerLimits, jdoubleArray jupperLimits, jdoubleArray jjointRanges, jdoubleArray jrestPoses,
@@ -1965,7 +1939,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseKinematics
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseDynamics
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_calculateInverseDynamics
 (JNIEnv *env, jobject jRoboSimAPI, int bodyUniqueId, jdoubleArray jjointPositions, jdoubleArray jjointVelocities,
  jdoubleArray jjointAccelerations, jdoubleArray jjointForcesOutput) 
 {
@@ -1998,7 +1972,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_calculateInverseDynamics
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyJacobian
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getBodyJacobian
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, jdoubleArray jlocalPosition, jdoubleArray jjointPositions,
  jdoubleArray jjointVelocities, jdoubleArray jjointAccelerations, jdoubleArray jlinearJacobian, jdoubleArray jangularJacobian)
 {
@@ -2038,7 +2012,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getBodyJacobian
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getDynamicsInfo
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getDynamicsInfo
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint jointIndex, jobject jDynamicsInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2048,7 +2022,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getDynamicsInfo
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_changeDynamics
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_changeDynamics
 (JNIEnv *env, jobject jRoboSimAPI,
  jint bodyUniqueId, jint linkIndex, jdouble mass, jdouble lateralFriction, jdouble spinningFriction,
  jdouble rollingFriction, jdouble restitution, jdouble linearDamping, jdouble angularDamping,
@@ -2073,7 +2047,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_changeDynamics
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getLinkState
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getLinkState
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, int computeLinkVelocity, int computeForwardKinematics, jobject jlinkState)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2083,14 +2057,14 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getLinkState
   return status; 
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_configureDebugVisualizer
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_configureDebugVisualizer
 (JNIEnv *env, jobject jRoboSimAPI, jint flags, jint enable)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> configureDebugVisualizer((b3ConfigureDebugVisualizerEnum)flags, enable);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_resetDebugVisualizerCamera
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_resetDebugVisualizerCamera
 (JNIEnv *env, jobject jRoboSimAPI, jdouble cameraDistance, jdouble cameraPitch, jdouble cameraYaw, jobject jtargetPos)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2098,7 +2072,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_resetDebugVisualizerCamera
   jrsa -> resetDebugVisualizerCamera(cameraDistance, cameraPitch, cameraYaw, targetPos);
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_startStateLogging
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_startStateLogging
 (JNIEnv *env, jobject jRoboSimAPI, jint loggingType, jstring jfileName, jintArray jobjectUniqueIds, jint maxLogDof)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2121,40 +2095,32 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_startStateLogging
   return logid;
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_stopStateLogging
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_stopStateLogging
 (JNIEnv *env, jobject jRoboSimAPI, jint stateLoggerUniqueId)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   jrsa -> stopStateLogging(stateLoggerUniqueId);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_getKeyboardEventsData
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_getKeyboardEventsData
 (JNIEnv *env, jobject jRoboSimAPI, jobject jkeyboardEventsData)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   struct b3KeyboardEventsData keyboardEventsData;
   jrsa -> getKeyboardEvents(&keyboardEventsData);
   nativeKeyboardEventsDataToJava(env, jkeyboardEventsData, keyboardEventsData);
-  if (keyboardEventsData.m_keyboardEvents != NULL) {
-    //    delete [] keyboardEventsData.m_keyboardEvents;
-    keyboardEventsData.m_keyboardEvents = NULL;
-  }
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_getMouseEventsData
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_getMouseEventsData
 (JNIEnv *env, jobject jRoboSimAPI, jobject jmouseEventsData)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
   struct b3MouseEventsData mouseEventsData;
   jrsa -> getMouseEvents(&mouseEventsData);
   nativeMouseEventsDataToJava(env, jmouseEventsData, mouseEventsData);
-  if (mouseEventsData.m_mouseEvents != NULL) {
-    //    delete [] mouseEventsData.m_mouseEvents;
-    //    mouseEventsData.m_mouseEvents = NULL;
-  }
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_submitProfileTiming
 (JNIEnv *env, jobject jRoboSimAPI, jstring jprofileName, int durationInMicroseconds)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2166,7 +2132,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_submitProfileTiming
   env->ReleaseStringUTFChars(jprofileName, profileName);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrix
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_computeViewMatrix
 (JNIEnv *env, jobject obj, jfloatArray jcameraPosition, jfloatArray jcameraTargetPosition,
  jfloatArray jcameraUp, jfloatArray jviewMatrix)
 {
@@ -2197,7 +2163,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrix
   env->ReleasePrimitiveArrayCritical(jcameraPosition, cameraPosition, 0);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrixFromYawPitchRoll
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_computeViewMatrixFromYawPitchRoll
 (JNIEnv *env, jobject obj, jfloatArray jcameraTargetPosition, jfloat distance,
  jfloat yaw, jfloat pitch, jfloat roll, jint upAxisIndex, jfloatArray jviewMatrix)
 {
@@ -2218,7 +2184,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeViewMatrixFromYawPitchRoll
   env->ReleasePrimitiveArrayCritical(jviewMatrix, viewMatrix, 0);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeProjectionMatrix
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_computeProjectionMatrix
 (JNIEnv *env, jobject obj, jfloat left, jfloat right, jfloat bottom, jfloat top,
  jfloat nearVal, jfloat farVal, jfloatArray jprojectionMatrix)
 {
@@ -2233,7 +2199,7 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeProjectionMatrix
   env->ReleasePrimitiveArrayCritical(jprojectionMatrix, projectionMatrix, 0);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_computeProjectionMatrixFOV
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_computeProjectionMatrixFOV
 (JNIEnv *env, jobject obj, jfloat fov, jfloat aspect, jfloat nearVal, jfloat farVal, jfloatArray jprojectionMatrix)
 {
   float *projectionMatrix = NULL;
@@ -2299,7 +2265,7 @@ jboolean getCameraImageBasic
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getCameraImage
 (JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
  jfloatArray jlightDirection, jfloatArray jlightColor,
@@ -2307,7 +2273,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
  jfloat lightAmbientCoeff, jfloat lightDiffuseCoeff, jfloat lightSpecularCoeff,
  jint renderer, jobject jcameraImage)
 {
-  struct b3CameraImageData cameraImage = allocCameraImage(width, height);
+  struct b3CameraImageData cameraImage;
   jboolean status = getCameraImageBasic(env, jRoboSimAPI, width, height,
 					jviewMatrix, jprojectionMatrix,
 					jlightDirection, jlightColor,
@@ -2316,11 +2282,10 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImage
 					renderer, cameraImage);
   nativeCameraImageDataToJava(env, jcameraImage, cameraImage);
 
-  deleteCameraImageFields(cameraImage);
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getCameraImageInts
 (JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
  jfloatArray jlightDirection, jfloatArray jlightColor,
@@ -2330,7 +2295,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
 {
   int i;
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3CameraImageData cameraImage = allocCameraImage(width, height);
+  struct b3CameraImageData cameraImage;
   int *rgbColorData = NULL;
   float *depthValues = NULL;
   int *segmentationMaskValues = NULL;
@@ -2372,11 +2337,10 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageInts
     env->ReleasePrimitiveArrayCritical(jsegmentationMaskValues, segmentationMaskValues, 0);
   }
 
-  deleteCameraImageFields(cameraImage);
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getCameraImageBytes
 (JNIEnv *env, jobject jRoboSimAPI, jint width, jint height,
  jfloatArray jviewMatrix, jfloatArray jprojectionMatrix,
  jfloatArray jlightDirection, jfloatArray jlightColor,
@@ -2385,7 +2349,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
  jint renderer, jbyteArray jrgbColorData, jfloatArray jdepthValues, jintArray jsegmentationMaskValues)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
-  struct b3CameraImageData cameraImage = allocCameraImage(width, height);
+  struct b3CameraImageData cameraImage;
   char *rgbColorData = NULL;
   float *depthValues = NULL;
   int *segmentationMaskValues = NULL;
@@ -2425,12 +2389,11 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getCameraImageBytes
     env->ReleasePrimitiveArrayCritical(jsegmentationMaskValues, segmentationMaskValues, 0);
   }
 
-  deleteCameraImageFields(cameraImage);
   return status;
 }
 
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_addUserDebugText
 (JNIEnv *env, jobject jRoboSimAPI, jstring jtext, jdoubleArray jpositionXYZ, jdoubleArray jorientation, jdoubleArray jcolorRGB,
  jdouble size, jdouble lifeTime, jint parentObjectUniqueId, jint parentLinkIndex)
 {
@@ -2485,7 +2448,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugText
   return iparam;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugLine
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_addUserDebugLine
 (JNIEnv *env, jobject jRoboSimAPI, jdoubleArray jfromXYZ, jdoubleArray jtoXYZ, jdoubleArray jcolorRGB,
  jdouble lineWidth, jdouble lifeTime, jint parentObjectUniqueId, jint parentLinkIndex)
 {
@@ -2525,7 +2488,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugLine
   return iparam;
 }
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugParameter
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_addUserDebugParameter
 (JNIEnv *env, jobject jRoboSimAPI, jstring jparamName, jdouble rangeMin, jdouble rangeMax, jdouble startValue)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2537,7 +2500,7 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_addUserDebugParameter
   return iparam;
 }
 
-JNIEXPORT jdouble Java_edu_berkeley_bid_Bullet_readUserDebugParameter
+JNIEXPORT jdouble Java_edu_berkeley_bid_bullet_Bullet_readUserDebugParameter
 (JNIEnv *env, jobject jRoboSimAPI, jint itemUniqueId)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2547,7 +2510,7 @@ JNIEXPORT jdouble Java_edu_berkeley_bid_Bullet_readUserDebugParameter
   return dvalue;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_removeUserDebugItem
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_removeUserDebugItem
 (JNIEnv *env, jobject jRoboSimAPI, jint itemUniqueId)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2557,7 +2520,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_removeUserDebugItem
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_setPhysicsEngineParameter
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_setPhysicsEngineParameter
 (JNIEnv *env, jobject jRoboSimAPI,
  jdouble fixedTimeStep, jint numSolverIterations, jint useSplitImpulse, jdouble splitImpulsePenetrationThreshold,
  jint numSubSteps, jint collisionFilterMode, jdouble contactBreakingThreshold,  jint maxNumCmdPer1ms,
@@ -2584,7 +2547,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_setPhysicsEngineParameter
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_applyExternalForce
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_applyExternalForce
 (JNIEnv *env, jobject jRoboSimAPI,
  jint objectUniqueId, jint linkIndex, jdoubleArray jforce, jdoubleArray jposition, jint flags)
 {
@@ -2606,7 +2569,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_applyExternalForce
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_applyExternalTorque
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_applyExternalTorque
 (JNIEnv *env, jobject jRoboSimAPI,
  jint objectUniqueId, jint linkIndex, jdoubleArray jtorque, jint flags)
 {
@@ -2623,7 +2586,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_applyExternalTorque
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_enableJointForceTorqueSensor
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_enableJointForceTorqueSensor
 (JNIEnv *env, jobject jRoboSimAPI,
  jint objectUniqueId, jint linkIndex, jboolean enable)
 {
@@ -2634,7 +2597,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_enableJointForceTorqueSensor
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getDebugVisualizerCamera
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getDebugVisualizerCamera
 (JNIEnv *env, jobject jRoboSimAPI, jobject jcameraInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2647,7 +2610,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getDebugVisualizerCamera
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getContactPoints
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getContactPoints
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueIdA, jint bodyUniqueIdB, jint linkIndexA, jint linkIndexB, jobject jcontactInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2666,7 +2629,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getContactPoints
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getClosestPoints
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getClosestPoints
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueIdA, jint bodyUniqueIdB, jfloat distance, jint linkIndexA, jint linkIndexB, jobject jcontactInfo)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2685,7 +2648,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getClosestPoints
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getOverlappingObjects
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getOverlappingObjects
 (JNIEnv *env, jobject jRoboSimAPI, jdoubleArray jAABBMin, jdoubleArray jAABBMax, jobject joverlapData)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2705,18 +2668,13 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getOverlappingObjects
 
   nativeAABBOverlapDataToJava(env, joverlapData, overlapData);
 
-  if (overlapData.m_overlappingObjects != NULL) {
-    //    delete [] overlapData.m_overlappingObjects;
-    //    overlapData.m_overlappingObjects = NULL;
-  }
-
   env->ReleasePrimitiveArrayCritical(jAABBMax, AABBMax, 0);
   env->ReleasePrimitiveArrayCritical(jAABBMin, AABBMin, 0);
 
   return status;
 }
 
-JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getAABB
+JNIEXPORT jboolean Java_edu_berkeley_bid_bullet_Bullet_getAABB
 (JNIEnv *env, jobject jRoboSimAPI, jint bodyUniqueId, jint linkIndex, jdoubleArray jAABBMin, jdoubleArray jAABBMax)
 {
   b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
@@ -2739,7 +2697,7 @@ JNIEXPORT jboolean Java_edu_berkeley_bid_Bullet_getAABB
 }
 
 
-JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createCollisionShape
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_createCollisionShape
 (JNIEnv *env, jobject jRoboSimAPI, jint shapeType, jdouble radius, jdoubleArray jhalfExtents, jdouble height,
  jstring jfileName, jdoubleArray jmeshScale, jdoubleArray jplaneNormal, jint flags)
 {
@@ -2785,21 +2743,21 @@ JNIEXPORT jint Java_edu_berkeley_bid_Bullet_createCollisionShape
   return objectId;
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testMatrix3x3
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   b3Matrix3x3 m = javaMatrix3x3ToNative(env, min);
   nativeMatrix3x3ToJava(env, mout, m);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testTransform3
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testTransform3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   b3Transform m = javaTransform3ToNative(env, min);
   nativeTransform3ToJava(env, mout, m);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointInfo
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testJointInfo
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   b3JointInfo *jointInfo = javaJointInfoToNative(env, min);
@@ -2807,56 +2765,56 @@ JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointInfo
   deleteJointInfo(jointInfo);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointSensorState
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testJointSensorState
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   b3JointSensorState m = javaJointSensorStateToNative(env, min);
   nativeJointSensorStateToJava(env, mout, m);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testJointStates2
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testJointStates2
 (JNIEnv *env, jobject obj, jobject min, jobject mout, jint numJoints)
 {
   b3JointStates2 m = javaJointStates2ToNative(env, min, numJoints);
   nativeJointStates2ToJava(env, mout, m, numJoints);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testLinkState
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testLinkState
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   struct b3LinkState m = javaLinkStateToNative(env, min);
   nativeLinkStateToJava(env, mout, m);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testKeyboardEventsData
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testKeyboardEventsData
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   struct b3KeyboardEventsData m = javaKeyboardEventsDataToNative(env, min);
   nativeKeyboardEventsDataToJava(env, mout, m);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testCameraImageData
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testCameraImageData
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   struct b3CameraImageData m = javaCameraImageDataToNative(env, min);
   nativeCameraImageDataToJava(env, mout, m);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testDynamicsInfo
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testDynamicsInfo
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   b3DynamicsInfo dynamicsInfo = javaDynamicsInfoToNative(env, min);
   nativeDynamicsInfoToJava(env, mout, dynamicsInfo);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testDebugVisualizerCameraInfo
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testDebugVisualizerCameraInfo
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   b3OpenGLVisualizerCameraInfo cameraInfo = javaDebugVisualizerCameraInfoToNative(env, min);
   nativeDebugVisualizerCameraInfoToJava(env, mout, cameraInfo);
 }
 
-JNIEXPORT void Java_edu_berkeley_bid_Bullet_testContactPointData
+JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testContactPointData
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {
   b3ContactPointData contactData = javaContactPointDataToNative(env, min);

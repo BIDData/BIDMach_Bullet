@@ -1,10 +1,8 @@
 import BIDMach.rl.environments.bullet._
-import BIDMach.rl.environments.Bullet
-import BIDMach.rl.environments.Bullet._
 
 val p = new Bullet;
 
-p.connect(eCONNECT_GUI);
+p.connect(p.GUI);
 
 p.resetSimulation()
 
@@ -28,7 +26,7 @@ val inactive_wheels = Array(3,5,7);
 val wheels = Array(2);
 
 for (wheel <- inactive_wheels) {
-    p.setJointMotorControl(car,wheel,VELOCITY_CONTROL,targetVelocity=0, force=0);
+    p.setJointMotorControl(car,wheel,p.VELOCITY_CONTROL,targetVelocity=0, force=0);
 }
 	
 val steering = Array(4,6);
@@ -43,11 +41,11 @@ while (true) {
     //    print(targetVelocity);
 	
     for (wheel <- wheels) {
-	p.setJointMotorControl(car,wheel,VELOCITY_CONTROL,targetVelocity=targetVelocity,force=maxForce);
+	p.setJointMotorControl(car,wheel,p.VELOCITY_CONTROL,targetVelocity=targetVelocity,force=maxForce);
     }
     
     for (steer <- steering) {
-	p.setJointMotorControl(car,steer,POSITION_CONTROL,targetPosition=steeringAngle);
+	p.setJointMotorControl(car,steer,p.POSITION_CONTROL,targetPosition=steeringAngle);
     }
 
     if (! useRealTimeSim) {
