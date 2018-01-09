@@ -1,5 +1,5 @@
 package BIDMach.rl.environments.bullet;
-import BIDMat.{FMat,DMat,Quaternion};
+import BIDMat.{FMat,DMat,IMat,Quaternion};
 import BIDMat.MatFunctions._;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.ListBuffer;
@@ -11,7 +11,7 @@ class Minitaur(val p:Bullet, val urdfRootPath:String = "") {
     var kd:Double = 0;
     var maxForce:Double = 0;
     var nMotors:Int = 0;
-    var motorIdList:ListBuffer[Int] = null;
+    var motorIdList:IMat = null;
     var jointNameToId:HashMap[String,Int] = null;
     var motorDir:DMat = null;
 
@@ -30,14 +30,14 @@ class Minitaur(val p:Bullet, val urdfRootPath:String = "") {
     };
 
     def buildMotorIdList() = {
-	motorIdList.append(jointNameToId("motor_front_leftL_joint"));
-	motorIdList.append(jointNameToId("motor_front_leftR_joint"));
-	motorIdList.append(jointNameToId("motor_back_leftL_joint"));
-	motorIdList.append(jointNameToId("motor_back_leftR_joint"));
-	motorIdList.append(jointNameToId("motor_front_rightL_joint"));
-	motorIdList.append(jointNameToId("motor_front_rightR_joint"));
-	motorIdList.append(jointNameToId("motor_back_rightL_joint"));
-	motorIdList.append(jointNameToId("motor_back_rightR_joint"));
+	motorIdList = irow(jointNameToId("motor_front_leftL_joint"),
+			   jointNameToId("motor_front_leftR_joint"),
+			   jointNameToId("motor_back_leftL_joint"),
+			   jointNameToId("motor_back_leftR_joint"),
+			   jointNameToId("motor_front_rightL_joint"),
+			   jointNameToId("motor_front_rightR_joint"),
+			   jointNameToId("motor_back_rightL_joint"),
+			   jointNameToId("motor_back_rightR_joint"));
     };
 
 
@@ -47,7 +47,6 @@ class Minitaur(val p:Bullet, val urdfRootPath:String = "") {
 	kd = 0.1;
 	maxForce = 3.5;
 	nMotors = 8;
-	motorIdList = ListBuffer.empty[Int];
 	jointNameToId = new HashMap[String,Int]();
 	motorDir = drow(-1, -1, -1, -1, 1, 1, 1, 1);
 
