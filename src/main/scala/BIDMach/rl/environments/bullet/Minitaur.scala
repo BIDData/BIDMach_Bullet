@@ -2,7 +2,6 @@ package BIDMach.rl.environments.bullet;
 import BIDMat.{FMat,DMat,IMat,Quaternion};
 import BIDMat.MatFunctions._;
 import scala.collection.mutable.HashMap;
-import scala.collection.mutable.ListBuffer;
 
 class Minitaur(val p:Bullet, val urdfRootPath:String = "") {
 
@@ -12,8 +11,8 @@ class Minitaur(val p:Bullet, val urdfRootPath:String = "") {
     var maxForce:Double = 0;
     var nMotors:Int = 0;
     var motorIdList:IMat = null;
-    var jointNameToId:HashMap[String,Int] = null;
     var motorDir:DMat = null;
+    var jointNameToId:HashMap[String,Int] = null;
 
     reset();
 
