@@ -1,0 +1,20 @@
+import BIDMach.rl.environments.bullet._
+
+val p = new Bullet;
+
+val timeStep = 0.01;
+var c = p.connect(p.SHARED_MEMORY);
+if (!c) {
+    c = p.connect(p.GUI);
+}
+val params = drow(0.1903581461951056, 0.0006732219568880068, 0.05018085615283363, 3.219916795483583, 6.2406418167980595, 4.189869754607539);
+val evaluate_func = "evaluate_desired_motorAngle_2Amplitude4Phase";
+val energy_weight = 0.01;
+
+val minitaureval = new MinitaurEval(p, "/code/bullet3/data/");
+
+val finalReturn = minitaureval.evaluate_params(evaluateFunc = evaluate_func, params=params, objectiveParams=drow(energy_weight),
+                                               timeStep=timeStep, sleepTime=timeStep, maxNumSteps = 10000);
+
+print(finalReturn);
+

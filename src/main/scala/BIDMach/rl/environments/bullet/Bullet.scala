@@ -98,6 +98,10 @@ class Bullet {
     def getEulerFromQuaternion(q:BIDMat.Quaternion):FMat =
 	Bullet.getEulerFromQuaternion(q);
 
+    def getMatrixFromQuaternion(q:BIDMat.Quaternion):FMat = {
+	q.toRotMat;
+    };
+
     def getNumJoints(bodyUniqueId:Int):Int = {
 	javaBullet.getNumJoints(bodyUniqueId);
     };
@@ -703,6 +707,10 @@ object Bullet {
 	val q0 = BIDMatQtoJavaQ(q);
 	edu.berkeley.bid.bullet.Bullet.getEulerFromQuaternion(q0, v);
 	fromVector3ToFMat(v);
+    };
+
+    def getMatrixFromQuaternion(q:BIDMat.Quaternion):FMat = {
+	q.toRotMat;
     };
 
     def computeViewMatrix(cameraPosition:FMat, cameraTargetPosition:FMat, cameraUp:FMat):FMat = {
