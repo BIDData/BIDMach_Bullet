@@ -50,6 +50,7 @@ class Minitaur(val p:Bullet, val urdfRootPath:String = "") {
 	motorIdList = ListBuffer.empty[Int];
 	jointNameToId = new HashMap[String,Int]();
 	motorDir = drow(-1, -1, -1, -1, 1, 1, 1, 1);
+
 	buildJointNameToIdDict();
 	buildMotorIdList();
     };
@@ -132,32 +133,29 @@ class Minitaur(val p:Bullet, val urdfRootPath:String = "") {
     };
 
     def getMotorAngles() = {
-	val motorAngles = ListBuffer.empty[Double];
+	val motorAngles = dzeros(1, nMotors);
 	for (i <- 0 until nMotors) {
 	    val jointState = p.getJointState(quadruped, motorIdList(i));
-	    motorAngles.append(jointState.position);
+	    motorAngles(i) = jointState.position;
 	}
-	val mmotorAngles = drow(motorAngles.toArray) *@ motorDir;
-	mmotorAngles;
+	motorAngles *@ motorDir;
     };
 	
     def getMotorVelocities() = {
-	val motorVelocities = ListBuffer.empty[Double];
+	val motorVelocities = dzeros(1, nMotors);
 	for (i <- 0 until nMotors) {
 	    val jointState = p.getJointState(quadruped, motorIdList(i));
-	    motorVelocities.append(jointState.velocity);
+	    motorVelocities(i) = jointState.velocity;
 	}
-	val mmotorVelocities = drow(motorVelocities.toArray) *@ motorDir;
-	mmotorVelocities;
+	motorVelocities *@ motorDir;
     };
 
     def getMotorTorques() = {
-	val motorTorques = ListBuffer.empty[Double];
+	val motorTorques = dzeros(1, nMotors);
 	for (i <- 0 until nMotors) {
 	    val jointState = p.getJointState(quadruped, motorIdList(i));
-	    motorTorques.append(jointState.motorTorque);
+	    motorTorques(i) = jointState.motorTorque;
 	}
-	val mmotorTorques = drow(motorTorques.toArray) *@ motorDir;
-	mmotorTorques;
+	motorTorques *@ motorDir;
     }
 }
