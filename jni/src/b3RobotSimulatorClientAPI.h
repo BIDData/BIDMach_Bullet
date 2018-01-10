@@ -350,6 +350,50 @@ struct b3RobotSimulatorCreateCollisionShapeArgs
 
 };
 
+struct b3RobotSimulatorCreateMultiBodyArgs
+{
+  double m_baseMass;
+  int m_baseCollisionShapeIndex;
+  int m_baseVisualShapeIndex;
+  b3Vector3 m_basePosition;
+  b3Quaternion m_baseOrientation;
+  b3Vector3 m_baseInertialFramePosition;
+  b3Quaternion m_baseInertialFrameOrientation;
+
+  int m_numLinks;
+  double *m_linkMasses;
+  int *m_linkCollisionShapeIndices;
+  int *m_linkVisualShapeIndices;
+  b3Vector3 *m_linkPositions;
+  b3Quaternion *m_linkOrientations;
+  b3Vector3 *m_linkInertialFramePositions;
+  b3Quaternion *m_linkInertialFrameOrientations;
+  int *m_linkParentIndices;
+  int *m_linkJointTypes;
+  b3Vector3 *m_linkJointAxes;
+  
+  int m_useMaximalCoordinates;
+
+  b3RobotSimulatorCreateMultiBodyArgs()
+    : m_numLinks(0), m_baseMass(0), m_baseCollisionShapeIndex(-1), m_baseVisualShapeIndex(-1), m_useMaximalCoordinates(0), 
+      m_linkMasses(NULL), 
+      m_linkCollisionShapeIndices(NULL), 
+      m_linkVisualShapeIndices(NULL), 
+      m_linkPositions(NULL), 
+      m_linkOrientations(NULL), 
+      m_linkInertialFramePositions(NULL), 
+      m_linkInertialFrameOrientations(NULL), 
+      m_linkParentIndices(NULL), 
+      m_linkJointTypes(NULL), 
+      m_linkJointAxes(NULL)      
+  {
+    m_basePosition.setValue(0,0,0);
+    m_baseOrientation.setValue(0,0,0,1);
+    m_baseInertialFramePosition.setValue(0,0,0);
+    m_baseInertialFrameOrientation.setValue(0,0,0,1);
+  }
+};
+
 ///The b3RobotSimulatorClientAPI is pretty much the C++ version of pybullet
 ///as documented in the pybullet Quickstart Guide
 ///https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA
@@ -508,6 +552,8 @@ public:
 	bool getAABB(int bodyUniqueId, int linkIndex, b3Vector3 &aabbMin, b3Vector3 &aabbMax);
 
         int createCollisionShape(int shapeType, struct b3RobotSimulatorCreateCollisionShapeArgs &args);
+
+        int createMultiBody(struct b3RobotSimulatorCreateMultiBodyArgs &args);
 
         int getNumConstraints() const;
 

@@ -3,7 +3,19 @@
 #include <../examples/SharedMemory/PhysicsClientC_API.h>
 #include <string.h>
 
-// JFC: This struct added here because its in b3RobotSimulatorClient.cpp but not in any header. 
+// JFC: This struct added here because its in b3RobotSimulatorClient.cpp but not in any header.
+
+static void floatToDouble3(float a[3], double b[3]) {
+  for (int i = 0; i < 3; i++) {
+    b[i] = a[i];
+  }
+}
+
+static void floatToDouble4(float a[4], double b[4]) {
+  for (int i = 0; i < 4; i++) {
+    b[i] = a[i];
+  }
+}
 struct b3RobotSimulatorClientAPI_InternalData
 {
 	b3PhysicsClientHandle m_physicsClientHandle;
@@ -121,6 +133,7 @@ bool b3RobotSimulatorClientAPI::calculateInverseDynamics(int bodyUniqueId, doubl
   int statusType;
   b3SharedMemoryCommandHandle commandHandle = b3CalculateInverseDynamicsCommandInit(m_data->m_physicsClientHandle, bodyUniqueId, jointPositions,
 										    jointVelocities, jointAccelerations);
+  
   statusHandle = b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, commandHandle);
 
   statusType = b3GetStatusType(statusHandle);
@@ -166,6 +179,7 @@ bool b3RobotSimulatorClientAPI::removeBody(int bodyUniqueId)
   
   b3SharedMemoryStatusHandle statusHandle;
   int statusType;
+  
   if (b3CanSubmitCommand(m_data->m_physicsClientHandle)) {
     statusHandle = b3SubmitClientCommandAndWaitStatus(m_data->m_physicsClientHandle, b3InitRemoveBodyCommand(m_data->m_physicsClientHandle, bodyUniqueId));
     statusType = b3GetStatusType(statusHandle);
@@ -856,6 +870,7 @@ int b3RobotSimulatorClientAPI::createCollisionShape(int shapeType, struct b3Robo
   int statusType;
   int shapeIndex = -1;
 
+  command = b3CreateCollisionShapeCommandInit(sm);
 
   if (shapeType==GEOM_SPHERE && args.m_radius>0) {
     shapeIndex = b3CreateCollisionShapeAddSphere(command, args.m_radius);
@@ -883,6 +898,79 @@ int b3RobotSimulatorClientAPI::createCollisionShape(int shapeType, struct b3Robo
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
   statusType = b3GetStatusType(statusHandle);
   if (statusType == CMD_CREATE_COLLISION_SHAPE_COMPLETED) {
+    int uid = b3GetStatusCollisionShapeUniqueId(statusHandle);
+    return uid;
+  }
+  return -1;
+}
+
+int b3RobotSimulatorClientAPI::createMultiBody(struct b3RobotSimulatorCreateMultiBodyArgs &args)
+{
+  b3PhysicsClientHandle sm = m_data->m_physicsClientHandle;
+  if (sm == 0) {
+    b3Warning("Not connected");
+    return false;
+  }
+  b3SharedMemoryCommandHandle command;
+  b3SharedMemoryStatusHandle statusHandle;
+  int statusType, baseIndex;
+
+  double doubleBasePosition[3];
+  double doubleBaseInertialFramePosition[3];
+  floatToDouble3(args.m_basePosition.m_floats, doubleBasePosition);
+  floatToDouble3(args.m_baseInertialFramePosition.m_floats, doubleBaseInertialFramePosition);
+
+  double doubleBaseOrientation[4];
+  double doubleBaseInertialFrameOrientation[4];
+  floatToDouble4(args.m_baseOrientation.m_floats, doubleBaseOrientation);
+  floatToDouble4(args.m_baseInertialFrameOrientation.m_floats, doubleBaseInertialFrameOrientation);
+
+  command = b3CreateMultiBodyCommandInit(sm);
+
+  baseIndex = b3CreateMultiBodyBase(command, args.m_baseMass, args.m_baseCollisionShapeIndex, args.m_baseVisualShapeIndex,
+				    doubleBasePosition, doubleBaseOrientation, doubleBaseInertialFramePosition, doubleBaseInertialFrameOrientation);
+
+  for (int i = 0; i < args.m_numLinks; i++) {
+    double linkMass = args.m_linkMasses[i];
+    int linkCollisionShapeIndex = args.m_linkCollisionShapeIndices[i];
+    int linkVisualShapeIndex = args.m_linkVisualShapeIndices[i];
+    b3Vector3 linkPosition = args.m_linkPositions[i];
+    b3Quaternion linkOrientation = args.m_linkOrientations[i];
+    b3Vector3 linkInertialFramePosition = args.m_linkInertialFramePositions[i];
+    b3Quaternion linkInertialFrameOrientation = args.m_linkInertialFrameOrientations[i];
+    int linkParentIndex = args.m_linkParentIndices[i];
+    int linkJointType = args.m_linkJointTypes[i];
+    b3Vector3 linkJointAxis = args.m_linkJointAxes[i];
+
+    double doubleLinkPosition[3];
+    double doubleLinkInertialFramePosition[3];
+    double doubleLinkJointAxis[3];
+    floatToDouble3(linkPosition.m_floats, doubleLinkPosition);
+    floatToDouble3(linkInertialFramePosition.m_floats, doubleLinkInertialFramePosition);
+    floatToDouble3(linkJointAxis.m_floats, doubleLinkJointAxis);
+    
+    double doubleLinkOrientation[4];
+    double doubleLinkInertialFrameOrientation[4];
+    floatToDouble4(linkOrientation.m_floats, doubleLinkOrientation);
+    floatToDouble4(linkInertialFrameOrientation.m_floats, doubleLinkInertialFrameOrientation);
+    
+    b3CreateMultiBodyLink(command, 
+			  linkMass, 
+			  linkCollisionShapeIndex, 
+			  linkVisualShapeIndex, 
+			  doubleLinkPosition, 
+			  doubleLinkOrientation,
+			  doubleLinkInertialFramePosition,
+			  doubleLinkInertialFrameOrientation,
+			  linkParentIndex,
+			  linkJointType,
+			  doubleLinkJointAxis
+			  );    
+  }
+
+  statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
+  statusType = b3GetStatusType(statusHandle);
+  if (statusType == CMD_CREATE_MULTI_BODY_COMPLETED) {
     int uid = b3GetStatusCollisionShapeUniqueId(statusHandle);
     return uid;
   }

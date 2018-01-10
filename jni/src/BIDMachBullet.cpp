@@ -2743,6 +2743,110 @@ JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_createCollisionShape
   return objectId;
 }
 
+JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_createMultiBody
+(JNIEnv *env, jobject jRoboSimAPI, jdouble baseMass, jint baseCollisionShapeIndex, jint baseVisualShapeIndex,
+ jobject jbasePosition, jobject jbaseOrientation, jobject jbaseInertialFramePosition, jobject jbaseInertialFrameOrientation,
+ jdoubleArray jlinkMasses, jintArray jlinkCollisionShapeIndices, jintArray jlinkVisualShapeIndices,
+ jobjectArray jlinkPositions, jobjectArray jlinkOrientations, jobjectArray jlinkInertialFramePositions, jobjectArray jlinkInertialFrameOrientations,
+ jintArray jlinkParentIndices, jintArray jlinkJointTypes, jobjectArray jlinkJointAxes, jint useMaximalCoordinates)
+{
+  b3RobotSimulatorClientAPI *jrsa = getRobotSimulatorClientAPI(env, jRoboSimAPI);
+
+  struct b3RobotSimulatorCreateMultiBodyArgs args;
+
+  args.m_baseMass = baseMass;
+  args.m_baseCollisionShapeIndex = baseCollisionShapeIndex;
+  args.m_baseVisualShapeIndex = baseVisualShapeIndex;
+  
+  args.m_basePosition = javaVector3ToNative(env, jbasePosition);
+  args.m_baseOrientation = javaQuaternionToNative(env, jbaseOrientation);
+  args.m_baseInertialFramePosition = javaVector3ToNative(env, jbaseInertialFramePosition);
+  args.m_baseInertialFrameOrientation = javaQuaternionToNative(env, jbaseInertialFrameOrientation);
+
+  args.m_linkMasses = NULL;
+  args.m_linkCollisionShapeIndices = NULL;
+  args.m_linkVisualShapeIndices = NULL;
+  args.m_linkParentIndices = NULL;
+  args.m_linkJointTypes = NULL;
+
+  args.m_linkPositions = NULL;
+  args.m_linkOrientations = NULL;
+  args.m_linkInertialFramePositions = NULL;
+  args.m_linkInertialFrameOrientations = NULL;
+  args.m_linkJointAxes = NULL;
+
+  int numLinks = 0;
+
+  if (jlinkMasses != NULL) {
+    numLinks = env->GetArrayLength(jlinkMasses);
+    CHECKVALUE(jlinkCollisionShapeIndices, "createMultiBody: linkCollisionShapeIndices array is null\n", -1);
+    CHECKVALUE(jlinkVisualShapeIndices, "createMultiBody: linkVisualShapeIndices array is null\n", -1);
+    CHECKVALUE(jlinkPositions, "createMultiBody: linkPositions array is null\n", -1);
+    CHECKVALUE(jlinkOrientations, "createMultiBody: linkOrientations array is null\n", -1);
+    CHECKVALUE(jlinkInertialFramePositions, "createMultiBody: linkInertialFramePositions array is null\n", -1);
+    CHECKVALUE(jlinkInertialFrameOrientations, "createMultiBody: linkInertialFrameOrientations array is null\n", -1);
+    CHECKVALUE(jlinkParentIndices, "createMultiBody: linkParentIndices array is null\n", -1);
+    CHECKVALUE(jlinkJointTypes, "createMultiBody: linkJointTypes array is null\n", -1);
+    CHECKVALUE(jlinkJointAxes, "createMultiBody: linkJointAxes array is null\n", -1);
+    
+    CHECKDIMS(jlinkCollisionShapeIndices, numLinks, "createMultiBody: linkCollisionShapeIndices array dimension must be numLinks\n", -1);
+    CHECKDIMS(jlinkVisualShapeIndices, numLinks, "createMultiBody: linkVisualShapeIndices array dimension must be numLinks\n", -1);
+    CHECKDIMS(jlinkPositions, numLinks, "createMultiBody: linkPositions array dimension must be numLinks\n", -1);
+    CHECKDIMS(jlinkOrientations, numLinks, "createMultiBody: linkOrientations array dimension must be numLinks\n", -1);
+    CHECKDIMS(jlinkInertialFramePositions, numLinks, "createMultiBody: linkInertialFramePositions array dimension must be numLinks\n", -1);
+    CHECKDIMS(jlinkInertialFrameOrientations, numLinks, "createMultiBody: linkInertialFrameOrientations array dimension must be numLinks\n", -1);
+    CHECKDIMS(jlinkParentIndices, numLinks, "createMultiBody: linkParentIndices array dimension must be numLinks\n", -1);
+    CHECKDIMS(jlinkJointTypes, numLinks, "createMultiBody: linkJointTypes array dimension must be numLinks\n", -1);
+    CHECKDIMS(jlinkJointAxes, numLinks, "createMultiBody: linkJointAxes array dimension must be numLinks\n", -1);
+
+    args.m_linkMasses = (double *)env->GetPrimitiveArrayCritical(jlinkMasses, JNI_FALSE);
+    args.m_linkCollisionShapeIndices = (int *)env->GetPrimitiveArrayCritical(jlinkCollisionShapeIndices, JNI_FALSE);
+    args.m_linkVisualShapeIndices = (int *)env->GetPrimitiveArrayCritical(jlinkVisualShapeIndices, JNI_FALSE);
+    args.m_linkParentIndices = (int *)env->GetPrimitiveArrayCritical(jlinkParentIndices, JNI_FALSE);
+    args.m_linkJointTypes = (int *)env->GetPrimitiveArrayCritical(jlinkJointTypes, JNI_FALSE);
+
+    args.m_linkPositions = new b3Vector3[numLinks];
+    args.m_linkOrientations = new b3Quaternion[numLinks];
+    args.m_linkInertialFramePositions = new b3Vector3[numLinks];
+    args.m_linkInertialFrameOrientations = new b3Quaternion[numLinks];
+    args.m_linkJointAxes = new b3Vector3[numLinks];
+
+    for (int i = 0; i < numLinks; i++) {
+      jobject jlinkPosition = env->GetObjectArrayElement(jlinkPositions, i);
+      args.m_linkPositions[i] = javaVector3ToNative(env, jlinkPosition);
+      jobject jlinkOrientation = env->GetObjectArrayElement(jlinkOrientations, i);
+      args.m_linkOrientations[i] = javaQuaternionToNative(env, jlinkOrientation);
+      jobject jlinkInertialFramePosition = env->GetObjectArrayElement(jlinkInertialFramePositions, i);
+      args.m_linkInertialFramePositions[i] = javaVector3ToNative(env, jlinkInertialFramePosition);
+      jobject jlinkInertialFrameOrientation = env->GetObjectArrayElement(jlinkInertialFrameOrientations, i);
+      args.m_linkInertialFrameOrientations[i] = javaQuaternionToNative(env, jlinkInertialFrameOrientation);
+      jobject jlinkJointAxis = env->GetObjectArrayElement(jlinkJointAxes, i);
+      args.m_linkJointAxes[i] = javaVector3ToNative(env, jlinkJointAxis);
+    }
+  }
+
+  int bodyId = jrsa -> createMultiBody(args);
+
+  if (jlinkMasses != NULL) {
+
+    delete [] args.m_linkJointAxes;
+    delete [] args.m_linkInertialFrameOrientations;
+    delete [] args.m_linkInertialFramePositions;
+    delete [] args.m_linkOrientations;
+    delete [] args.m_linkPositions;
+
+    env->ReleasePrimitiveArrayCritical(jlinkJointTypes, args.m_linkJointTypes, 0);
+    env->ReleasePrimitiveArrayCritical(jlinkParentIndices, args.m_linkParentIndices, 0);
+    env->ReleasePrimitiveArrayCritical(jlinkVisualShapeIndices, args.m_linkVisualShapeIndices, 0);
+    env->ReleasePrimitiveArrayCritical(jlinkCollisionShapeIndices, args.m_linkCollisionShapeIndices, 0);
+    env->ReleasePrimitiveArrayCritical(jlinkMasses, args.m_linkMasses, 0);
+    
+  }
+  return bodyId;
+}
+
+
+
 JNIEXPORT void Java_edu_berkeley_bid_bullet_Bullet_testMatrix3x3
 (JNIEnv *env, jobject obj, jobject min, jobject mout)
 {

@@ -66,6 +66,13 @@ public class Bullet implements Serializable {
     public native int createCollisionShape(int shapeType, double radius, double [] halfExtents, double height,
 						  String fileName, double [] jmeshScale, double [] jplaneNormal, int flags);
 
+    public native int createMultiBody(double baseMass, int baseCollisionShapeIndex, int baseVisualShapeIndex,
+				      Vector3 basePosition, Quaternion baseOrientation,
+				      Vector3 baseInertialFramePosition, Quaternion baseInertialFrameOrientation,
+				      double [] linkMasses, int [] linkCollisionShapeIndices, int [] linkVisualShapeIndices,
+				      Vector3 [] linkPositions, Quaternion [] linkOrientations,
+				      Vector3 [] linkInertialFramePositions, Quaternion [] linkInertialFrameOrientations,
+				      int [] linkParentIndices, int [] linkJointTypes, Vector3 [] linkJointAxes, int useMaximalCoordinates);
 
     public native void stepSimulation();
 
