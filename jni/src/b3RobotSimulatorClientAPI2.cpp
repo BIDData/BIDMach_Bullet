@@ -5,13 +5,13 @@
 
 // JFC: This struct added here because its in b3RobotSimulatorClient.cpp but not in any header.
 
-static void floatToDouble3(float a[3], double b[3]) {
+static void scalarToDouble3(b3Scalar a[3], double b[3]) {
   for (int i = 0; i < 3; i++) {
     b[i] = a[i];
   }
 }
 
-static void floatToDouble4(float a[4], double b[4]) {
+static void scalarToDouble4(b3Scalar a[4], double b[4]) {
   for (int i = 0; i < 4; i++) {
     b[i] = a[i];
   }
@@ -917,13 +917,13 @@ int b3RobotSimulatorClientAPI::createMultiBody(struct b3RobotSimulatorCreateMult
 
   double doubleBasePosition[3];
   double doubleBaseInertialFramePosition[3];
-  floatToDouble3(args.m_basePosition.m_floats, doubleBasePosition);
-  floatToDouble3(args.m_baseInertialFramePosition.m_floats, doubleBaseInertialFramePosition);
+  scalarToDouble3(args.m_basePosition.m_floats, doubleBasePosition);
+  scalarToDouble3(args.m_baseInertialFramePosition.m_floats, doubleBaseInertialFramePosition);
 
   double doubleBaseOrientation[4];
   double doubleBaseInertialFrameOrientation[4];
-  floatToDouble4(args.m_baseOrientation.m_floats, doubleBaseOrientation);
-  floatToDouble4(args.m_baseInertialFrameOrientation.m_floats, doubleBaseInertialFrameOrientation);
+  scalarToDouble4(args.m_baseOrientation.m_floats, doubleBaseOrientation);
+  scalarToDouble4(args.m_baseInertialFrameOrientation.m_floats, doubleBaseInertialFrameOrientation);
 
   command = b3CreateMultiBodyCommandInit(sm);
 
@@ -945,14 +945,14 @@ int b3RobotSimulatorClientAPI::createMultiBody(struct b3RobotSimulatorCreateMult
     double doubleLinkPosition[3];
     double doubleLinkInertialFramePosition[3];
     double doubleLinkJointAxis[3];
-    floatToDouble3(linkPosition.m_floats, doubleLinkPosition);
-    floatToDouble3(linkInertialFramePosition.m_floats, doubleLinkInertialFramePosition);
-    floatToDouble3(linkJointAxis.m_floats, doubleLinkJointAxis);
+    scalarToDouble3(linkPosition.m_floats, doubleLinkPosition);
+    scalarToDouble3(linkInertialFramePosition.m_floats, doubleLinkInertialFramePosition);
+    scalarToDouble3(linkJointAxis.m_floats, doubleLinkJointAxis);
     
     double doubleLinkOrientation[4];
     double doubleLinkInertialFrameOrientation[4];
-    floatToDouble4(linkOrientation.m_floats, doubleLinkOrientation);
-    floatToDouble4(linkInertialFrameOrientation.m_floats, doubleLinkInertialFrameOrientation);
+    scalarToDouble4(linkOrientation.m_floats, doubleLinkOrientation);
+    scalarToDouble4(linkInertialFrameOrientation.m_floats, doubleLinkInertialFrameOrientation);
     
     b3CreateMultiBodyLink(command, 
 			  linkMass, 
