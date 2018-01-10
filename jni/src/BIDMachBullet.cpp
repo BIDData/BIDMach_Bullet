@@ -2825,6 +2825,9 @@ JNIEXPORT jint Java_edu_berkeley_bid_bullet_Bullet_createMultiBody
     }
   }
 
+  args.m_numLinks = numLinks;
+  args.m_useMaximalCoordinates = useMaximalCoordinates;
+
   int bodyId = jrsa -> createMultiBody(args);
 
   if (jlinkMasses != NULL) {
