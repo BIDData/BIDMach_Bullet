@@ -3,7 +3,21 @@
 #include <../examples/SharedMemory/PhysicsClientC_API.h>
 #include <string.h>
 
+
 // JFC: This struct added here because its in b3RobotSimulatorClient.cpp but not in any header.
+
+struct b3RobotSimulatorClientAPI_InternalData
+{
+	b3PhysicsClientHandle m_physicsClientHandle;
+	struct GUIHelperInterface* m_guiHelper;
+
+	b3RobotSimulatorClientAPI_InternalData()
+		: m_physicsClientHandle(0),
+		m_guiHelper(0)
+	{
+	}
+};
+
 
 static void scalarToDouble3(b3Scalar a[3], double b[3]) {
   for (int i = 0; i < 3; i++) {
@@ -16,17 +30,6 @@ static void scalarToDouble4(b3Scalar a[4], double b[4]) {
     b[i] = a[i];
   }
 }
-struct b3RobotSimulatorClientAPI_InternalData
-{
-	b3PhysicsClientHandle m_physicsClientHandle;
-	struct GUIHelperInterface* m_guiHelper;
-
-	b3RobotSimulatorClientAPI_InternalData()
-		: m_physicsClientHandle(0),
-		m_guiHelper(0)
-	{
-	}
-};
 
 bool b3RobotSimulatorClientAPI::getLinkState(int bodyUniqueId, int linkIndex, int computeLinkVelocity, int computeForwardKinematics, b3LinkState* linkState)
 {

@@ -259,7 +259,7 @@ static b3JointInfo * javaJointInfoToNative(JNIEnv *env, jobject jv) {
   char *linkName = (char *)(env->GetStringUTFChars(jLinkName, 0));
   char *jointName = (char *)(env->GetStringUTFChars(jJointName, 0));
 
-  // TODO: will need to be changed for versions > 2.8.7 since these fields change from char * to char [1024]
+  // JFC TODO: will need to be changed for versions > 2.8.7 since these fields change from char * to char [1024]
   jointInfo->m_linkName = new char[strlen(linkName)+1];
   jointInfo->m_jointName = new char[strlen(jointName)+1];
   strcpy(jointInfo->m_linkName, linkName);
