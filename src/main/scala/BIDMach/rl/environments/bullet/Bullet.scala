@@ -1,7 +1,7 @@
 package BIDMach.rl.environments.bullet;
 import edu.berkeley.bid.bullet.{Vector3,Matrix3x3}
 import BIDMat.{BMat,DMat,FMat,IMat,Quaternion};
-import BIDMat.MatFunctions;
+import BIDMat.MatFunctions._;
 
 
 class Bullet {
@@ -55,18 +55,46 @@ class Bullet {
 
     def loadSDF(fname:String, forceOverrideFixedBase:Boolean=false, useMultiBody:Boolean=true):IMat = {
 	val ints:Array[Int] = javaBullet.loadSDF(appendPathPrefix(fname), forceOverrideFixedBase, useMultiBody);
-	MatFunctions.irow(ints);
+	irow(ints);
     };
 
     def loadMJCF(fname:String):IMat = {
 	val ints:Array[Int] = javaBullet.loadMJCF(appendPathPrefix(fname));
-	MatFunctions.irow(ints);
+	irow(ints);
     };
 
     def loadBullet(fname:String):IMat = {
 	val ints:Array[Int] = javaBullet.loadBullet(appendPathPrefix(fname));
-	MatFunctions.irow(ints);
+	irow(ints);
     };
+
+    def createCollisionShape(shapeType:Int, radius:Double=0.5, halfExtents:DMat=drow(1,1,1), height:Double=1,
+			     fileName:String=null, meshScale:DMat=drow(1,1,1), planeNormal:DMat=drow(0,0,1), flags:Int=0) = {
+	
+	javaBullet.createCollisionShape(shapeType, radius, getData(halfExtents), height,
+					fileName, getData(meshScale), getData(planeNormal), flags);
+    }
+
+    def createMultiBody(baseMass:Double= -1, baseCollisionShapeIndex:Int = -1, baseVisualShapeIndex:Int = -1,
+			basePosition:FMat = null, baseOrientation:Quaternion = null,
+			baseInertialFramePosition:FMat = null, baseInertialFrameOrientation:Quaternion = null,
+
+			linkMasses:FMat = null, linkCollisionShapeIndices:IMat = null, linkVisualShapeIndices:IMat = null,
+			linkPositions:FMat = null, linkOrientations:FMat = null, 
+			linkInertialFramePositions:FMat = null, linkInertialFrameOrientations:FMat = null,
+			linkParentIndices:IMat = null, linkJointTypes:IMat = null, linkJointAxes:FMat = null, useMaximalCoordinates:Int = 0) = {
+
+	javaBullet.createMultiBody(baseMass, baseCollisionShapeIndex, baseVisualShapeIndex,
+				   fromFMatToVector3(basePosition), BIDMatQtoJavaQ(baseOrientation),
+				   fromFMatToVector3(baseInertialFramePosition), BIDMatQtoJavaQ(baseInertialFrameOrientation),
+
+				   getDataF2D(linkMasses), getData(linkCollisionShapeIndices), getData(linkVisualShapeIndices),
+				   fromFMatToArrayVector3(linkPositions), fromFMatToArrayQuaternion(linkPositions),
+				   fromFMatToArrayVector3(linkInertialFramePositions), fromFMatToArrayQuaternion(linkInertialFramePositions), 
+				   getData(linkParentIndices), getData(linkJointTypes), fromFMatToArrayVector3(linkJointAxes),
+				   useMaximalCoordinates);
+    }
+
 
     def stepSimulation():Unit = {
 	javaBullet.stepSimulation();
@@ -357,7 +385,7 @@ class Bullet {
 			     lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
 			     renderer:Int = -1):BMat = {
 
-	val cameraImage = BMat.bzeros(MatFunctions.irow(4,height,width));
+	val cameraImage = BMat.bzeros(irow(4,height,width));
 	
 	javaBullet.getCameraImageBytes(width, height,
 				       fromFMatToFloatArray(viewMatrix), fromFMatToFloatArray(projectionMatrix),
@@ -376,7 +404,7 @@ class Bullet {
 			     lightAmbientCoeff:Float = -1f, lightDiffuseCoeff:Float = -1f, lightSpecularCoeff:Float = -1f,
 			     renderer:Int = -1):(BMat,FMat,IMat) = {
 
-	val cameraImage = BMat.bzeros(MatFunctions.irow(4,height,width));
+	val cameraImage = BMat.bzeros(irow(4,height,width));
 	val depthImage = FMat.zeros(width, height);
 	val segmentation = IMat.izeros(width, height);
 	
@@ -440,12 +468,12 @@ class Bullet {
 	jointAnglesOutput;
     };
 
-    def addUserDebugLine(fromXYZ:FMat, toXYZ:FMat, textColorRGB:FMat= MatFunctions.row(1,1,1), lineWidth:Double=1, lifeTime:Double= 0,
+    def addUserDebugLine(fromXYZ:FMat, toXYZ:FMat, textColorRGB:FMat= row(1,1,1), lineWidth:Double=1, lifeTime:Double= 0,
 			 parentObjectUniqueId:Int= -1, parentLinkIndex:Int= -1) = {
 	javaBullet.addUserDebugLine(getDataF2D(fromXYZ), getDataF2D(toXYZ), getDataF2D(textColorRGB), lineWidth, lifeTime, parentObjectUniqueId, parentLinkIndex);
     };
 
-    def addUserDebugText(text:String, position:FMat, orientation:Quaternion= null, textColorRGB:FMat= MatFunctions.row(1,1,1), textSize:Double= 1, lifeTime:Double= 0,
+    def addUserDebugText(text:String, position:FMat, orientation:Quaternion= null, textColorRGB:FMat= row(1,1,1), textSize:Double= 1, lifeTime:Double= 0,
 			   parentObjectUniqueId:Int= -1, parentLinkIndex:Int= -1) = {
 	javaBullet.addUserDebugText(text, getDataF2D(position), getDataF2D(orientation), getDataF2D(textColorRGB), textSize, lifeTime, parentObjectUniqueId, parentLinkIndex);
     };
@@ -544,6 +572,14 @@ class Bullet {
     };
 
     def getData(a:DMat):Array[Double]= {
+	if (a.asInstanceOf[AnyRef] != null) {
+	    a.data;
+	} else {
+	    null;
+	}
+    };
+
+    def getData(a:IMat):Array[Int]= {
 	if (a.asInstanceOf[AnyRef] != null) {
 	    a.data;
 	} else {
@@ -696,7 +732,7 @@ object Bullet {
     };
 
     def getQuaternionFromEuler(yawZ:Double, pitchY:Double, rollX:Double):BIDMat.Quaternion = {
-	val euler0 = fromFMatToVector3(MatFunctions.row(yawZ, pitchY, rollX));
+	val euler0 = fromFMatToVector3(row(yawZ, pitchY, rollX));
 	val q = new edu.berkeley.bid.bullet.Quaternion();
 	edu.berkeley.bid.bullet.Bullet.getQuaternionFromEuler(euler0, q);
 	JavaQtoBIDMatQ(q);
@@ -763,7 +799,7 @@ object Bullet {
 
     def fromVector3ToFMat(v:Vector3):FMat = {
 	if (v.asInstanceOf[AnyRef] != null) {
-	    MatFunctions.row(v.x, v.y, v.z);
+	    row(v.x, v.y, v.z);
 	} else {
 	    null;
 	}
@@ -771,7 +807,7 @@ object Bullet {
 
     def fromVector3ToDMat(v:Vector3):DMat = {
 	if (v.asInstanceOf[AnyRef] != null) {
-	    MatFunctions.drow(v.x, v.y, v.z);
+	    drow(v.x, v.y, v.z);
 	} else {
 	    null;
 	}
@@ -785,6 +821,14 @@ object Bullet {
 	}
     }
 
+    def fromFMatToJavaQuaternion(v:FMat):edu.berkeley.bid.bullet.Quaternion = {
+	if (v.asInstanceOf[AnyRef] != null) {
+	    new edu.berkeley.bid.bullet.Quaternion(v.data(0), v.data(1), v.data(2), v.data(3));
+	} else {
+	    null;
+	}
+    }
+
     def fromDMatToVector3(v:DMat):Vector3 = {
 	if (v.asInstanceOf[AnyRef] != null) {
 	    new Vector3(v.data(0).toFloat, v.data(1).toFloat, v.data(2).toFloat);
@@ -792,4 +836,35 @@ object Bullet {
 	    null;
 	}
     }
+
+    def fromFMatToArrayVector3(v:FMat):Array[Vector3] = {
+	if (v.asInstanceOf[AnyRef] != null) {
+	    val nvecs = v.ncols;
+	    val out = new Array[Vector3](nvecs);
+	    var i = 0;
+	    while (i < nvecs) {
+		out(i) = fromFMatToVector3(v(?,i));
+		i += 1;
+	    }
+	    out;
+	} else {
+	    null;
+	}
+    }
+
+    def fromFMatToArrayQuaternion(v:FMat):Array[edu.berkeley.bid.bullet.Quaternion] = {
+	if (v.asInstanceOf[AnyRef] != null) {
+	    val nvecs = v.ncols;
+	    val out = new Array[edu.berkeley.bid.bullet.Quaternion](nvecs);
+	    var i = 0;
+	    while (i < nvecs) {
+		out(i) = fromFMatToJavaQuaternion(v(?,i));
+		i += 1;
+	    }
+	    out;
+	} else {
+	    null;
+	}
+    }
+
 }
