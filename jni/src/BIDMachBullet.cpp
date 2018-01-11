@@ -1453,7 +1453,7 @@ JNIEXPORT jintArray Java_edu_berkeley_bid_bullet_Bullet_loadSDF
   int size = m_results.m_uniqueObjectIds.size();
   jintArray results = env->NewIntArray(size);
   if (results != NULL) {
-    jint *body = env->GetIntArrayElements(results, 0);
+    int *body = (int *)env->GetIntArrayElements(results, 0);
     for (i = 0; i < size; i++) {
       body[i] = m_results.m_uniqueObjectIds[i];
     }
@@ -1476,7 +1476,7 @@ JNIEXPORT jintArray Java_edu_berkeley_bid_bullet_Bullet_loadMJCF
   int size = m_results.m_uniqueObjectIds.size();
   jintArray results = env->NewIntArray(size);
   if (results != NULL) {
-    jint *body = env->GetIntArrayElements(results, 0);
+    int *body = (int *)env->GetIntArrayElements(results, 0);
     for (i = 0; i < size; i++) {
       body[i] = m_results.m_uniqueObjectIds[i];
     }
@@ -1499,7 +1499,7 @@ JNIEXPORT jintArray Java_edu_berkeley_bid_bullet_Bullet_loadBullet
   int size = m_results.m_uniqueObjectIds.size();
   jintArray results = env->NewIntArray(size);
   if (results != NULL) {
-    jint *body = env->GetIntArrayElements(results, 0);
+    int *body = (int *)env->GetIntArrayElements(results, 0);
     for (i = 0; i < size; i++) {
       body[i] = m_results.m_uniqueObjectIds[i];
     }
