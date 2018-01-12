@@ -62,21 +62,21 @@ fi
 
 echo "Creating config for $OS $ARCH"
 
-if [ "$OS$" == windows ];then
-BULLET_LIBS="${BULLET_HOME}/lib/Release/libRobotSimulator.lib \
-${BULLET_HOME}/lib/Release/BulletExampleBrowserLib.lib \
-${BULLET_HOME}/lib/Release/BulletRobotics.lib \
-${BULLET_HOME}/lib/Release/BulletInverseDynamicsUtils.lib \
-${BULLET_HOME}/lib/Release/BulletWorldImporter.lib \
-${BULLET_HOME}/lib/Release/BulletFileLoader.lib \
-${BULLET_HOME}/lib/Release/BulletSoftBody.lib \
-${BULLET_HOME}/lib/Release/BulletDynamics.lib \
-${BULLET_HOME}/lib/Release/BulletCollision.lib \
-${BULLET_HOME}/lib/Release/BulletInverseDynamics.lib \
-${BULLET_HOME}/lib/Release/LinearMath.lib \
-${BULLET_HOME}/lib/Release/OpenGLWindow.lib \
-${BULLET_HOME}/lib/Release/gwen.lib \
-${BULLET_HOME}/lib/Release/Bullet3Common.lib"
+if [ "$OS" == windows ];then
+BULLET_LIBS="RobotSimulator.lib \
+BulletExampleBrowserLib.lib \
+BulletRobotics.lib \
+BulletInverseDynamicsUtils.lib \
+BulletWorldImporter.lib \
+BulletFileLoader.lib \
+BulletSoftBody.lib \
+BulletDynamics.lib \
+BulletCollision.lib \
+BulletInverseDynamics.lib \
+LinearMath.lib \
+OpenGLWindow.lib \
+gwen.lib \
+Bullet3Common.lib"
 else
 BULLET_LIBS="${BULLET_HOME}/examples/RobotSimulator/libRobotSimulator.a \
 ${BULLET_HOME}/examples/ExampleBrowser/libBulletExampleBrowserLib.a \
@@ -106,7 +106,8 @@ else
 fi
 BIDBULLET_ROOT=`dirname "$BIDBULLET_ROOT"`
 BIDBULLET_ROOT=`cd "$BIDBULLET_ROOT/../..";pwd`
-BIDBULLET_ROOT="$( echo ${BIDBULLET_ROOT} | sed s+/cygdrive/c+c:+ )" 
+BIDBULLET_ROOT="$( echo ${BIDBULLET_ROOT} | sed 's+/cygdrive/\(.\)+\1:+' )"
+BULLET_HOME="$( echo ${BULLET_HOME} | sed 's+/cygdrive/\(.\)+\1:+' )" 
 
 if [ "$OS" = "apple" ] ; then
     if [ "$JAVA_HOME" = "" ]; then
@@ -218,14 +219,11 @@ elif [ "$OS" = "windows" ] ; then
     FFLAGS="-c $FFLAGS"
     LAPACK_INCLUDES=""
     FORTRAN_LIBS=""
-    if [ "$PARLIB" = "sequential" ] ; then
-	    CPU_LIBS=""
-    else
-	    CPU_LIBS=""
-    fi
+	CPU_LIBS="opengl32.lib glu32.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib shell32.lib ws2_32.lib"
     BULLET_HOME=`echo ${BULLET_HOME} | sed 'sx/x\\\\xg'`
+    echo ${BULLET_HOME}
     BULLET_LIBS="${BULLET_LIBS} zlib.lib legacy_stdio_definitions.lib"
-    LIBDIR="${BIDBULLET_ROOT}/lib"
+    LIBDIR="${BULLET_HOME}/lib/Release"
     INSTALL_DIR="${BIDBULLET_ROOT}/src/main/resources/lib"
     LIB="$JAVA_HOME/lib;${LIBDIR};${ZLIB_DIR};${BULLET_HOME};$LIB"
     INCLUDE="$JAVA_HOME/include;$JAVA_HOME/include/win32;${BIDBULLET_ROOT}/jni/include;$CUDA_HOME/include;${BULLET_HOME}/src;$INCLUDE"
