@@ -64,6 +64,7 @@ echo "Creating config for $OS $ARCH"
 
 if [ "$OS$" == windows ];then
 BULLET_LIBS="${BULLET_HOME}/lib/Release/libRobotSimulator.lib \
+${BULLET_HOME}/lib/Release/BulletExampleBrowserLib.lib \
 ${BULLET_HOME}/lib/Release/BulletRobotics.lib \
 ${BULLET_HOME}/lib/Release/BulletInverseDynamicsUtils.lib \
 ${BULLET_HOME}/lib/Release/BulletWorldImporter.lib \
@@ -74,22 +75,20 @@ ${BULLET_HOME}/lib/Release/BulletCollision.lib \
 ${BULLET_HOME}/lib/Release/BulletInverseDynamics.lib \
 ${BULLET_HOME}/lib/Release/LinearMath.lib \
 ${BULLET_HOME}/lib/Release/OpenGLWindow.lib \
-${BULLET_HOME}/lib/Release/BulletExampleBrowserLib.lib \
 ${BULLET_HOME}/lib/Release/gwen.lib \
 ${BULLET_HOME}/lib/Release/Bullet3Common.lib"
 else
 BULLET_LIBS="${BULLET_HOME}/examples/RobotSimulator/libRobotSimulator.a \
-${BULLET_HOME}/Extras/BulletRobotics/libBulletRobotics.a \
-${BULLET_HOME}/Extras/InverseDynamics/libBulletInverseDynamicsUtils.a \
+${BULLET_HOME}/examples/ExampleBrowser/libBulletExampleBrowserLib.a \
 ${BULLET_HOME}/Extras/Serialize/BulletWorldImporter/libBulletWorldImporter.a \
 ${BULLET_HOME}/Extras/Serialize/BulletFileLoader/libBulletFileLoader.a \
 ${BULLET_HOME}/src/BulletSoftBody/libBulletSoftBody.a \
 ${BULLET_HOME}/src/BulletDynamics/libBulletDynamics.a \
 ${BULLET_HOME}/src/BulletCollision/libBulletCollision.a \
+${BULLET_HOME}/Extras/InverseDynamics/libBulletInverseDynamicsUtils.a \
 ${BULLET_HOME}/src/BulletInverseDynamics/libBulletInverseDynamics.a \
 ${BULLET_HOME}/src/LinearMath/libLinearMath.a \
 ${BULLET_HOME}/examples/OpenGLWindow/libOpenGLWindow.a \
-${BULLET_HOME}/examples/ExampleBrowser/libBulletExampleBrowserLib.a \
 ${BULLET_HOME}/examples/ThirdPartyLibs/Gwen/libgwen.a \
 ${BULLET_HOME}/src/Bullet3Common/libBullet3Common.a"
 fi
