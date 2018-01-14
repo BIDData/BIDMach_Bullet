@@ -1,11 +1,8 @@
-import BIDMach.rl.environments.bullet._
 
 val p = new Bullet;
 
 p.connect(p.GUI);
 //p.connect(p.SHARED_MEMORY);
-
-p.setPathPrefix("/code/bullet3/data/");
 
 val restitutionId = p.addUserDebugParameter("restitution",0,1,1);
 val restitutionVelocityThresholdId = p.addUserDebugParameter("res. vel. threshold",0,3,0.2);
@@ -13,6 +10,8 @@ val restitutionVelocityThresholdId = p.addUserDebugParameter("res. vel. threshol
 val lateralFrictionId = p.addUserDebugParameter("lateral friction",0,1,0.5);
 val spinningFrictionId = p.addUserDebugParameter("spinning friction",0,1,0.03);
 val rollingFrictionId = p.addUserDebugParameter("rolling friction",0,1,0.03);
+
+// Make sure the fileNamePrefix in BIDMach_Bullet/lib/bidmach_init.scala points to bullet3/data
 
 val plane = p.loadURDF("plane_with_restitution.urdf");
 val sphere = p.loadURDF("sphere_with_restitution.urdf",row(0,0,2));

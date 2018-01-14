@@ -322,11 +322,11 @@ struct b3RobotSimulatorCreateCollisionShapeArgs
 {
   int m_shapeType;
   double m_radius;
-  double m_halfExtents[3];
+  b3Vector3 m_halfExtents;
   double m_height;
   char* m_fileName;
-  double m_meshScale[3];
-  double m_planeNormal[3];
+  b3Vector3 m_meshScale;
+  b3Vector3 m_planeNormal;
   int m_flags;
   b3RobotSimulatorCreateCollisionShapeArgs()
     : m_shapeType(-1),
@@ -335,17 +335,17 @@ struct b3RobotSimulatorCreateCollisionShapeArgs
       m_fileName(NULL),
       m_flags(0)
   {
-    m_halfExtents[0] = 1;
-    m_halfExtents[1] = 1;
-    m_halfExtents[2] = 1;
+    m_halfExtents.m_floats[0] = 1;
+    m_halfExtents.m_floats[1] = 1;
+    m_halfExtents.m_floats[2] = 1;
 
-    m_meshScale[0] = 1;
-    m_meshScale[1] = 1;
-    m_meshScale[2] = 1;
+    m_meshScale.m_floats[0] = 1;
+    m_meshScale.m_floats[1] = 1;
+    m_meshScale.m_floats[2] = 1;
 
-    m_planeNormal[0] = 0;
-    m_planeNormal[1] = 0;
-    m_planeNormal[2] = 1;
+    m_planeNormal.m_floats[0] = 0;
+    m_planeNormal.m_floats[1] = 0;
+    m_planeNormal.m_floats[2] = 1;
   }
 
 };

@@ -10,19 +10,12 @@ class Bullet {
 
     import BIDMach.rl.environments.bullet.Bullet._;
 
-    var filePathPrefix:String = null;
-
-    def appendPathPrefix(fname:String):String = {
-	if (filePathPrefix.asInstanceOf[AnyRef] != null) {
-	    filePathPrefix + fname;
+    def appendFileNamePrefix(fname:String):String = {
+	if (Bullet.fileNamePrefix.asInstanceOf[AnyRef] != null) {
+	    Bullet.fileNamePrefix + fname;
 	} else {
 	    fname;
 	}
-    };
-
-    def setPathPrefix(dirname:String):String = {
-	filePathPrefix = dirname;
-	dirname;
     };
 
     def connect(method:Int, hostname:String="localhost", port:Int= -1):Boolean = {
@@ -50,29 +43,29 @@ class Bullet {
     def loadURDF(fname:String, startPos:FMat=null, startOrient:Quaternion=null, forceOverrideFixedBase:Boolean=false, useMultiBody:Boolean=true, flags:Int=0):Int = {
 	val startPos0 = fromFMatToVector3(startPos);
 	val startOrient0 = BIDMatQtoJavaQ(startOrient);
-	javaBullet.loadURDF(appendPathPrefix(fname), startPos0, startOrient0, forceOverrideFixedBase, useMultiBody, flags);
+	javaBullet.loadURDF(appendFileNamePrefix(fname), startPos0, startOrient0, forceOverrideFixedBase, useMultiBody, flags);
     };
 
     def loadSDF(fname:String, forceOverrideFixedBase:Boolean=false, useMultiBody:Boolean=true):IMat = {
-	val ints:Array[Int] = javaBullet.loadSDF(appendPathPrefix(fname), forceOverrideFixedBase, useMultiBody);
+	val ints:Array[Int] = javaBullet.loadSDF(appendFileNamePrefix(fname), forceOverrideFixedBase, useMultiBody);
 	irow(ints);
     };
 
     def loadMJCF(fname:String):IMat = {
-	val ints:Array[Int] = javaBullet.loadMJCF(appendPathPrefix(fname));
+	val ints:Array[Int] = javaBullet.loadMJCF(appendFileNamePrefix(fname));
 	irow(ints);
     };
 
     def loadBullet(fname:String):IMat = {
-	val ints:Array[Int] = javaBullet.loadBullet(appendPathPrefix(fname));
+	val ints:Array[Int] = javaBullet.loadBullet(appendFileNamePrefix(fname));
 	irow(ints);
     };
 
-    def createCollisionShape(shapeType:Int, radius:Double=0.5, halfExtents:DMat=drow(1,1,1), height:Double=1,
-			     fileName:String=null, meshScale:DMat=drow(1,1,1), planeNormal:DMat=drow(0,0,1), flags:Int=0) = {
+    def createCollisionShape(shapeType:Int, radius:Double=0.5, halfExtents:FMat=row(1,1,1), height:Double=1,
+			     fileName:String=null, meshScale:FMat=row(1,1,1), planeNormal:FMat=row(0,0,1), flags:Int=0) = {
 	
-	javaBullet.createCollisionShape(shapeType, radius, getData(halfExtents), height,
-					fileName, getData(meshScale), getData(planeNormal), flags);
+	javaBullet.createCollisionShape(shapeType, radius, fromFMatToVector3(halfExtents), height,
+					fileName, fromFMatToVector3(meshScale), fromFMatToVector3(planeNormal), flags);
     }
 
     def createMultiBody(baseMass:Double= -1, baseCollisionShapeIndex:Int = -1, baseVisualShapeIndex:Int = -1,
@@ -82,16 +75,16 @@ class Bullet {
 			linkMasses:FMat = null, linkCollisionShapeIndices:IMat = null, linkVisualShapeIndices:IMat = null,
 			linkPositions:FMat = null, linkOrientations:FMat = null, 
 			linkInertialFramePositions:FMat = null, linkInertialFrameOrientations:FMat = null,
-			linkParentIndices:IMat = null, linkJointTypes:IMat = null, linkJointAxes:FMat = null, useMaximalCoordinates:Int = 0) = {
+			linkParentIndices:IMat = null, linkJointTypes:IMat = null, linkJointAxis:FMat = null, useMaximalCoordinates:Int = 0) = {
 
 	javaBullet.createMultiBody(baseMass, baseCollisionShapeIndex, baseVisualShapeIndex,
 				   fromFMatToVector3(basePosition), BIDMatQtoJavaQ(baseOrientation),
 				   fromFMatToVector3(baseInertialFramePosition), BIDMatQtoJavaQ(baseInertialFrameOrientation),
 
 				   getDataF2D(linkMasses), getData(linkCollisionShapeIndices), getData(linkVisualShapeIndices),
-				   fromFMatToArrayVector3(linkPositions), fromFMatToArrayQuaternion(linkPositions),
-				   fromFMatToArrayVector3(linkInertialFramePositions), fromFMatToArrayQuaternion(linkInertialFramePositions), 
-				   getData(linkParentIndices), getData(linkJointTypes), fromFMatToArrayVector3(linkJointAxes),
+				   fromFMatToArrayVector3(linkPositions), fromFMatToArrayQuaternion(linkOrientations),
+				   fromFMatToArrayVector3(linkInertialFramePositions), fromFMatToArrayQuaternion(linkInertialFrameOrientations), 
+				   getData(linkParentIndices), getData(linkJointTypes), fromFMatToArrayVector3(linkJointAxis),
 				   useMaximalCoordinates);
     }
 
@@ -268,12 +261,14 @@ class Bullet {
 	dynamicsInfo;
     };
 
-    def changeDynamics(bodyUniqueId:Int, linkIndex:Int, mass:Double= -1, lateralFriction:Double= -1, spinningFriction:Double= -1,
-		       rollingFriction:Double= -1, restitution:Double= -1, linearDamping:Double= -1, angularDamping:Double= -1,
+    def changeDynamics(bodyUniqueId:Int, linkIndex:Int, mass:Double= -1,
+		       lateralFriction:Double= -1, spinningFriction:Double= -1, rollingFriction:Double= -1,
+		       restitution:Double= -1, linearDamping:Double= -1, angularDamping:Double= -1,
 		       contactStiffness:Double= -1, contactDamping:Double= -1, frictionAnchor:Int= -1):Boolean = {
 	
-	javaBullet.changeDynamics(bodyUniqueId, linkIndex, mass, lateralFriction, spinningFriction,
-				  rollingFriction, restitution, linearDamping, angularDamping,
+	javaBullet.changeDynamics(bodyUniqueId, linkIndex, mass,
+				  lateralFriction, spinningFriction, rollingFriction,
+				  restitution, linearDamping, angularDamping,
 				  contactStiffness, contactDamping, frictionAnchor);
     };
 
@@ -503,13 +498,13 @@ class Bullet {
 	javaBullet.resetDebugVisualizerCamera(cameraDistance, cameraPitch, cameraYaw, targetPos0);
     };
     
-    def getKeyboardEventsData():KeyboardEventsData = {
+    def getKeyboardEvents():KeyboardEventsData = {
 	val keyboardEventsData = new KeyboardEventsData();
 	javaBullet.getKeyboardEventsData(keyboardEventsData);
 	keyboardEventsData;
     };
 
-    def getMouseEventsData():MouseEventsData = {
+    def getMouseEventsx():MouseEventsData = {
 	val mouseEventsData = new MouseEventsData();
 	javaBullet.getMouseEventsData(mouseEventsData);
 	mouseEventsData;
@@ -867,4 +862,13 @@ object Bullet {
 	}
     }
 
+    var fileNamePrefix:String = null;
+
+    def setFileNamePrefix(dirname:String):String = {
+	fileNamePrefix = dirname;
+	dirname;
+    };
+
+
 }
+

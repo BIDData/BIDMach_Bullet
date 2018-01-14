@@ -17,3 +17,5 @@ import BIDMach.rl.environments.bullet._
 Mat.checkMKL(false)
 Mat.checkCUDA
 
+Bullet.setFileNamePrefix("/code/bullet3/data/");
+

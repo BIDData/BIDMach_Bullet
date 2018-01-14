@@ -1,4 +1,3 @@
-import BIDMach.rl.environments.bullet._
 
 val p = new Bullet;
 
@@ -8,11 +7,11 @@ p.resetSimulation()
 
 p.setGravity(0,0,-9.8f);
 
-p.setPathPrefix("/code/bullet3/data/");
-
 var useRealTimeSim = true;
 
 p.setRealTimeSimulation(useRealTimeSim);
+
+// Make sure the fileNamePrefix in BIDMach_Bullet/lib/bidmach_init.scala points to bullet3/data
 
 p.loadSDF("stadium.sdf");
 

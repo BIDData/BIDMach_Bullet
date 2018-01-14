@@ -1,4 +1,3 @@
-import BIDMach.rl.environments.bullet._
 
 val p = new Bullet;
 
@@ -6,7 +5,8 @@ var clid = p.connect(p.GUI);
 //var clid = p.connect(p.SHARED_MEMORY);
 if (!clid) p.connect(p.DIRECT);
 
-p.setPathPrefix("/code/bullet3/data/");
+// Make sure the fileNamePrefix in BIDMach_Bullet/lib/bidmach_init.scala points to bullet3/data
+
 p.loadURDF("plane.urdf",row(0,0,-0.3f));
 
 val kukaId = p.loadURDF("kuka_iiwa/model.urdf",row(0,0,0));

@@ -1,0 +1,64 @@
+
+val p = new Bullet;
+
+p.connect(p.GUI);
+p.createCollisionShape(p.GEOM_PLANE);
+p.createMultiBody(0,0);
+
+val sphereRadius = 0.05;
+val colSphereId = p.createCollisionShape(p.GEOM_SPHERE,radius=sphereRadius);
+val colBoxId = p.createCollisionShape(p.GEOM_BOX,halfExtents=row(sphereRadius,sphereRadius,sphereRadius));
+var sphereUid = 0;
+
+val mass = 1;
+val visualShapeId = -1;
+
+	
+	
+val link_Masses=row(1);
+val linkCollisionShapeIndices=irow(colBoxId);
+val linkVisualShapeIndices=irow(-1);
+val linkPositions=col(0,0,0.11);
+val linkOrientations=col(0,0,0,1);
+val linkInertialFramePositions=col(0,0,0);
+val linkInertialFrameOrientations=col(0,0,0,1);
+val indices=irow(0);
+val jointTypes=irow(p.JOINT_REVOLUTE);
+val axis=col(0,0,1);
+
+for (i <- 0 until 3) {
+    for (j <- 0 until 3) {
+	for (k <- 0 until 3) {
+	    val basePosition = row(1+i*5*sphereRadius,1+j*5*sphereRadius,1+k*5*sphereRadius+1);
+	    val baseOrientation = Quaternion(0,0,0,1);
+	    if ((k & 2) > 0) {
+		sphereUid = p.createMultiBody(mass,colSphereId,visualShapeId,basePosition,baseOrientation);
+	    } else {
+		sphereUid = p.createMultiBody(mass,colBoxId,visualShapeId,basePosition,baseOrientation,linkMasses=link_Masses,linkCollisionShapeIndices=linkCollisionShapeIndices,linkVisualShapeIndices=linkVisualShapeIndices,linkPositions=linkPositions,linkOrientations=linkOrientations,linkInertialFramePositions=linkInertialFramePositions, linkInertialFrameOrientations=linkInertialFrameOrientations,linkParentIndices=indices,linkJointTypes=jointTypes,linkJointAxis=axis);
+	    };
+			
+	    p.changeDynamics(sphereUid,-1,spinningFriction=0.001, rollingFriction=0.001,linearDamping=0.0);
+	    for (joint <- 0 until p.getNumJoints(sphereUid)) {
+		p.setJointMotorControl(sphereUid,joint,p.VELOCITY_CONTROL,targetVelocity=1,force=10);
+	    }
+	}
+    }
+}
+
+
+p.setGravity(0,0,-10);
+p.setRealTimeSimulation(true);
+
+p.getNumJoints(sphereUid);
+for (i <- 0 until p.getNumJoints(sphereUid)) {
+    p.getJointInfo(sphereUid,i);
+}
+	
+while (true) {
+    val keys = p.getKeyboardEvents();
+    print(keys);
+
+    Thread.sleep(10);
+}
+
+	

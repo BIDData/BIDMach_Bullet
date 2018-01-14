@@ -1,4 +1,3 @@
-import BIDMach.rl.environments.bullet._
 
 val p = new Bullet;
 
@@ -11,7 +10,9 @@ val params = drow(0.1903581461951056, 0.0006732219568880068, 0.05018085615283363
 val evaluate_func = "evaluate_desired_motorAngle_2Amplitude4Phase";
 val energy_weight = 0.01;
 
-val minitaureval = new MinitaurEval(p, "/code/bullet3/data/");
+// Make sure the fileNamePrefix in BIDMach_Bullet/lib/bidmach_init.scala points to bullet3/data
+
+val minitaureval = new MinitaurEval(p);
 
 val finalReturn = minitaureval.evaluate_params(evaluateFunc = evaluate_func, params=params, objectiveParams=drow(energy_weight),
                                                timeStep=timeStep, sleepTime=timeStep, maxNumSteps = 10000);

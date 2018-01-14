@@ -1,8 +1,5 @@
-import BIDMach.rl.environments.bullet._
 
 val p = new Bullet;
-
-p.setPathPrefix("/code/bullet3/data/");
 
 val draw=true
 val printtext = false
@@ -12,6 +9,9 @@ if (draw) {
 } else {
     p.connect(p.DIRECT);
 }
+
+// Make sure the fileNamePrefix in BIDMach_Bullet/lib/bidmach_init.scala points to bullet3/data
+
 val r2d2 = p.loadURDF("r2d2.urdf");
 
 def drawAABB(aabbMin:FMat, aabbMax:FMat) = {

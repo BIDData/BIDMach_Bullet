@@ -63,8 +63,8 @@ public class Bullet implements Serializable {
 
     public native int[] loadBullet(String fname);
 
-    public native int createCollisionShape(int shapeType, double radius, double [] halfExtents, double height,
-						  String fileName, double [] jmeshScale, double [] jplaneNormal, int flags);
+    public native int createCollisionShape(int shapeType, double radius, Vector3 halfExtents, double height,
+					   String fileName, Vector3 meshScale, Vector3 planeNormal, int flags);
 
     public native int createMultiBody(double baseMass, int baseCollisionShapeIndex, int baseVisualShapeIndex,
 				      Vector3 basePosition, Quaternion baseOrientation,
@@ -273,8 +273,9 @@ public class Bullet implements Serializable {
 
     public native boolean getDynamicsInfo(int bodyUniqueId, int jointIndex, DynamicsInfo dynamicsInfo);
 
-    public native boolean changeDynamics(int bodyUniqueId, int linkIndex, double mass, double lateralFriction, double spinningFriction,
-					 double rollingFriction, double restitution, double linearDamping, double angularDamping,
+    public native boolean changeDynamics(int bodyUniqueId, int linkIndex, double mass,
+					 double lateralFriction, double spinningFriction, double rollingFriction,
+					 double restitution, double linearDamping, double angularDamping,
 					 double contactStiffness, double contactDamping, int frictionAnchor);
 
     public native void setTimeStep(double t);

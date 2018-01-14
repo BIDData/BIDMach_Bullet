@@ -1,6 +1,5 @@
 
 :silent
-import BIDMach.rl.environments.bullet._
 
 val p = new Bullet;
 var clid = p.connect(p.SHARED_MEMORY);
@@ -35,7 +34,9 @@ val gravity_constant = -9.81f;
 p.resetSimulation();
 p.setTimeStep(time_step);
 p.setGravity(0, 0, gravity_constant);
-p.setPathPrefix("/code/bullet3/data/");
+
+// Make sure the fileNamePrefix in BIDMach_Bullet/lib/bidmach_init.scala points to bullet3/data
+
 p.loadURDF("plane.urdf", row(0,0,-0.3f));
 
 val kukaId = p.loadURDF("kuka_iiwa/model.urdf");

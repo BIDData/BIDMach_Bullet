@@ -250,11 +250,11 @@ bool b3RobotSimulatorClientAPI::changeDynamics(int bodyUniqueId, int linkIndex, 
   }
   
   if (args.m_spinningFriction>=0) {
-    b3ChangeDynamicsInfoSetSpinningFriction(command, bodyUniqueId, linkIndex,args.m_spinningFriction);
+    b3ChangeDynamicsInfoSetSpinningFriction(command, bodyUniqueId, linkIndex, args.m_spinningFriction);
   }
 
   if (args.m_rollingFriction>=0) {
-    b3ChangeDynamicsInfoSetRollingFriction(command, bodyUniqueId, linkIndex,args.m_rollingFriction);
+    b3ChangeDynamicsInfoSetRollingFriction(command, bodyUniqueId, linkIndex, args.m_rollingFriction);
   }
 
   if (args.m_linearDamping>=0)	{
@@ -879,7 +879,9 @@ int b3RobotSimulatorClientAPI::createCollisionShape(int shapeType, struct b3Robo
     shapeIndex = b3CreateCollisionShapeAddSphere(command, args.m_radius);
   }
   if (shapeType==GEOM_BOX)  {
-    shapeIndex = b3CreateCollisionShapeAddBox(command, args.m_halfExtents);
+    double halfExtents[3];
+    scalarToDouble3(args.m_halfExtents, halfExtents);
+    shapeIndex = b3CreateCollisionShapeAddBox(command, halfExtents);
   }
   if (shapeType==GEOM_CAPSULE && args.m_radius>0 && args.m_height>=0) {
     shapeIndex = b3CreateCollisionShapeAddCapsule(command, args.m_radius, args.m_height);
@@ -888,11 +890,15 @@ int b3RobotSimulatorClientAPI::createCollisionShape(int shapeType, struct b3Robo
     shapeIndex = b3CreateCollisionShapeAddCylinder(command, args.m_radius, args.m_height);
   }
   if (shapeType==GEOM_MESH && args.m_fileName) {
-    shapeIndex = b3CreateCollisionShapeAddMesh(command, args.m_fileName, args.m_meshScale);
+    double meshScale[3];
+    scalarToDouble3(args.m_meshScale, meshScale);
+    shapeIndex = b3CreateCollisionShapeAddMesh(command, args.m_fileName, meshScale);
   }
   if (shapeType==GEOM_PLANE) {
     double planeConstant=0;
-    shapeIndex = b3CreateCollisionShapeAddPlane(command, args.m_planeNormal, planeConstant);
+    double planeNormal[3];
+    scalarToDouble3(args.m_planeNormal, planeNormal);
+    shapeIndex = b3CreateCollisionShapeAddPlane(command, planeNormal, planeConstant);
   }
   if (shapeIndex>=0 && args.m_flags) {
     b3CreateCollisionSetFlag(command, shapeIndex, args.m_flags);
@@ -974,7 +980,7 @@ int b3RobotSimulatorClientAPI::createMultiBody(struct b3RobotSimulatorCreateMult
   statusHandle = b3SubmitClientCommandAndWaitStatus(sm, command);
   statusType = b3GetStatusType(statusHandle);
   if (statusType == CMD_CREATE_MULTI_BODY_COMPLETED) {
-    int uid = b3GetStatusCollisionShapeUniqueId(statusHandle);
+    int uid = b3GetStatusBodyIndex(statusHandle);
     return uid;
   }
   return -1;

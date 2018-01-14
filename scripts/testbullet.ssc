@@ -1,4 +1,3 @@
-import BIDMach.rl.environments.bullet._
 
 val p = new Bullet;
 
@@ -8,7 +7,7 @@ p.connect(p.GUI);
 
 p.setGravity(row(0,0,-9.8f));
 
-p.setPathPrefix("/code/bullet3/data/");
+// Set the fileNamePrefix in BIDMach_Bullet/lib/bidmach_init.scala to point to bullet3/data
 
 val planeId = p.loadURDF("plane.urdf")
 
